@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive JavaScript Tutorial - IST 411</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Dark Theme (Default) */
+            --primary: #5B8DEE;
+            --secondary: #2C3E50;
+            --accent: #E8B04B;
+            --dark: #1A1D29;
+            --light: #E8EBF0;
+            --code-bg: #252834;
+            --success: #4ECDC4;
+            --error: #E85D75;
+            --bg-gradient-start: #1A1D29;
+            --bg-gradient-end: #2C3E50;
+            --slide-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(91, 141, 238, 0.3);
+            --text-primary: #E8EBF0;
+            --text-secondary: #A8B2C1;
+        }
+
+        [data-theme="light"] {
+            /* Light Theme */
+            --primary: #3B7DD6;
+            --secondary: #5A6C7D;
+            --accent: #D4940C;
+            --dark: #FFFFFF;
+            --light: #1F2937;
+            --code-bg: #F8F9FA;
+            --success: #059669;
+            --error: #DC2626;
+            --bg-gradient-start: #F0F4F8;
+            --bg-gradient-end: #E1E8ED;
+            --slide-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(59, 125, 214, 0.3);
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 140px 0 120px 0;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .presentation-container {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .slide {
+            width: 90%;
+            max-width: 1200px;
+            min-height: 400px;
+            background: var(--slide-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 60px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: none;
+            border: 2px solid var(--border-color);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            display: block;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 4em;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            animation: slideInDown 0.8s ease-out;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 2.5em;
+            color: var(--accent);
+            margin-bottom: 30px;
+            letter-spacing: -1px;
+        }
+
+        h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            font-size: 1.5em;
+            color: var(--primary);
+            margin: 25px 0 15px 0;
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-weight: 300;
+            animation: fadeIn 1s ease-out 0.3s both;
+        }
+
+        .code-playground {
+            background: var(--code-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-playground::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 15px 15px 0 0;
+        }
+
+        .playground-label {
+            position: absolute;
+            top: 5px;
+            left: 20px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9em;
+            color: white;
+            font-weight: 700;
+            z-index: 1;
+        }
+
+        .code-editor {
+            font-family: 'Space Mono', monospace;
+            width: 100%;
+            min-height: 350px;
+            height: auto;
+            background: rgba(0, 0, 0, 0.4);
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            color: #00ff88;
+            font-size: 0.95em;
+            resize: vertical;
+            margin-top: 15px;
+            outline: none;
+            line-height: 1.5;
+        }
+
+        [data-theme="light"] .code-editor {
+            background: rgba(0, 0, 0, 0.05);
+            color: #5B21B6;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .run-button {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .run-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .run-button:active {
+            transform: translateY(-1px);
+        }
+
+        .output-console {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 120px;
+            font-family: 'Space Mono', monospace;
+            color: var(--success);
+            border: 1px solid var(--success);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        [data-theme="light"] .output-console {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--success);
+        }
+
+        .output-console .error {
+            color: var(--error);
+        }
+
+        .output-label {
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: var(--primary);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-button:hover {
+            background: var(--secondary);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .slide-indicator {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            background: var(--primary);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 1em;
+            z-index: 1000;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-box {
+            background: rgba(232, 176, 75, 0.15);
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        [data-theme="light"] .info-box {
+            background: rgba(212, 148, 12, 0.1);
+        }
+
+        .tip-box {
+            background: rgba(78, 205, 196, 0.15);
+            border-left: 4px solid var(--success);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        [data-theme="light"] .tip-box {
+            background: rgba(5, 150, 105, 0.1);
+        }
+
+        .warning-box {
+            background: rgba(232, 93, 117, 0.15);
+            border-left: 4px solid var(--error);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        [data-theme="light"] .warning-box {
+            background: rgba(220, 38, 38, 0.1);
+        }
+
+        ul {
+            margin: 20px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin: 12px 0;
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        code {
+            font-family: 'Space Mono', monospace;
+            background: rgba(91, 141, 238, 0.2);
+            padding: 3px 8px;
+            border-radius: 5px;
+            color: var(--primary);
+        }
+
+        [data-theme="light"] code {
+            background: rgba(59, 125, 214, 0.15);
+        }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .example-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] .example-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid var(--border-color);
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .penn-state-badge {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 1.2em;
+            color: var(--primary);
+            z-index: 1000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .interactive-label {
+            display: inline-block;
+            background: var(--success);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-left: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 40px;
+            right: 180px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .theme-icon {
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="penn-state-badge">HCDD 411</div>
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <span class="theme-icon">🌙</span>
+        <span class="theme-text">Light Mode</span>
+    </button>
+    <div class="slide-indicator">
+        <span id="currentSlide">1</span> / <span id="totalSlides">15</span>
+    </div>
+
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active" data-slide="1">
+            <h1>JavaScript Syntax - Part 1</h1>
+            <h2>Md Touhidul Islam</h2>
+
+        </div>
+
+        <!-- Slide 2: Development Environment -->
+        <div class="slide" data-slide="2">
+            <h2>Development Environment</h2>
+            <h3>Code Editor</h3>
+            <ul>
+                <li><strong>Visual Studio Code</strong> (Recommended)</li>
+                <li>Recommended Extensions for VS Code:
+                    <ul>
+                        <li>Live Server</li>
+                        <li>HTML CSS Support</li>
+                        <li>Prettier</li>
+                        <li>JavaScript Code Snippets</li>
+                    </ul>
+                </li>
+            </ul>
+            <h3 style="margin-top: 30px;">Browser Developer Tools</h3>
+            <div class="tip-box">
+                <strong style="color: var(--success);">💡 Pro Tip:</strong><br>
+                Press <code>F12</code> or <code>Ctrl+Shift+I</code> (Windows) / <code>Cmd+Option+I</code> (Mac) to open browser developer tools and access the Console tab!
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">Open the Broswer Console and Try:</span>
+                <textarea class="code-editor" id="dev-tools-test">console.log("Hello!");
+console.log("I am learning JavaScript")</textarea>
+            </div>
+        </div>
+
+        <!-- Slide 3: Why JavaScript? -->
+        <div class="slide" data-slide="3">
+            <h2>Why Do We Need JavaScript?</h2>
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>HTML/CSS</h3>
+                    <p>Define the content and layout</p>
+                    <ul>
+                        <li>Structure</li>
+                        <li>Styling</li>
+                        <li>Static content</li>
+                    </ul>
+                </div>
+                <div class="example-card">
+                    <h3>JavaScript</h3>
+                    <p>Handle changes and updates</p>
+                    <ul>
+                        <li>Interactivity</li>
+                        <li>Dynamic content</li>
+                        <li>User events</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Code Locations -->
+        <div class="slide" data-slide="4">
+            <h2>JavaScript Code Locations</h2>
+            <div class="info-box">
+                <strong>Four Ways to Add JavaScript:</strong> All examples below do the same thing - they display "Hello from JavaScript!"
+            </div>
+
+            <!-- Example 1: In the <head> -->
+            <div class="code-example">
+                <h3>1. Inside &lt;head&gt; Tag</h3>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    <span style="color: var(--success);">&lt;script&gt;
+        function showMessage() {
+            document.getElementById('demo').innerHTML = 'Hello from JavaScript!';
+        }
+    &lt;/script&gt;</span>
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1 id="demo"&gt;Original Text&lt;/h1&gt;
+    &lt;button onclick="showMessage()"&gt;Click Me&lt;/button&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+            </div>
+
+            <!-- Example 2: In the <body> -->
+            <div class="code-example">
+                <h3>2. Inside &lt;body&gt; Tag</h3>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1 id="demo"&gt;Original Text&lt;/h1&gt;
+    &lt;button onclick="showMessage()"&gt;Click Me&lt;/button&gt;
+    
+    <span style="color: var(--success);">&lt;script&gt;
+        function showMessage() {
+            document.getElementById('demo').innerHTML = 'Hello from JavaScript!';
+        }
+    &lt;/script&gt;</span>
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+            </div>
+
+            <!-- Example 3: External File -->
+            <div class="code-example">
+                <h3>3. External File (Recommended!)</h3>
+                <p><strong>HTML file:</strong></p>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1 id="demo"&gt;Original Text&lt;/h1&gt;
+    &lt;button onclick="showMessage()"&gt;Click Me&lt;/button&gt;
+    
+    <span style="color: var(--success);">&lt;script src="script.js"&gt;&lt;/script&gt;</span>
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                <p><strong>script.js file:</strong></p>
+                <pre><code>function showMessage() {
+    document.getElementById('demo').innerHTML = 'Hello from JavaScript!';
+}</code></pre>
+            </div>
+
+            <!-- Example 4: Inline JavaScript -->
+            <div class="code-example">
+                <h3>4. Inline JavaScript (Avoid!)</h3>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1 id="demo"&gt;Original Text&lt;/h1&gt;
+    <span style="color: var(--error);">&lt;button onclick="document.getElementById('demo').innerHTML = 'Hello from JavaScript!'"&gt;Click Me&lt;/button&gt;</span>
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+            </div>
+        </div>
+
+        <!-- Slide 5: Statements -->
+        <div class="slide" data-slide="5">
+            <h2>JavaScript Statements</h2>
+            <h3>Statement Terminators</h3>
+            <ul>
+                <li><strong>Semicolon <code>;</code></strong> - Explicit terminator</li>
+                <li><strong>New line</strong> - Implicit terminator</li>
+                <li>You can use either, but <strong>be consistent</strong> in teamwork!</li>
+            </ul>
+            <div class="code-playground">
+                <span class="playground-label">EXPERIMENT: Both Styles Work</span>
+                <textarea class="code-editor" id="statements">// With semicolons (more common)
+console.log("First statement");
+console.log("Second statement");
+console.log("Third statement");
+
+// Multiple statements on one line (needs semicolons)
+let x = 5; let y = 10; console.log(x + y);
+
+// Without semicolons (JavaScript adds them automatically)
+console.log("Fourth statement")
+console.log("Fifth statement")</textarea>
+                <button class="run-button" onclick="runCode('statements', 'statements-output')">Run Code</button>
+                <div class="output-console" id="statements-output">
+                    <span class="output-label">Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Comments -->
+        <div class="slide" data-slide="6">
+            <h2>JavaScript Comments</h2>
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>Single Line</h3>
+                    <code>// comment</code>
+                </div>
+                <div class="example-card">
+                    <h3>Multi Line</h3>
+                    <code>/* comment */</code>
+                </div>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">TRY IT: Practice Comments</span>
+                <textarea class="code-editor" id="comments">// This is a single line comment
+console.log("This will run");
+
+// console.log("This won't run - it's commented out!");
+
+/*
+This is a multi-line comment
+You can write multiple lines
+None of this will execute
+*/
+
+console.log("Back to running code");
+
+/* You can also use multi-line comments inline */ console.log("Inline comment");
+
+// TODO: Try commenting and uncommenting different lines!
+console.log("Experiment with comments!");</textarea>
+                <button class="run-button" onclick="runCode('comments', 'comments-output')">Run Code</button>
+                <div class="output-console" id="comments-output">
+                    <span class="output-label">Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Variables -->
+        <div class="slide" data-slide="7">
+            <h2>JavaScript Variables</h2>
+            <h3>Declaring Variables</h3>
+            <ul>
+                <li>Use <code>var</code> keyword (older style)</li>
+                <li>Use <code>let</code> keyword (modern, recommended)</li>
+                <li>Use <code>const</code> for constants</li>
+                <li>No need to declare data type!</li>
+            </ul>
+            <div class="warning-box">
+                <strong style="color: var(--error);">⚠️ Variable Naming Rules:</strong>
+                <ul>
+                    <li>Case sensitive: <code>myVar</code> ≠ <code>myvar</code></li>
+                    <li>Can contain: letters, numbers, $, _</li>
+                    <li>Cannot start with numbers</li>
+                    <li>Cannot use keywords (like <code>if</code>, <code>for</code>, etc.)</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PLAYGROUND: Create Your Variables</span>
+                <textarea class="code-editor" id="variables">// Try creating your own variables!
+var numberOfStudents = 30;
+let studentName = "Sam";
+const COURSE_NAME = "IST 411"; // Constants use UPPER_CASE
+
+console.log("Students:", numberOfStudents);
+console.log("Name:", studentName);
+console.log("Course:", COURSE_NAME);
+
+// Variables can change (except const)
+numberOfStudents = 35;
+studentName = "Alex";
+console.log("Updated students:", numberOfStudents);
+console.log("Updated name:", studentName);
+
+// Try adding your own variables below:
+</textarea>
+                <button class="run-button" onclick="runCode('variables', 'variables-output')">Run Code</button>
+                <div class="output-console" id="variables-output">
+                    <span class="output-label">Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Data Types -->
+        <div class="slide" data-slide="8">
+            <h2>JavaScript Data Types</h2>
+            <h3>Basic Data Types</h3>
+            <ul>
+                <li><code>number</code> - integers and floats (3.14, 42)</li>
+                <li><code>string</code> - text ("hello", 'world')</li>
+                <li><code>boolean</code> - true/false</li>
+                <li><code>undefined</code> - not assigned</li>
+                <li><code>object</code> - complex data</li>
+            </ul>
+            <div class="tip-box">
+                <strong style="color: var(--success);">💡 Use typeof:</strong> The <code>typeof</code> operator tells you the data type of any variable!
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">EXPLORE: Data Types & typeof</span>
+                <textarea class="code-editor" id="datatypes">// Numbers
+let age = 25;
+let price = 19.99;
+console.log("age:", age, "| type:", typeof age);
+console.log("price:", price, "| type:", typeof price);
+
+// Strings
+let name = "JavaScript";
+let quote = 'Learn by doing!';
+console.log("name:", name, "| type:", typeof name);
+
+// Boolean
+let isStudent = true;
+let hasGraduated = false;
+console.log("isStudent:", isStudent, "| type:", typeof isStudent);
+
+// Undefined
+let futureVariable;
+console.log("futureVariable:", futureVariable, "| type:", typeof futureVariable);
+
+// Try creating variables with different types!
+</textarea>
+                <button class="run-button" onclick="runCode('datatypes', 'datatypes-output')">Run Code</button>
+                <div class="output-console" id="datatypes-output">
+                    <span class="output-label">Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Type Conversion -->
+        <div class="slide" data-slide="9">
+            <h2>Data Type Conversion</h2>
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>To Number</h3>
+                    <code>Number()</code><br>
+                    <code>parseInt()</code>
+                </div>
+                <div class="example-card">
+                    <h3>To String</h3>
+                    <code>String()</code><br>
+                    <code>.toString()</code>
+                </div>
+                <div class="example-card">
+                    <h3>To Boolean</h3>
+                    <code>Boolean()</code>
+                </div>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">EXPERIMENT: Convert Data Types</span>
+                <textarea class="code-editor" id="conversion">// String to Number
+let strNum = "99";
+let num1 = Number(strNum);
+let num2 = parseInt("100");
+console.log("String to Number:", num1, num2);
+
+// Number to String
+let number = 42;
+let str1 = String(number);
+let str2 = number.toString();
+console.log("Number to String:", str1, str2);
+
+// To Boolean
+let bool1 = Boolean("true");  // true
+let bool2 = Boolean("");      // false
+let bool3 = Boolean(0);       // false
+let bool4 = Boolean(1);       // true
+console.log("Booleans:", bool1, bool2, bool3, bool4);
+
+// Try your own conversions!
+</textarea>
+                <button class="run-button" onclick="runCode('conversion', 'conversion-output')">Run Code</button>
+                <div class="output-console" id="conversion-output">
+                    <span class="output-label">Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Operators -->
+        <div class="slide" data-slide="10">
+            <h2>JavaScript Operators</h2>
+            <h3>Operator Types</h3>
+            <ul>
+                <li><strong>Arithmetic:</strong> <code>+</code> <code>-</code> <code>*</code> <code>/</code> <code>%</code> <code>++</code> <code>--</code></li>
+                <li><strong>Comparison:</strong> <code>&gt;</code> <code>&gt;=</code> <code>&lt;</code> <code>&lt;=</code></li>
+                <li><strong>Equality:</strong> <code>===</code> (strict) vs <code>==</code> (loose)</li>
+                <li><strong>Logical:</strong> <code>&&</code> (AND) <code>||</code> (OR) <code>!</code> (NOT)</li>
+            </ul>
+            <div class="warning-box">
+                <strong style="color: var(--error);">⚠️ Always use <code>===</code> and <code>!==</code> instead of <code>==</code> and <code>!=</code></strong><br>
+                Strict equality checks both value AND type!
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">CALCULATOR: Test Operators</span>
+                <textarea class="code-editor" id="operators">// Arithmetic
+console.log("5 + 3 =", 5 + 3);
+console.log("5 - 3 =", 5 - 3);
+console.log("5 * 3 =", 5 * 3);
+console.log("5 / 2 =", 5 / 2);
+console.log("5 % 2 =", 5 % 2);  // remainder
+
+// Comparison
+console.log("5 > 3:", 5 > 3);
+console.log("5 < 3:", 5 < 3);
+
+// Equality: === vs ==
+console.log("1 === '1':", 1 === "1");  // false (different types)
+console.log("1 == '1':", 1 == "1");    // true (converts types)
+
+// Logical
+console.log("true && false:", true && false);  // AND
+console.log("true || false:", true || false);  // OR
+console.log("!true:", !true);                   // NOT
+
+// Try your own calculations!
+</textarea>
+                <button class="run-button" onclick="runCode('operators', 'operators-output')">Run Code</button>
+                <div class="output-console" id="operators-output">
+                    <span class="output-label">Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Control Flow -->
+        <div class="slide" data-slide="11">
+            <h2>JavaScript Control Flow</h2>
+            <h3>Conditional Statements</h3>
+            <ul>
+                <li><code>if</code>, <code>else if</code>, <code>else</code></li>
+                <li><code>switch</code> statement</li>
+            </ul>
+            <h3>Looping Statements</h3>
+            <ul>
+                <li><code>while</code> loop</li>
+                <li><code>for</code> loop</li>
+                <li><code>break</code> and <code>continue</code></li>
+            </ul>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE: Conditions & Loops</span>
+                <textarea class="code-editor" id="controlflow">// IF statements
+let score = 85;
+if (score >= 90) {
+    console.log("Grade: A");
+} else if (score >= 80) {
+    console.log("Grade: B");
+} else {
+    console.log("Grade: C");
+}
+
+// FOR loop
+console.log("\nCounting 1 to 5:");
+for (let i = 1; i <= 5; i++) {
+    console.log(i);
+}
+
+// WHILE loop
+console.log("\nCountdown from 3:");
+let count = 3;
+while (count > 0) {
+    console.log(count);
+    count--;
+}
+
+// Try changing the score or loop values!
+// Add your own if/else or loops:
+</textarea>
+                <button class="run-button" onclick="runCode('controlflow', 'controlflow-output')">Run Code</button>
+                <div class="output-console" id="controlflow-output">
+                    <span class="output-label">Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Functions -->
+        <div class="slide" data-slide="12">
+            <h2>JavaScript Functions</h2>
+            <h3>Function Syntax</h3>
+            <div class="info-box">
+                <code style="font-size: 1.1em;">
+                    function functionName(param1, param2) {<br>
+                    &nbsp;&nbsp;// code here<br>
+                    &nbsp;&nbsp;return result;<br>
+                    }
+                </code>
+            </div>
+            <ul>
+                <li>Use <code>function</code> keyword to define</li>
+                <li>Can accept parameters (inputs)</li>
+                <li>Use <code>return</code> to send back results</li>
+                <li>Functions are reusable blocks of code</li>
+            </ul>
+            <div class="code-playground">
+                <span class="playground-label">BUILD: Create Functions</span>
+                <textarea class="code-editor" id="functions">// Basic function
+function greet(name) {
+    return "Hello, " + name + "!";
+}
+
+console.log(greet("Student"));
+console.log(greet("JavaScript Learner"));
+
+// Function with math
+function addNumbers(a, b) {
+    return a + b;
+}
+
+console.log("5 + 3 =", addNumbers(5, 3));
+console.log("10 + 20 =", addNumbers(10, 20));
+
+// Function with multiple statements
+function calculateArea(width, height) {
+    let area = width * height;
+    console.log("Calculating area...");
+    return area;
+}
+
+console.log("Area:", calculateArea(5, 10));
+
+// Create your own functions below!
+</textarea>
+                <button class="run-button" onclick="runCode('functions', 'functions-output')">Run Code</button>
+                <div class="output-console" id="functions-output">
+                    <span class="output-label">Output:</span>
+                </div>
+            </div>
+            <div class="tip-box" style="margin-top: 30px;">
+                <strong style="color: var(--success);">🎉 Congratulations!</strong><br>
+                You've completed JavaScript Syntax - Part 1! Keep experimenting with the code examples and build your own variations. The best way to learn is by doing!
+            </div>
+        </div>
+
+
+        
+<!-- Slide 13: Practice Problem 1 -->
+        <div class="slide" data-slide="13">
+            <h2>Practice Problem 1: Variables & Math</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Create a simple calculator that stores two numbers in variables, performs arithmetic operations, and displays the results.
+            </div>
+            
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Create two variables: <code>num1</code> and <code>num2</code> with any numbers you like</li>
+                <li>Calculate and display their sum, difference, product, and division</li>
+                <li>Use <code>console.log()</code> to show each result with a label</li>
+            </ul>
+
+            <div class="tip-box">
+                <strong style="color: var(--success);">💡 Example Output:</strong><br>
+                <code>Sum: 15</code><br>
+                <code>Difference: 5</code><br>
+                <code>Product: 50</code><br>
+                <code>Division: 2</code>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE: Complete the Calculator</span>
+                <textarea class="code-editor" id="practice1">
+</textarea>
+                <button class="run-button" onclick="runCode('practice1', 'practice1-output')">Run Code</button>
+                <div class="output-console" id="practice1-output">
+                    <span class="output-label">Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Practice Problem 2 -->
+        <div class="slide" data-slide="14">
+            <h2>Practice Problem 2: Age Checker</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Write a program that checks someone's age and displays an appropriate message.
+            </div>
+            
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Create a variable called <code>age</code> with any number</li>
+                <li>Use <code>if</code>, <code>else if</code>, and <code>else</code> statements</li>
+                <li>Display different messages based on age:
+                    <ul>
+                        <li>Under 13: "You're a kid!"</li>
+                        <li>13-17: "You're a teenager!"</li>
+                        <li>18-64: "You're an adult!"</li>
+                        <li>65 and above: "You're a senior!"</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="tip-box">
+                <strong style="color: var(--success);">💡 Hint:</strong> Use comparison operators like <code>&lt;</code>, <code>&gt;=</code>, etc.
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE: Build the Age Checker</span>
+                <textarea class="code-editor" id="practice2">
+</textarea>
+                <button class="run-button" onclick="runCode('practice2', 'practice2-output')">Run Code</button>
+                <div class="output-console" id="practice2-output">
+                    <span class="output-label">Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Practice Problem 3 -->
+        <div class="slide" data-slide="15">
+            <h2>Practice Problem 3: Build Your Own Function</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Create a function that takes a name and an age, then returns a personalized greeting message.
+            </div>
+            
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Create a function called <code>createGreeting</code></li>
+                <li>It should accept two parameters: <code>name</code> and <code>age</code></li>
+                <li>Return a message like: "Hello, Alice! You are 25 years old."</li>
+                <li>Test your function with at least 2 different names and ages</li>
+            </ul>
+
+            <div class="tip-box">
+                <strong style="color: var(--success);">💡 Remember:</strong> Use the <code>return</code> keyword to send back your message, and use <code>+</code> to combine strings!
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE: Create the Greeting Function</span>
+                <textarea class="code-editor" id="practice3">
+</textarea>
+                <button class="run-button" onclick="runCode('practice3', 'practice3-output')">Run Code</button>
+                <div class="output-console" id="practice3-output">
+                    <span class="output-label">Output:</span>
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = document.querySelectorAll('.slide').length;
+
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        // Theme toggle function
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const themeIcon = document.querySelector('.theme-icon');
+            const themeText = document.querySelector('.theme-text');
+            
+            if (currentTheme === 'light') {
+                body.removeAttribute('data-theme');
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'Light Mode';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.setAttribute('data-theme', 'light');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Dark Mode';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Load saved theme on page load
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.querySelector('.theme-icon');
+            const themeText = document.querySelector('.theme-text');
+            
+            if (savedTheme === 'light') {
+                document.body.setAttribute('data-theme', 'light');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Dark Mode';
+            }
+        }
+
+        // Load theme when page loads
+        loadTheme();
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            
+            if (n > totalSlides) {
+                currentSlide = totalSlides;
+            }
+            if (n < 1) {
+                currentSlide = 1;
+            }
+
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+
+            slides[currentSlide - 1].classList.add('active');
+            
+            document.getElementById('currentSlide').textContent = currentSlide;
+            
+            // Update button states
+            document.getElementById('prevBtn').disabled = (currentSlide === 1);
+            document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+            
+            // Scroll to top smoothly when changing slides
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            showSlide(currentSlide);
+        }
+
+        // Keyboard navigation (only when not editing code)
+        document.addEventListener('keydown', (e) => {
+            // Don't navigate if user is typing in a textarea
+            if (e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+            
+            if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            } else if (e.key === 'ArrowRight') {
+                changeSlide(1);
+            }
+        });
+
+        function runCode(editorId, outputId) {
+            const code = document.getElementById(editorId).value;
+            const output = document.getElementById(outputId);
+            
+            // Clear previous output
+            output.innerHTML = '<span class="output-label">Output:</span><br>';
+            
+            // Capture console.log
+            const logs = [];
+            const originalLog = console.log;
+            console.log = function(...args) {
+                logs.push(args.map(arg => {
+                    if (typeof arg === 'object') {
+                        return JSON.stringify(arg);
+                    }
+                    return String(arg);
+                }).join(' '));
+                originalLog.apply(console, args);
+            };
+            
+            try {
+                // Execute the code
+                eval(code);
+                
+                // Display captured logs
+                if (logs.length > 0) {
+                    output.innerHTML += logs.join('<br>');
+                } else {
+                    output.innerHTML += '<span style="color: var(--accent);">Code executed successfully (no console output)</span>';
+                }
+            } catch (error) {
+                output.innerHTML += '<span class="error">Error: ' + error.message + '</span>';
+            } finally {
+                // Restore original console.log
+                console.log = originalLog;
+            }
+        }
+
+        // Initialize
+        showSlide(currentSlide);
+
+        // Auto-resize all textareas to fit content
+        function autoResizeTextarea(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+        }
+
+        // Auto-resize all textareas on page load
+        document.querySelectorAll('.code-editor').forEach(textarea => {
+            autoResizeTextarea(textarea);
+            
+            // Auto-resize when typing
+            textarea.addEventListener('input', function() {
+                autoResizeTextarea(this);
+            });
+        });
+    </script>
+</body>
+</html>

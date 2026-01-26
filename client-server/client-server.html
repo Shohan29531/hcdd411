@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client-Server Architecture Presentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .presentation-container {
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .slide {
+            display: none;
+            padding: 60px;
+            min-height: 700px;
+            position: relative;
+        }
+        
+        .slide.active {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            border-bottom: 4px solid #667eea;
+            padding-bottom: 15px;
+        }
+        
+        h2 {
+            color: #4a5568;
+            font-size: 2em;
+            margin: 30px 0 20px 0;
+        }
+        
+        h3 {
+            color: #667eea;
+            font-size: 1.5em;
+            margin: 25px 0 15px 0;
+        }
+        
+        p, li {
+            color: #4a5568;
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .diagram {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 25px 0;
+        }
+        
+        .architecture-box {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .component {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 200px;
+            margin: 10px;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .arrow {
+            font-size: 2em;
+            color: #667eea;
+            margin: 0 20px;
+        }
+        
+        .example-box {
+            background: #edf2f7;
+            border-left: 5px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .controls {
+            background: #2d3748;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .slide-number {
+            color: white;
+            font-size: 1.1em;
+        }
+        
+        .key-point {
+            background: #fef5e7;
+            border-left: 5px solid #f39c12;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 25px 0;
+        }
+        
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .flow-step {
+            background: white;
+            border: 2px solid #667eea;
+            padding: 20px;
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .flow-step::after {
+            content: "↓";
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2em;
+            color: #667eea;
+        }
+        
+        .flow-step:last-child::after {
+            display: none;
+        }
+        
+        ul {
+            margin-left: 30px;
+        }
+        
+        .highlight {
+            background: #fef3c7;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .tech-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .tech-item:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .evolution-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 30px 0;
+            gap: 20px;
+        }
+
+        .evolution-stage {
+            flex: 1;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .big-number {
+            font-size: 4em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .visual-flow {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: center;
+            margin: 30px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 20px;
+                min-height: auto;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            h2 {
+                font-size: 1.5em;
+            }
+            
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            
+            .architecture-box {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+            }
+
+            .visual-flow {
+                grid-template-columns: 1fr;
+            }
+
+            .visual-flow .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <h1>HCDD 411: Client-Server Architecture</h1>
+            <h2 style="color: #667eea; margin-top: 40px;">Md Touhidul Islam</h2>
+            
+            
+            <div class="key-point" style="margin-top: 80px;">
+                <p><strong>Today's Goals:</strong></p>
+                <ul>
+                    <li>Understand How modern systems are built</li>
+                    <li>Understand the client-server model</li>
+                    <li>Explore each component one by one</li>
+                    <li>See how everything works together</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 2: The Evolution - Big Picture -->
+        <div class="slide">
+            <h1>The Big Picture: Evolution of Computing</h1>
+            
+            <p style="font-size: 1.2em;">To understand where we are, let's see how we got here...</p>
+            
+            <div class="evolution-container" style="flex-direction: column; gap: 40px; margin-top: 40px;">
+                <!-- 1970s-1980s -->
+                <div class="evolution-stage" style="border-color: #cbd5e0; width: 100%;">
+                    <h3 style="color: #718096; margin: 0;">1970s-1980s: Standalone Computers</h3>
+                    <div style="margin: 20px 0;">
+                        <div style="background: #f7fafc; padding: 30px; border-radius: 10px; display: inline-block;">
+                            <div style="font-size: 3em;">💻</div>
+                            <p style="margin-top: 10px;"><strong>Single Computer</strong></p>
+                        </div>
+                    </div>
+                    <p>Everything stored locally. No sharing. No internet.</p>
+                </div>
+
+                <div class="arrow" style="font-size: 3em;">↓</div>
+
+                <!-- 1990s-2000s -->
+                <div class="evolution-stage" style="border-color: #a0aec0; width: 100%;">
+                    <h3 style="color: #4a5568; margin: 0;">1990s-2000s: Networks & The Web Emerges</h3>
+                    <div style="margin: 20px 0;">
+                        <div style="background: #f7fafc; padding: 30px; border-radius: 10px; display: inline-block;">
+                            <div style="font-size: 2em;">💻 ↔️ 💻 ↔️ 💻</div>
+                            <p style="margin-top: 10px;"><strong>Connected Computers</strong></p>
+                        </div>
+                    </div>
+                    <p>Computers connected via networks. Early websites. Dial-up internet.</p>
+                </div>
+
+                <div class="arrow" style="font-size: 3em;">↓</div>
+
+                <!-- Today -->
+                <div class="evolution-stage" style="border-color: #667eea; border-width: 3px; width: 100%;">
+                    <h3 style="color: #667eea; margin: 0;">Today: Distributed Systems</h3>
+                    <div style="margin: 20px 0;">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; display: inline-block; color: white;">
+                            <div style="font-size: 2em;">📱 💻 🖥️ ↔️ ☁️ ↔️ 🗄️🗄️🗄️</div>
+                            <p style="margin-top: 10px; color: white;"><strong>Millions of Devices & Servers</strong></p>
+                        </div>
+                    </div>
+                    <p><strong>This is what we'll study!</strong> Systems split across many computers, working together seamlessly.</p>
+                </div>
+            </div>
+
+            <div class="key-point">
+                <p><strong>Key Insight:</strong> Modern applications don't run on a single computer. They're <span class="highlight">distributed</span> across many computers, each with a specific role. This is called a <span class="highlight">distributed system</span>.</p>
+            </div>
+        </div>
+
+        <!-- Slide 3: What is Client-Server Architecture? -->
+        <div class="slide">
+            <h1>The Client-Server Model</h1>
+            
+            <p style="font-size: 1.2em; margin-top: 30px;">The most common way to organize a distributed system is the <strong>client-server architecture</strong>. It divides responsibilities into two main roles:</p>
+            
+            <div class="architecture-box" style="margin-top: 50px;">
+                <div class="component" style="min-width: 300px;">
+                    <h3 style="color: white; margin: 0;">CLIENT</h3>
+                    <div class="big-number" style="color: white; font-size: 3em;">📱</div>
+                    <p style="color: white; margin-top: 15px; font-size: 1.1em;">The Requester</p>
+                    <p style="color: white; font-size: 0.95em;">Your device: phone, laptop, browser</p>
+                </div>
+                
+                <div class="arrow" style="font-size: 3em;">⟷</div>
+                
+                <div class="component" style="min-width: 300px;">
+                    <h3 style="color: white; margin: 0;">SERVER</h3>
+                    <div class="big-number" style="color: white; font-size: 3em;">🖥️</div>
+                    <p style="color: white; margin-top: 15px; font-size: 1.1em;">The Provider</p>
+                    <p style="color: white; font-size: 0.95em;">Powerful computer storing data and running services</p>
+                </div>
+            </div>
+            
+            <div class="example-box" style="margin-top: 50px;">
+                <h3 style="margin-top: 0;">Real-World Analogy: Restaurant 🍽️</h3>
+                <div class="two-column">
+                    <div>
+                        <p><strong>You (The Client):</strong></p>
+                        <ul>
+                            <li>Look at the menu</li>
+                            <li>Order your food</li>
+                            <li>Wait to receive it</li>
+                            <li>Enjoy your meal</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p><strong>Kitchen (The Server):</strong></p>
+                        <ul>
+                            <li>Has all the ingredients</li>
+                            <li>Receives your order</li>
+                            <li>Prepares the food</li>
+                            <li>Sends it back to you</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="key-point">
+                <p><strong>Core Principle:</strong> The client <span class="highlight">requests</span>, the server <span class="highlight">responds</span>. Simple as that!</p>
+            </div>
+        </div>
+
+        <!-- Slide 4: The Three Essential Components -->
+        <div class="slide">
+            <h1>Three Essential Components</h1>
+            
+            <p style="font-size: 1.2em; margin-top: 30px;">No matter how complex an application is, it always has these three parts:</p>
+            
+            <div class="diagram" style="margin-top: 40px;">
+                <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 20px; align-items: center;">
+                    
+                    <div class="component" style="margin: 0; min-width: 180px;">
+                        <div style="font-size: 3em; margin-bottom: 15px;">📱</div>
+                        <h3 style="color: white; margin: 0;">CLIENT</h3>
+                        <p style="color: white; margin-top: 10px; font-size: 0.95em;">What users see and interact with</p>
+                    </div>
+                    
+                    <div class="arrow" style="font-size: 2.5em;">⟷</div>
+                    
+                    <div class="component" style="margin: 0; min-width: 180px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div style="font-size: 3em; margin-bottom: 15px;">🌐</div>
+                        <h3 style="color: white; margin: 0;">NETWORK</h3>
+                        <p style="color: white; margin-top: 10px; font-size: 0.95em;">The pathway for communication</p>
+                    </div>
+                    
+                    <div class="arrow" style="font-size: 2.5em;">⟷</div>
+                    
+                    <div class="component" style="margin: 0; min-width: 180px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div style="font-size: 3em; margin-bottom: 15px;">🖥️</div>
+                        <h3 style="color: white; margin: 0;">SERVER</h3>
+                        <p style="color: white; margin-top: 10px; font-size: 0.95em;">Where data and logic live</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 50px;">
+                <div class="example-box" style="background: #e8f4f8;">
+                    <p style="font-size: 1.1em; margin: 0;"><strong>Real Example: Checking Instagram</strong></p>
+                    <ul style="margin-top: 15px;">
+                        <li><strong>Client:</strong> Instagram app on your phone</li>
+                        <li><strong>Network:</strong> WiFi or cellular data connection</li>
+                        <li><strong>Server:</strong> Instagram's computers storing all the photos and user data</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="key-point">
+                <p><strong>Remember:</strong> We'll explore each of these components in detail, one at a time. First, let's understand what each one does...</p>
+            </div>
+        </div>
+
+        <!-- Slide 5: Component 1 - The Client (Front-End) -->
+        <div class="slide">
+            <h1>Component 1: The Client (Front-End)</h1>
+            <h2>What Users See and Touch</h2>
+            
+            <div class="diagram">
+                <div style="text-align: center; padding: 30px;">
+                    <div style="font-size: 5em; margin-bottom: 20px;">📱 💻 🖥️</div>
+                    <h3 style="color: #667eea;">The Client = Any Device You Use</h3>
+                </div>
+            </div>
+
+            <div class="example-box">
+                <h3 style="margin-top: 0;">What Does the Client Do?</h3>
+                <ul>
+                    <li><strong>Displays</strong> information to users (text, images, videos)</li>
+                    <li><strong>Accepts</strong> user input (clicks, typing, touches)</li>
+                    <li><strong>Sends requests</strong> to the server when it needs data</li>
+                    <li><strong>Receives responses</strong> from the server and shows them</li>
+                </ul>
+            </div>
+
+            <div class="two-column" style="margin-top: 30px;">
+                <div class="example-box" style="background: #fef3e7;">
+                    <h3 style="margin-top: 0; color: #d97706;">Examples of Clients</h3>
+                    <ul>
+                        <li>Web browsers (Chrome, Safari, Firefox)</li>
+                        <li>Mobile apps (Instagram, Gmail, Twitter)</li>
+                        <li>Desktop applications</li>
+                        <li>Smart TV apps</li>
+                    </ul>
+                </div>
+
+                <div class="example-box" style="background: #e8f5e9;">
+                    <h3 style="margin-top: 0; color: #2e7d32;">Technologies We'll Learn</h3>
+                    <ul>
+                        <li><strong>HTML:</strong> Structure of web pages</li>
+                        <li><strong>CSS:</strong> Styling and layout</li>
+                        <li><strong>JavaScript:</strong> Interactivity</li>
+                        <li><strong>React:</strong> Building modern interfaces</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Slide 6: Component 2 - The Network -->
+        <div class="slide">
+            <h1>Component 2: The Network</h1>
+            <h2>The Highway for Data</h2>
+            
+            <div class="diagram">
+                <div style="text-align: center; padding: 30px;">
+                    <div style="font-size: 5em; margin-bottom: 20px;">🌐 🛜 📡</div>
+                    <h3 style="color: #f5576c;">The Network = The Connection Between Client and Server</h3>
+                </div>
+            </div>
+
+            <div class="example-box">
+                <h3 style="margin-top: 0;">What Does the Network Do?</h3>
+                <ul>
+                    <li><strong>Transmits</strong> requests from client to server</li>
+                    <li><strong>Carries</strong> responses from server back to client</li>
+                    <li><strong>Uses protocols</strong> (rules) to ensure data arrives correctly</li>
+                    <li><strong>Handles</strong> millions of messages simultaneously</li>
+                </ul>
+            </div>
+
+            <div class="visual-flow" style="margin-top: 40px;">
+                <div class="component" style="margin: 0;">
+                    <div style="font-size: 2em;">📱</div>
+                    <p style="color: white; margin-top: 10px;">Your Phone</p>
+                </div>
+
+                <div style="text-align: center;">
+                    <div class="arrow" style="margin: 10px 0;">→</div>
+                    <p style="font-size: 0.9em; color: #667eea;"><strong>WiFi or Cellular</strong></p>
+                    <div class="arrow" style="margin: 10px 0;">→</div>
+                    <p style="font-size: 0.9em; color: #667eea;"><strong>Internet</strong></p>
+                    <div class="arrow" style="margin: 10px 0;">→</div>
+                </div>
+
+                <div class="component" style="margin: 0; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div style="font-size: 2em;">🖥️</div>
+                    <p style="color: white; margin-top: 10px;">Web Server</p>
+                </div>
+            </div>
+
+            <div class="example-box" style="margin-top: 30px; background: #e3f2fd;">
+                <h3 style="margin-top: 0; color: #1565c0;">The Protocol: HTTP/HTTPS</h3>
+                <p>Just like humans speak different languages (English, Spanish, French), computers use <strong>protocols</strong> to communicate.</p>
+                <p style="margin-top: 10px;"><strong>HTTP</strong> (HyperText Transfer Protocol) is the language of the web. It defines:</p>
+                <ul>
+                    <li>How to format requests and responses</li>
+                    <li>What different types of requests mean (GET, POST, etc.)</li>
+                    <li>How to handle errors</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Slide 7: Component 3 - The Server (Back-End) -->
+        <div class="slide">
+            <h1>Component 3: The Server (Back-End)</h1>
+            <h2>The Brain and Memory of the System</h2>
+            
+            <div class="diagram">
+                <div style="text-align: center; padding: 30px;">
+                    <div style="font-size: 5em; margin-bottom: 20px;">🖥️ 🗄️ ⚙️</div>
+                    <h3 style="color: #00f2fe;">The Server = Where Everything Important Happens</h3>
+                </div>
+            </div>
+
+            <div class="example-box">
+                <h3 style="margin-top: 0;">What Does the Server Do?</h3>
+                <ul>
+                    <li><strong>Stores</strong> all your data (photos, messages, user accounts)</li>
+                    <li><strong>Processes</strong> requests (searches, calculations, updates)</li>
+                    <li><strong>Manages</strong> business logic (rules like "you must be logged in")</li>
+                    <li><strong>Sends back</strong> responses to clients</li>
+                    <li><strong>Handles</strong> thousands of users at the same time</li>
+                </ul>
+            </div>
+
+            <div class="two-column" style="margin-top: 30px;">
+                <div class="example-box" style="background: #fef3e7;">
+                    <h3 style="margin-top: 0; color: #d97706;">Server Components</h3>
+                    <ul>
+                        <li><strong>Web Server:</strong> Handles incoming requests</li>
+                        <li><strong>Application Logic:</strong> Processes data</li>
+                        <li><strong>Database:</strong> Stores information permanently</li>
+                    </ul>
+                </div>
+
+                <div class="example-box" style="background: #e8f5e9;">
+                    <h3 style="margin-top: 0; color: #2e7d32;">Technologies We'll Learn</h3>
+                    <ul>
+                        <li><strong>Node.js:</strong> Runs JavaScript on the server</li>
+                        <li><strong>Express:</strong> Framework for building web servers</li>
+                        <li><strong>MongoDB:</strong> Database for storing data</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="key-point">
+                <p><strong>Why Servers?</strong> Imagine if Instagram stored all your photos on your phone. You'd run out of space instantly! Servers have:</p>
+                <ul style="margin-top: 10px;">
+                    <li>Massive storage capacity</li>
+                    <li>Powerful processors</li>
+                    <li>Always-on availability</li>
+                    <li>Security and backups</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 8: How They Work Together -->
+        <div class="slide">
+            <h1>How It All Works Together</h1>
+            
+            <p style="font-size: 1.2em; margin-top: 20px;">Let's watch what happens when you check social media...</p>
+            
+            <div class="flow-diagram" style="margin-top: 40px;">
+                <div class="flow-step" style="background: #e6f3ff;">
+                    <h3 style="color: #667eea; margin: 0;">Step 1: User Action</h3>
+                    <p style="margin-top: 10px;">You open Instagram and pull to refresh your feed</p>
+                    <p style="font-size: 0.95em; color: #718096;">(This happens on the CLIENT - your phone)</p>
+                </div>
+                
+                <div class="flow-step" style="background: #fff3e6;">
+                    <h3 style="color: #f39c12; margin: 0;">Step 2: Client Sends Request</h3>
+                    <p style="margin-top: 10px;">App creates a message: "Give me the latest posts"</p>
+                    <p style="font-size: 0.95em; color: #718096;">(Sent through the NETWORK using HTTP)</p>
+                </div>
+                
+                <div class="flow-step" style="background: #ffe6f3;">
+                    <h3 style="color: #ec4899; margin: 0;">Step 3: Request Travels</h3>
+                    <p style="margin-top: 10px;">Message travels through WiFi → Internet → Instagram's servers</p>
+                    <p style="font-size: 0.95em; color: #718096;">(Happens in milliseconds!)</p>
+                </div>
+                
+                <div class="flow-step" style="background: #e6ffe6;">
+                    <h3 style="color: #16a34a; margin: 0;">Step 4: Server Processes</h3>
+                    <p style="margin-top: 10px;">Instagram's server:</p>
+                    <ul style="margin-top: 5px;">
+                        <li>Checks who you are (authentication)</li>
+                        <li>Looks up who you follow</li>
+                        <li>Finds their recent posts from the database</li>
+                        <li>Prepares them in a nice format</li>
+                    </ul>
+                </div>
+                
+                <div class="flow-step" style="background: #f3e6ff;">
+                    <h3 style="color: #9333ea; margin: 0;">Step 5: Server Sends Response</h3>
+                    <p style="margin-top: 10px;">Server packages the posts and sends them back</p>
+                    <p style="font-size: 0.95em; color: #718096;">(Travels back through the NETWORK)</p>
+                </div>
+                
+                <div class="flow-step" style="background: #e6f9ff;">
+                    <h3 style="color: #0284c7; margin: 0;">Step 6: Client Displays</h3>
+                    <p style="margin-top: 10px;">Instagram app receives the data and displays it beautifully on your screen</p>
+                    <p style="font-size: 0.95em; color: #718096;">(CLIENT renders the UI)</p>
+                </div>
+            </div>
+
+            <div class="key-point">
+                <p><strong>This entire cycle happens in less than a second!</strong> And it repeats every time you interact with any web application.</p>
+            </div>
+        </div>
+
+        <!-- Slide 9 : Transition -->
+        <div class="slide">
+            <div style="display: flex; justify-content: center; align-items: center; height: 100%; min-height: 600px;">
+                <h1 style="border: none; margin: 0; font-size: 3.5em; text-align: center;">Advanced Concepts</h1>
+            </div>
+        </div>
+
+        <!-- Slide 10: Static vs Dynamic Content -->
+        <div class="slide">
+            <h1>Static vs Dynamic Content</h1>
+            
+            <div class="two-column">
+                <div>
+                    <div class="example-box" style="background: #e8f4f8;">
+                        <h3 style="margin-top: 0; color: #2563eb;">📄 Static Content</h3>
+                        <p><strong>What it is:</strong> Fixed content that never changes</p>
+                        <p><strong>Example:</strong> A company's "About Us" page</p>
+                    </div>
+                    
+                    <div style="background: white; border: 3px solid #2563eb; border-radius: 10px; padding: 25px; margin-top: 20px;">
+                        <h3 style="margin: 0 0 15px 0; color: #2563eb;">Example Page</h3>
+                        <div style="background: #f7fafc; padding: 20px; border-radius: 5px;">
+                            <h4>About Our Company</h4>
+                            <p>We were founded in 2010.</p>
+                            <p>We have 50 employees.</p>
+                            <p>Our office is in New York.</p>
+                        </div>
+                        <p style="margin-top: 15px; font-size: 0.9em; color: #718096;">This text is written directly in HTML and doesn't change unless a developer manually updates it.</p>
+                    </div>
+
+                    <div class="key-point" style="margin-top: 20px; background: #e3f2fd;">
+                        <p><strong>Uses:</strong> Simple websites, documentation, blogs</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="example-box" style="background: #fef3e7;">
+                        <h3 style="margin-top: 0; color: #d97706;">⚡ Dynamic Content</h3>
+                        <p><strong>What it is:</strong> Content that changes based on data or user actions</p>
+                        <p><strong>Example:</strong> Your personalized Instagram feed</p>
+                    </div>
+                    
+                    <div style="background: white; border: 3px solid #d97706; border-radius: 10px; padding: 25px; margin-top: 20px;">
+                        <h3 style="margin: 0 0 15px 0; color: #d97706;">Example Page</h3>
+                        <div style="background: #f7fafc; padding: 20px; border-radius: 5px;">
+                            <h4>Welcome back, Sarah!</h4>
+                            <p>You have 5 new messages.</p>
+                            <p>Today is Sunday, January 11, 2026</p>
+                            <p>Current temperature: 72°F</p>
+                        </div>
+                        <p style="margin-top: 15px; font-size: 0.9em; color: #718096;">The name, message count, date, and temperature all change based on data from the server!</p>
+                    </div>
+
+                    <div class="key-point" style="margin-top: 20px; background: #fef3e7;">
+                        <p><strong>Uses:</strong> Social media, email, online shopping, dashboards</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="key-point" style="margin-top: 30px;">
+                <p><strong>The Difference:</strong></p>
+                <ul>
+                    <li><strong>Static:</strong> HTML creates the page once, shows the same thing to everyone</li>
+                    <li><strong>Dynamic:</strong> Server generates different HTML for each user based on data</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 11: Databases -->
+        <div class="slide">
+            <h1>Databases: The Memory of Your Application</h1>
+            
+            <p style="font-size: 1.2em;">Every application needs to remember things. That's where databases come in!</p>
+            
+            <div class="example-box" style="margin-top: 30px;">
+                <h3 style="margin-top: 0;">What Gets Stored in a Database?</h3>
+                <div class="two-column">
+                    <ul>
+                        <li>User accounts and profiles</li>
+                        <li>Posts, photos, videos</li>
+                        <li>Messages and comments</li>
+                        <li>Product catalogs</li>
+                    </ul>
+                    <ul>
+                        <li>Order history</li>
+                        <li>Settings and preferences</li>
+                        <li>Everything that needs to persist!</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="diagram" style="margin-top: 30px;">
+                <h3 style="margin-top: 0;">Example: Viewing Your Social Media Posts</h3>
+                
+                <div class="flow-diagram" style="gap: 10px;">
+                    <div class="flow-step" style="background: #e6f3ff; padding: 15px;">
+                        <p><strong>1.</strong> You click "My Profile" button → <em>Client sends request</em></p>
+                    </div>
+                    
+                    <div class="flow-step" style="background: #fff3e6; padding: 15px;">
+                        <p><strong>2.</strong> Request reaches server → <em>"Show posts for user Sarah123"</em></p>
+                    </div>
+                    
+                    <div class="flow-step" style="background: #e6ffe6; padding: 15px;">
+                        <p><strong>3.</strong> Server asks database → <em>"Find all posts where user = Sarah123"</em></p>
+                    </div>
+                    
+                    <div class="flow-step" style="background: #ffe6f3; padding: 15px;">
+                        <p><strong>4.</strong> Database returns → <em>10 posts with photos, captions, dates</em></p>
+                    </div>
+                    
+                    <div class="flow-step" style="background: #f3e6ff; padding: 15px;">
+                        <p><strong>5.</strong> Server formats data → <em>Organizes posts newest to oldest</em></p>
+                    </div>
+                    
+                    <div class="flow-step" style="background: #e6f9ff; padding: 15px;">
+                        <p><strong>6.</strong> Client displays posts → <em>You see your beautiful photos!</em></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+         <!-- Slide 12: Building User Interfaces -->
+        <div class="slide">
+            <h1>Building Sophisticated User Interfaces</h1>
+            
+            <div class="two-column">
+                <div>
+                    <div class="example-box" style="background: #fef3e7;">
+                        <h3 style="margin-top: 0; color: #d97706;">Traditional Approach: HTML + JavaScript</h3>
+                        <p><strong>How it works:</strong></p>
+                        <ul>
+                            <li>Write HTML for structure</li>
+                            <li>Write JavaScript to update parts of the page</li>
+                            <li>Manually keep everything in sync</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="example-box" style="background: #e8f4f8;">
+                        <h3 style="margin-top: 0; color: #2563eb;">Modern Approach: React</h3>
+                        <p><strong>How it works:</strong></p>
+                        <ul>
+                            <li>Describe what the UI should look like</li>
+                            <li>React automatically updates everything</li>
+                            <li>Never worry about keeping things in sync!</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="key-point" style="margin-top: 30px;">
+                <p><strong>Why React?</strong> In a real app, you might show the same data in 50 different places. React automatically keeps all 50 places updated when the data changes. Traditional JavaScript requires updating all 50 manually - easy to make mistakes!</p>
+            </div>
+        </div>
+
+        <!-- Slide 13: What is an API?  -->
+<div class="slide">
+    <h1>What is an Application Programming Interface (API)?</h1>
+    
+    <p style="font-size: 1.2em; margin-top: 30px;">An API is like a menu at a restaurant - it tells you what you can request and how to request it!</p>
+    
+    <div class="diagram" style="margin-top: 40px;">
+        <div style="text-align: center; padding: 30px;">
+            <div style="font-size: 5em; margin-bottom: 20px;">📋 🔌 🤝</div>
+            <h3 style="color: #667eea;">API = The Contract Between Client and Server</h3>
+        </div>
+    </div>
+
+    <div class="example-box" style="margin-top: 30px;">
+        <h3 style="margin-top: 0;">What Does an API Do?</h3>
+        <ul>
+            <li><strong>Defines</strong> what requests the server can handle</li>
+            <li><strong>Specifies</strong> how to format those requests</li>
+            <li><strong>Describes</strong> what responses you'll get back</li>
+            <li><strong>Hides</strong> the complex server code - you just need to know how to ask!</li>
+        </ul>
+    </div>
+
+    <div class="two-column" style="margin-top: 30px;">
+        <div class="example-box" style="background: #fef3e7;">
+            <h3 style="margin-top: 0; color: #d97706;">Restaurant Menu Analogy 🍽️</h3>
+            <p><strong>Menu (API):</strong></p>
+            <ul>
+                <li>"Burger - $10"</li>
+                <li>"Pizza - $15"</li>
+                <li>"Salad - $8"</li>
+            </ul>
+            <p style="margin-top: 15px;"><strong>You don't need to know:</strong></p>
+            <ul>
+                <li>How to cook it</li>
+                <li>Where ingredients come from</li>
+                <li>Kitchen equipment used</li>
+            </ul>
+            <p style="margin-top: 15px;"><strong>You just need to know:</strong> What to order and how much it costs!</p>
+        </div>
+
+        <div class="example-box" style="background: #e8f4f8;">
+            <h3 style="margin-top: 0; color: #2563eb;">Web API Example 💻</h3>
+            <p><strong>Weather API:</strong></p>
+            <ul>
+                <li>"Get weather for New York"</li>
+                <li>"Get 5-day forecast"</li>
+                <li>"Get current temperature"</li>
+            </ul>
+            <p style="margin-top: 15px;"><strong>You don't need to know:</strong></p>
+            <ul>
+                <li>How weather data is collected</li>
+                <li>Database structure</li>
+                <li>Server programming language</li>
+            </ul>
+            <p style="margin-top: 15px;"><strong>You just need to know:</strong> What URL to call and what format to expect!</p>
+        </div>
+    </div>
+
+    <div class="visual-flow" style="margin-top: 40px;">
+        <div class="component" style="margin: 0;">
+            <div style="font-size: 2em;">📱</div>
+            <p style="color: white; margin-top: 10px;">Your App</p>
+            <p style="color: white; font-size: 0.9em;">"I need weather data"</p>
+        </div>
+
+        <div style="text-align: center;">
+            <div class="arrow" style="margin: 10px 0;">→</div>
+            <p style="font-size: 0.9em; color: #667eea;"><strong>Uses the Weather API</strong></p>
+            <p style="font-size: 0.85em; color: #718096;">"GET /weather?city=NewYork"</p>
+            <div class="arrow" style="margin: 10px 0;">←</div>
+        </div>
+
+        <div class="component" style="margin: 0; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div style="font-size: 2em;">🖥️</div>
+            <p style="color: white; margin-top: 10px;">Weather Server</p>
+            <p style="color: white; font-size: 0.9em;">"Here's the data: 72°F, Sunny"</p>
+        </div>
+    </div>
+</div>
+
+        <!-- Slide 14: RESTful Web Services -->
+        <div class="slide">
+            <h1>REST APIs</h1>
+            
+            <p style="font-size: 1.2em;">REST (Representational State Transfer) is a set of simple rules for designing web services. Think of it as a menu for your server!</p>
+            
+            <div class="example-box" style="margin-top: 30px;">
+                <h3 style="margin-top: 0;">Core Idea: Everything is a Resource</h3>
+                <p>In REST, everything (users, posts, products) is treated as a <strong>resource</strong> with its own unique address (URL).</p>
+            </div>
+
+            <div class="diagram" style="margin-top: 30px;">
+                <h3 style="margin-top: 0;">Example: Blog Posts API</h3>
+                
+                <div style="margin-top: 20px;">
+                    <div style="background: #e8f5e9; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 5px solid #16a34a;">
+                        <p style="margin: 0;"><strong style="color: #16a34a;">GET</strong> /api/posts</p>
+                        <p style="margin: 10px 0 0 0; font-size: 0.95em;">→ Get a list of all blog posts</p>
+                    </div>
+
+                    <div style="background: #e8f5e9; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 5px solid #16a34a;">
+                        <p style="margin: 0;"><strong style="color: #16a34a;">GET</strong> /api/posts/42</p>
+                        <p style="margin: 10px 0 0 0; font-size: 0.95em;">→ Get the specific post with ID 42</p>
+                    </div>
+
+                    <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 5px solid #2563eb;">
+                        <p style="margin: 0;"><strong style="color: #2563eb;">POST</strong> /api/posts</p>
+                        <p style="margin: 10px 0 0 0; font-size: 0.95em;">→ Create a new blog post</p>
+                        <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #718096;">Send data: title, content, author</p>
+                    </div>
+
+                    <div style="background: #fef3e7; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 5px solid #f59e0b;">
+                        <p style="margin: 0;"><strong style="color: #f59e0b;">PUT</strong> /api/posts/42</p>
+                        <p style="margin: 10px 0 0 0; font-size: 0.95em;">→ Update post 42</p>
+                        <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #718096;">Send new data: updated title or content</p>
+                    </div>
+
+                    <div style="background: #fee2e2; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 5px solid #dc2626;">
+                        <p style="margin: 0;"><strong style="color: #dc2626;">DELETE</strong> /api/posts/42</p>
+                        <p style="margin: 10px 0 0 0; font-size: 0.95em;">→ Delete post 42</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="key-point">
+                <p><strong>Why This Matters:</strong> REST makes APIs predictable! If you know one REST API, you can guess how others work. It's like knowing that in every restaurant, you order from a menu and pay at the end - consistent patterns make life easier!</p>
+            </div>
+        </div>
+
+        <!-- Slide 15: Putting It All Together -->
+        <div class="slide">
+            <h1>Putting It All Together</h1>
+            
+            <div class="diagram">
+                <div style="background: white; padding: 30px; border-radius: 10px; border: 3px solid #667eea;">
+                    <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 15px; align-items: center;">
+                        <!-- Client Side -->
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 10px; color: white; text-align: center;">
+                            <h3 style="color: white; margin: 0 0 15px 0;">CLIENT</h3>
+                            <div style="font-size: 2.5em; margin: 10px 0;">📱</div>
+                            <p style="color: white; margin: 5px 0;"><strong>React</strong></p>
+                            <p style="color: white; font-size: 0.9em; margin: 5px 0;">User Interface</p>
+                            <p style="color: white; margin: 5px 0;"><strong>HTML/CSS/JS</strong></p>
+                            <p style="color: white; font-size: 0.9em; margin: 5px 0;">Structure & Style</p>
+                        </div>
+                        
+                        <div class="arrow" style="font-size: 2em;">⟷</div>
+                        
+                        <!-- Network -->
+                        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 25px; border-radius: 10px; color: white; text-align: center;">
+                            <h3 style="color: white; margin: 0 0 15px 0;">NETWORK</h3>
+                            <div style="font-size: 2.5em; margin: 10px 0;">🌐</div>
+                            <p style="color: white; margin: 5px 0;"><strong>HTTP/HTTPS</strong></p>
+                            <p style="color: white; font-size: 0.9em; margin: 5px 0;">Communication Protocol</p>
+                            <p style="color: white; margin: 5px 0;"><strong>REST API</strong></p>
+                            <p style="color: white; font-size: 0.9em; margin: 5px 0;">Structured Requests</p>
+                        </div>
+                        
+                        <div class="arrow" style="font-size: 2em;">⟷</div>
+                        
+                        <!-- Server Side -->
+                        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 25px; border-radius: 10px; color: white; text-align: center;">
+                            <h3 style="color: white; margin: 0 0 15px 0;">SERVER</h3>
+                            <div style="font-size: 2.5em; margin: 10px 0;">🖥️</div>
+                            <p style="color: white; margin: 5px 0;"><strong>Node.js</strong></p>
+                            <p style="color: white; font-size: 0.9em; margin: 5px 0;">JavaScript Runtime</p>
+                            <p style="color: white; margin: 5px 0;"><strong>Express</strong></p>
+                            <p style="color: white; font-size: 0.9em; margin: 5px 0;">Web Framework</p>
+                            <p style="color: white; margin: 5px 0;"><strong>MongoDB</strong></p>
+                            <p style="color: white; font-size: 0.9em; margin: 5px 0;">Database</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+            <span class="slide-number">Slide <span id="currentSlide">1</span> of <span id="totalSlides">15</span></span>
+            <button id="nextBtn" onclick="changeSlide(1)">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        document.getElementById('totalSlides').textContent = totalSlides;
+        
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            if (n >= totalSlides) {
+                currentSlideIndex = totalSlides - 1;
+            } else if (n < 0) {
+                currentSlideIndex = 0;
+            } else {
+                currentSlideIndex = n;
+            }
+            
+            slides[currentSlideIndex].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlideIndex + 1;
+            
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentSlideIndex === 0;
+            document.getElementById('nextBtn').disabled = currentSlideIndex === totalSlides - 1;
+        }
+        
+        function changeSlide(direction) {
+            showSlide(currentSlideIndex + direction);
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+        
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>
