@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive JavaScript Tutorial - IST 411 - API</title>
+    <title>HCDD 411 - API</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
     <!-- CodeMirror CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
@@ -610,13 +610,13 @@
     </style>
 </head>
 <body>
-    <div class="penn-state-badge">IST 411</div>
+    <div class="penn-state-badge">HCDD 411</div>
     <button class="theme-toggle" onclick="toggleTheme()">
         <span class="theme-icon">🌙</span>
         <span class="theme-text">Light Mode</span>
     </button>
     <div class="slide-indicator">
-        <span id="currentSlide">1</span> / <span id="totalSlides">18</span>
+        <span id="currentSlide">1</span> / <span id="totalSlides">23</span>
     </div>
 
     <div class="presentation-container">
@@ -1149,8 +1149,416 @@ $.ajax({
             </div>
         </div>
 
-        <!-- Slide 14: AXIOS -->
+        
+        <!-- Slide 14: Promises (why .then/.catch exists) -->
         <div class="slide" data-slide="14">
+            <h2>Promises: Why <code>.then()</code> and <code>.catch()</code>?</h2>
+            <ul>
+                <li><strong>jQuery AJAX</strong> uses <strong>callbacks</strong>: <code>success</code> / <code>error</code></li>
+                <li><strong>Axios</strong> and <strong>Fetch</strong> return a <strong>Promise</strong></li>
+                <li>A Promise represents a value you will get <em>later</em> (success) or an error you will handle (failure)</li>
+            </ul>
+
+            <div class="info-box">
+                <strong>Key idea:</strong> Promises avoid “callback nesting” and make async code easier to compose.
+                <ul style="margin-top: 10px;">
+                    <li><code>.then(...)</code> = “when it succeeds, do this”</li>
+                    <li><code>.catch(...)</code> = “if it fails, do this”</li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">RUN: Promise + then/catch order</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">
+                        <span class="file-icon">📄</span>
+                        <span>promise.js</span>
+                    </div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="formatCode('promise-then-catch')" title="Format Code">✨ Format</button>
+                        <button class="toolbar-btn" onclick="resetCode('promise-then-catch')" title="Reset Code">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="promise-then-catch">console.log("1) Before promise");
+
+// A Promise: resolve(success) / reject(failure)
+const p = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve({ msg: "Hello from the future 👋" });
+        // reject(new Error("Something went wrong"));
+    }, 500);
+});
+
+p.then((value) => {
+    console.log("3) then():", value);
+}).catch((err) => {
+    console.error("catch():", err.message);
+});
+
+console.log("2) After promise (JS keeps running)");
+                    </textarea>
+                </div>
+                <div class="status-bar">
+                    <div class="cursor-pos">
+                        <span class="line-info" data-editor="promise-then-catch">Ln 1, Col 1</span>
+                    </div>
+                    <span class="language">JavaScript</span>
+                </div>
+                <div class="shortcuts-hint">
+                    <span class="shortcut"><kbd>Tab</kbd> Indent</span>
+                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Run</span>
+                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>/</kbd> Comment</span>
+                </div>
+                <button class="run-button" onclick="runCode('promise-then-catch', 'promise-then-catch-output')">
+                    <span class="play-icon">▶</span> Run Code
+                </button>
+                <button class="clear-button" onclick="clearOutput('promise-then-catch-output')">Clear Output</button>
+                <div class="output-console" id="promise-then-catch-output">
+                    <span class="output-label"><span class="terminal-icon">💻</span> Console Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Axios setup + how to run -->
+        <div class="slide" data-slide="15">
+            <h2>Axios: Setup + Run (Step-by-step)</h2>
+
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>🌐 In the Browser</h3>
+                    <ul>
+                        <li>Add Axios via <strong>CDN</strong> (a script tag)</li>
+                        <li>Then <code>axios.get(...)</code> works immediately</li>
+                        <li>Great for small demos / learning</li>
+                    </ul>
+                </div>
+                <div class="example-card">
+                    <h3>🧰 In Node.js</h3>
+                    <ul>
+                        <li>Install: <code>npm i axios</code></li>
+                        <li>Import: <code>const axios = require("axios")</code></li>
+                        <li>Run: <code>node app.js</code></li>
+                    </ul>
+                </div>
+                <div class="example-card">
+                    <h3>✅ Why students like Axios</h3>
+                    <ul>
+                        <li>Auto JSON parsing (response is already usable)</li>
+                        <li>Response payload is in <code>response.data</code></li>
+                        <li>Cleaner POST syntax vs jQuery AJAX</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <strong style="color: var(--success);">Step-by-step (browser):</strong>
+                <ol style="margin-top: 10px; padding-left: 22px;">
+                    <li>Include Axios (CDN) before your script</li>
+                    <li>Call <code>axios.get(url)</code> → returns a Promise</li>
+                    <li>Use <code>.then(...)</code> (or <code>await</code>)</li>
+                    <li>Read the JSON from <code>response.data</code></li>
+                </ol>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">RUN: Verify Axios is loaded + make a request</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">
+                        <span class="file-icon">📄</span>
+                        <span>axios-setup.js</span>
+                    </div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="formatCode('axios-setup-check')" title="Format Code">✨ Format</button>
+                        <button class="toolbar-btn" onclick="resetCode('axios-setup-check')" title="Reset Code">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="axios-setup-check">console.log("Axios loaded?", typeof axios !== "undefined");
+
+if (typeof axios === "undefined") {
+    console.error("Axios not found. In a normal HTML page you would add:");
+    console.log('<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>');
+} else {
+    console.log("Axios version (if available):", axios.VERSION || "(not exposed)");
+
+    axios
+        .get("https://jsonplaceholder.typicode.com/users/1")
+        .then((response) => {
+            // Axios auto-parses JSON
+            console.log("HTTP status:", response.status);
+            console.log("User 1 name:", response.data.name);
+        })
+        .catch((error) => {
+            console.error("Request failed:", error.message);
+        });
+}
+                    </textarea>
+                </div>
+                <div class="status-bar">
+                    <div class="cursor-pos">
+                        <span class="line-info" data-editor="axios-setup-check">Ln 1, Col 1</span>
+                    </div>
+                    <span class="language">JavaScript</span>
+                </div>
+                <div class="shortcuts-hint">
+                    <span class="shortcut"><kbd>Tab</kbd> Indent</span>
+                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Run</span>
+                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>/</kbd> Comment</span>
+                </div>
+                <button class="run-button" onclick="runCode('axios-setup-check', 'axios-setup-check-output')">
+                    <span class="play-icon">▶</span> Run Code
+                </button>
+                <button class="clear-button" onclick="clearOutput('axios-setup-check-output')">Clear Output</button>
+                <div class="output-console" id="axios-setup-check-output">
+                    <span class="output-label"><span class="terminal-icon">💻</span> Console Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: jQuery AJAX vs Axios (mapping) -->
+        <div class="slide" data-slide="16">
+            <h2>jQuery AJAX vs Axios: What changes?</h2>
+            <div class="info-box">
+                <strong>Big picture:</strong>
+                <ul style="margin-top: 10px;">
+                    <li><strong>jQuery AJAX</strong>: you pass options + callbacks (<code>success</code>/<code>error</code>)</li>
+                    <li><strong>Axios</strong>: you call a method (<code>get/post/put/delete</code>) and handle a Promise (<code>.then/.catch</code>)</li>
+                </ul>
+            </div>
+
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>Request body</h3>
+                    <ul>
+                        <li><strong>jQuery:</strong> usually needs <code>JSON.stringify(data)</code></li>
+                        <li><strong>Axios:</strong> just pass a JS object</li>
+                    </ul>
+                </div>
+                <div class="example-card">
+                    <h3>Response</h3>
+                    <ul>
+                        <li><strong>jQuery:</strong> response is already an object</li>
+                        <li><strong>Axios:</strong> response payload is in <code>response.data</code></li>
+                    </ul>
+                </div>
+                <div class="example-card">
+                    <h3>Errors</h3>
+                    <ul>
+                        <li><strong>jQuery:</strong> <code>error: function(err){...}</code></li>
+                        <li><strong>Axios:</strong> <code>.catch(err =&gt; ...)</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">RUN: Same GET request (jQuery vs Axios)</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">
+                        <span class="file-icon">📄</span>
+                        <span>compare.js</span>
+                    </div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="formatCode('axios-vs-jquery')" title="Format Code">✨ Format</button>
+                        <button class="toolbar-btn" onclick="resetCode('axios-vs-jquery')" title="Reset Code">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="axios-vs-jquery">console.log("=== jQuery AJAX GET ===");
+$.ajax({
+    url: "https://jsonplaceholder.typicode.com/users/1",
+    method: "GET",
+    success: function (response) {
+        // jQuery auto-parses JSON
+        console.log("jQuery name:", response.name);
+    },
+    error: function (err) {
+        console.error("jQuery error:", err.status);
+    },
+});
+
+console.log("=== Axios GET ===");
+axios
+    .get("https://jsonplaceholder.typicode.com/users/1")
+    .then((response) => {
+        // Axios puts the JSON payload in response.data
+        console.log("Axios name:", response.data.name);
+    })
+    .catch((err) => {
+        console.error("Axios error:", err.message);
+    });
+                    </textarea>
+                </div>
+                <div class="status-bar">
+                    <div class="cursor-pos">
+                        <span class="line-info" data-editor="axios-vs-jquery">Ln 1, Col 1</span>
+                    </div>
+                    <span class="language">JavaScript</span>
+                </div>
+                <div class="shortcuts-hint">
+                    <span class="shortcut"><kbd>Tab</kbd> Indent</span>
+                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Run</span>
+                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>/</kbd> Comment</span>
+                </div>
+                <button class="run-button" onclick="runCode('axios-vs-jquery', 'axios-vs-jquery-output')">
+                    <span class="play-icon">▶</span> Run Code
+                </button>
+                <button class="clear-button" onclick="clearOutput('axios-vs-jquery-output')">Clear Output</button>
+                <div class="output-console" id="axios-vs-jquery-output">
+                    <span class="output-label"><span class="terminal-icon">💻</span> Console Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: Fetch step-by-step -->
+        <div class="slide" data-slide="17">
+            <h2>Fetch: Step-by-step (What happens?)</h2>
+            <ul>
+                <li><code>fetch(url)</code> returns a <strong>Promise</strong> that resolves to a <strong>Response</strong></li>
+                <li>The <strong>Response</strong> is metadata (status, headers) + a body stream</li>
+                <li>To read JSON, you must call <code>response.json()</code> (this is also async)</li>
+            </ul>
+
+            <div class="warning-box">
+                <strong style="color: var(--error);">Common confusion:</strong>
+                Fetch does <strong>NOT</strong> auto-parse JSON, and <strong>does not automatically throw</strong> on HTTP 404/500.
+                <ul style="margin-top: 10px;">
+                    <li>You should check <code>response.ok</code> and throw an error yourself</li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">RUN: Fetch with status + ok + JSON parsing</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">
+                        <span class="file-icon">📄</span>
+                        <span>fetch-steps.js</span>
+                    </div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="formatCode('fetch-step-by-step')" title="Format Code">✨ Format</button>
+                        <button class="toolbar-btn" onclick="resetCode('fetch-step-by-step')" title="Reset Code">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="fetch-step-by-step">async function getUser(id) {
+    const url = `https://jsonplaceholder.typicode.com/users/${id}`;
+    console.log("Requesting:", url);
+
+    const response = await fetch(url);
+    console.log("HTTP status:", response.status, "| ok:", response.ok);
+
+    // Fetch only throws on network failure, not on HTTP error codes
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+
+    // This is the "manual JSON parsing" step
+    const data = await response.json();
+    console.log("User name:", data.name);
+}
+
+// Try changing id to something like 999 to see error handling
+getUser(1).catch((err) => console.error("Fetch failed:", err.message));
+                    </textarea>
+                </div>
+                <div class="status-bar">
+                    <div class="cursor-pos">
+                        <span class="line-info" data-editor="fetch-step-by-step">Ln 1, Col 1</span>
+                    </div>
+                    <span class="language">JavaScript</span>
+                </div>
+                <div class="shortcuts-hint">
+                    <span class="shortcut"><kbd>Tab</kbd> Indent</span>
+                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Run</span>
+                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>/</kbd> Comment</span>
+                </div>
+                <button class="run-button" onclick="runCode('fetch-step-by-step', 'fetch-step-by-step-output')">
+                    <span class="play-icon">▶</span> Run Code
+                </button>
+                <button class="clear-button" onclick="clearOutput('fetch-step-by-step-output')">Clear Output</button>
+                <div class="output-console" id="fetch-step-by-step-output">
+                    <span class="output-label"><span class="terminal-icon">💻</span> Console Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: async/await rules + how to run -->
+        <div class="slide" data-slide="18">
+            <h2><code>async</code> / <code>await</code>: How to use it (Step-by-step)</h2>
+            <ul>
+                <li><code>async</code> makes a function return a <strong>Promise</strong></li>
+                <li><code>await</code> pauses <em>inside that async function</em> until the Promise resolves</li>
+                <li>Use <code>try/catch</code> to handle errors like a normal synchronous program</li>
+            </ul>
+
+            <div class="info-box">
+                <strong>Translation in your head:</strong>
+                <ul style="margin-top: 10px;">
+                    <li><code>await something()</code> ≈ <code>something().then(...)</code> (same idea, easier to read)</li>
+                    <li>But <code>await</code> only works inside an <code>async function</code> (in this lecture style)</li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">RUN: await inside async + try/catch</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">
+                        <span class="file-icon">📄</span>
+                        <span>await.js</span>
+                    </div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="formatCode('await-rules')" title="Format Code">✨ Format</button>
+                        <button class="toolbar-btn" onclick="resetCode('await-rules')" title="Reset Code">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="await-rules">// ✅ Correct: await inside an async function
+async function run() {
+    try {
+        const response = await fetch("https://jsonplaceholder.typicode.com/users/1");
+        const user = await response.json();
+        console.log("Fetched user:", user.name);
+
+        // Because run() is async, it returns a Promise
+        return user;
+    } catch (err) {
+        console.error("Error:", err.message);
+        throw err;
+    }
+}
+
+// run() returns a Promise, so we can still use .then()
+run().then((user) => console.log("Returned value:", user.id));
+                    </textarea>
+                </div>
+                <div class="status-bar">
+                    <div class="cursor-pos">
+                        <span class="line-info" data-editor="await-rules">Ln 1, Col 1</span>
+                    </div>
+                    <span class="language">JavaScript</span>
+                </div>
+                <div class="shortcuts-hint">
+                    <span class="shortcut"><kbd>Tab</kbd> Indent</span>
+                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Run</span>
+                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>/</kbd> Comment</span>
+                </div>
+                <button class="run-button" onclick="runCode('await-rules', 'await-rules-output')">
+                    <span class="play-icon">▶</span> Run Code
+                </button>
+                <button class="clear-button" onclick="clearOutput('await-rules-output')">Clear Output</button>
+                <div class="output-console" id="await-rules-output">
+                    <span class="output-label"><span class="terminal-icon">💻</span> Console Output:</span>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <strong style="color: var(--success);">If you get an “await is only valid…” error:</strong>
+                it means you used <code>await</code> outside an <code>async</code> function (or outside an ES module).
+            </div>
+        </div>
+
+        <!-- Slide 19: AXIOS -->
+        <div class="slide" data-slide="19">
             <h2>AXIOS</h2>
             <ul>
                 <li>Simpler syntax</li>
@@ -1170,8 +1578,8 @@ $.ajax({
             </div>
         </div>
 
-        <!-- Slide 15: AXIOS – Code Example -->
-        <div class="slide" data-slide="15">
+        <!-- Slide 20: AXIOS – Code Example -->
+        <div class="slide" data-slide="20">
             <h2>AXIOS – Code Example</h2>
             <div class="code-playground">
                 <span class="playground-label">RUN: Axios GET + POST</span>
@@ -1232,8 +1640,8 @@ axios
             </div>
         </div>
 
-        <!-- Slide 16: FETCH API -->
-        <div class="slide" data-slide="16">
+        <!-- Slide 21: FETCH API -->
+        <div class="slide" data-slide="21">
             <h2>FETCH API</h2>
             <ul>
                 <li>Currently most popular in front-end web development</li>
@@ -1252,8 +1660,8 @@ axios
             </div>
         </div>
 
-        <!-- Slide 17: FETCH API – Code Example -->
-        <div class="slide" data-slide="17">
+        <!-- Slide 22: FETCH API – Code Example -->
+        <div class="slide" data-slide="22">
             <h2>FETCH API – Code Example</h2>
             <div class="code-playground">
                 <span class="playground-label">RUN: Fetch GET + POST</span>
@@ -1313,8 +1721,8 @@ fetch("https://jsonplaceholder.typicode.com/posts", {
             </div>
         </div>
 
-        <!-- Slide 18: Modern async/await + JSON handling comparison -->
-        <div class="slide" data-slide="18">
+        <!-- Slide 23: Modern async/await + JSON handling comparison -->
+        <div class="slide" data-slide="23">
             <h2>Modern Approach – async/await</h2>
             <ul>
                 <li>Asynchronous</li>
@@ -1415,6 +1823,7 @@ getUsersByAxios();
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/javascript-hint.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
 
+    
     <script>
         let currentSlide = 1;
         const totalSlides = document.querySelectorAll('.slide').length;
