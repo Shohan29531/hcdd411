@@ -1099,6 +1099,190 @@ $.ajax({
             </div>
         </div>
 
+
+<!-- Slide 13: PRACTICE #1 (jQuery AJAX GET + render) -->
+<div class="slide" data-slide="13">
+    <h2>Practice #1 — jQuery AJAX (GET + Render)</h2>
+
+    <div class="info-box">
+        <strong>Goal:</strong>
+        <ul style="margin-top: 10px;">
+            <li>Make a <code>GET</code> request to <code>/users</code></li>
+            <li>Log how many users you received</li>
+            <li>Render each user name into the list below</li>
+        </ul>
+    </div>
+
+    <h3>✅ Output target (DOM)</h3>
+    <ul id="pp1-users"></ul>
+
+    <div class="code-playground">
+        <span class="playground-label">PRACTICE: Fill the TODOs and Run</span>
+
+        <div class="ide-toolbar">
+            <div class="file-tab">
+                <span class="file-icon">📄</span>
+                <span>practice-1.js</span>
+            </div>
+            <div class="toolbar-actions">
+                <button class="toolbar-btn" onclick="formatCode('practice-1-jq-get')" title="Format Code">✨ Format</button>
+                <button class="toolbar-btn" onclick="resetCode('practice-1-jq-get')" title="Reset Code">🔄 Reset</button>
+            </div>
+        </div>
+
+        <div class="editor-wrapper">
+            <textarea class="code-editor" id="practice-1-jq-get">// PRACTICE #1 — jQuery AJAX GET + render to DOM
+// Endpoint: https://jsonplaceholder.typicode.com/users
+
+// Clear DOM list first (so repeated runs don't duplicate)
+$("#pp1-users").empty();
+
+// TODO 1: Write $.ajax({...}) with:
+//   - url: "https://jsonplaceholder.typicode.com/users"
+//   - method: "GET"
+// TODO 2: In success(users):
+//   - console.log("Users fetched:", users.length)
+//   - render each user's name into #pp1-users as <li>...</li>
+// TODO 3: In error(xhr):
+//   - console.error("Request failed:", xhr.status, xhr.statusText)
+
+$.ajax({
+    url: "https://jsonplaceholder.typicode.com/users",
+    method: "GET",
+    success: function (users) {
+        // TODO: log the count
+        // TODO: loop and append <li> to #pp1-users
+    },
+    error: function (xhr) {
+        // TODO: print status + statusText
+    },
+});
+            </textarea>
+        </div>
+
+        <div class="status-bar">
+            <div class="cursor-pos">
+                <span class="line-info" data-editor="practice-1-jq-get">Ln 1, Col 1</span>
+            </div>
+            <span class="language">JavaScript</span>
+        </div>
+
+        <div class="shortcuts-hint">
+            <span class="shortcut"><kbd>Tab</kbd> Indent</span>
+            <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Run</span>
+            <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>/</kbd> Comment</span>
+        </div>
+
+        <button class="run-button" onclick="runCode('practice-1-jq-get', 'practice-1-jq-get-output')">
+            <span class="play-icon">▶</span> Run Code
+        </button>
+        <button class="clear-button" onclick="clearOutput('practice-1-jq-get-output')">Clear Output</button>
+
+        <div class="output-console" id="practice-1-jq-get-output">
+            <span class="output-label"><span class="terminal-icon">💻</span> Console Output:</span>
+        </div>
+    </div>
+
+    <div class="tip-box">
+        <strong style="color: var(--success);">Hint:</strong>
+        Use <code>users.forEach(function(u){ ... })</code> and append like:
+        <code>$("#pp1-users").append("&lt;li&gt;" + u.name + "&lt;/li&gt;")</code>
+    </div>
+</div>
+
+<!-- Slide 14: PRACTICE #2 (jQuery AJAX POST + JSON.stringify) -->
+<div class="slide" data-slide="14">
+    <h2>Practice #2 — jQuery AJAX (POST + JSON)</h2>
+
+    <div class="warning-box">
+        <strong style="color: var(--error);">Common gotcha:</strong>
+        For JSON POST in jQuery, you usually need:
+        <ul style="margin-top: 10px;">
+            <li><code>contentType: "application/json"</code></li>
+            <li><code>data: JSON.stringify({...})</code></li>
+        </ul>
+    </div>
+
+    <div class="info-box">
+        <strong>Goal:</strong>
+        <ul style="margin-top: 10px;">
+            <li>Send a POST request to <code>/posts</code></li>
+            <li>Log the returned <code>id</code> from the created post</li>
+            <li>Handle errors (log <code>xhr.status</code>)</li>
+        </ul>
+    </div>
+
+    <div class="code-playground">
+        <span class="playground-label">PRACTICE: Fill the TODOs and Run</span>
+
+        <div class="ide-toolbar">
+            <div class="file-tab">
+                <span class="file-icon">📄</span>
+                <span>practice-2.js</span>
+            </div>
+            <div class="toolbar-actions">
+                <button class="toolbar-btn" onclick="formatCode('practice-2-jq-post')" title="Format Code">✨ Format</button>
+                <button class="toolbar-btn" onclick="resetCode('practice-2-jq-post')" title="Reset Code">🔄 Reset</button>
+            </div>
+        </div>
+
+        <div class="editor-wrapper">
+            <textarea class="code-editor" id="practice-2-jq-post">// PRACTICE #2 — jQuery AJAX POST (JSON)
+// Endpoint: https://jsonplaceholder.typicode.com/posts
+
+// TODO 1: Add contentType for JSON
+// TODO 2: Add data using JSON.stringify({ title, body, userId })
+// TODO 3: In success(response), log: "Created id:", response.id
+// TODO 4: In error(xhr), log: "Failed:", xhr.status
+
+$.ajax({
+    url: "https://jsonplaceholder.typicode.com/posts",
+    method: "POST",
+    // contentType: "application/json", // TODO 1
+
+    // data: JSON.stringify({ ... }), // TODO 2
+
+    success: function (response) {
+        // TODO 3
+    },
+    error: function (xhr) {
+        // TODO 4
+    },
+});
+            </textarea>
+        </div>
+
+        <div class="status-bar">
+            <div class="cursor-pos">
+                <span class="line-info" data-editor="practice-2-jq-post">Ln 1, Col 1</span>
+            </div>
+            <span class="language">JavaScript</span>
+        </div>
+
+        <div class="shortcuts-hint">
+            <span class="shortcut"><kbd>Tab</kbd> Indent</span>
+            <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Run</span>
+            <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>/</kbd> Comment</span>
+        </div>
+
+        <button class="run-button" onclick="runCode('practice-2-jq-post', 'practice-2-jq-post-output')">
+            <span class="play-icon">▶</span> Run Code
+        </button>
+        <button class="clear-button" onclick="clearOutput('practice-2-jq-post-output')">Clear Output</button>
+
+        <div class="output-console" id="practice-2-jq-post-output">
+            <span class="output-label"><span class="terminal-icon">💻</span> Console Output:</span>
+        </div>
+    </div>
+
+    <div class="tip-box">
+        <strong style="color: var(--success);">Suggested payload:</strong>
+        <code>{ title: "Practice Post", body: "Hello from HCDD 411", userId: 1 }</code>
+    </div>
+</div>
+
+
+
         <!-- Slide 13: jQuery AJAX – DELETE -->
         <div class="slide" data-slide="13">
             <h2>jQuery AJAX – DELETE</h2>
@@ -1802,6 +1986,157 @@ getUsersByAxios();
                 </ul>
             </div>
         </div>
+
+
+
+        <!-- Slide 26: PRACTICE #3 (Fetch + async/await + response.ok) -->
+<div class="slide" data-slide="26">
+    <h2>Practice #3 — Fetch (async/await + Error Handling)</h2>
+
+    <div class="info-box">
+        <strong>Goal:</strong>
+        <ul style="margin-top: 10px;">
+            <li>Write <code>async function getUserEmail(id)</code></li>
+            <li>Use <code>fetch</code>, check <code>response.ok</code>, then <code>await response.json()</code></li>
+            <li>Return the user’s <code>email</code></li>
+        </ul>
+    </div>
+
+    <div class="code-playground">
+        <span class="playground-label">PRACTICE: Complete the function and Run</span>
+
+        <div class="ide-toolbar">
+            <div class="file-tab">
+                <span class="file-icon">📄</span>
+                <span>practice-3.js</span>
+            </div>
+            <div class="toolbar-actions">
+                <button class="toolbar-btn" onclick="formatCode('practice-3-fetch')" title="Format Code">✨ Format</button>
+                <button class="toolbar-btn" onclick="resetCode('practice-3-fetch')" title="Reset Code">🔄 Reset</button>
+            </div>
+        </div>
+
+        <div class="editor-wrapper">
+            <textarea class="code-editor" id="practice-3-fetch">// PRACTICE #3 — Fetch + async/await + response.ok
+
+async function getUserEmail(id) {
+    const url = `https://jsonplaceholder.typicode.com/users/${id}`;
+
+    // TODO 1: await fetch(url)
+    // TODO 2: if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    // TODO 3: const data = await response.json()
+    // TODO 4: return data.email
+}
+
+getUserEmail(2)
+    .then((email) => console.log("Email:", email))
+    .catch((err) => console.error("Failed:", err.message));
+
+// Try: change 2 to 999 and confirm your error path works.
+            </textarea>
+        </div>
+
+        <div class="status-bar">
+            <div class="cursor-pos">
+                <span class="line-info" data-editor="practice-3-fetch">Ln 1, Col 1</span>
+            </div>
+            <span class="language">JavaScript</span>
+        </div>
+
+        <div class="shortcuts-hint">
+            <span class="shortcut"><kbd>Tab</kbd> Indent</span>
+            <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Run</span>
+            <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>/</kbd> Comment</span>
+        </div>
+
+        <button class="run-button" onclick="runCode('practice-3-fetch', 'practice-3-fetch-output')">
+            <span class="play-icon">▶</span> Run Code
+        </button>
+        <button class="clear-button" onclick="clearOutput('practice-3-fetch-output')">Clear Output</button>
+
+        <div class="output-console" id="practice-3-fetch-output">
+            <span class="output-label"><span class="terminal-icon">💻</span> Console Output:</span>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 27: PRACTICE #4 (Axios + filter/map) -->
+<div class="slide" data-slide="27">
+    <h2>Practice #4 — Axios (Filter + Map)</h2>
+
+    <div class="info-box">
+        <strong>Goal:</strong>
+        <ul style="margin-top: 10px;">
+            <li>Use Axios to fetch <code>/posts</code></li>
+            <li>Filter posts where <code>userId === 1</code></li>
+            <li>Log only the first 5 titles</li>
+        </ul>
+    </div>
+
+    <div class="code-playground">
+        <span class="playground-label">PRACTICE: Use axios.get + response.data</span>
+
+        <div class="ide-toolbar">
+            <div class="file-tab">
+                <span class="file-icon">📄</span>
+                <span>practice-4.js</span>
+            </div>
+            <div class="toolbar-actions">
+                <button class="toolbar-btn" onclick="formatCode('practice-4-axios')" title="Format Code">✨ Format</button>
+                <button class="toolbar-btn" onclick="resetCode('practice-4-axios')" title="Reset Code">🔄 Reset</button>
+            </div>
+        </div>
+
+        <div class="editor-wrapper">
+            <textarea class="code-editor" id="practice-4-axios">// PRACTICE #4 — Axios: filter + map titles
+
+// TODO 1: axios.get("https://jsonplaceholder.typicode.com/posts")
+// TODO 2: in then(response):
+//   - const posts = response.data
+//   - filter posts where post.userId === 1
+//   - take first 5 and log their titles
+// TODO 3: catch(error): console.error(error.message)
+
+axios
+    .get("https://jsonplaceholder.typicode.com/posts")
+    .then((response) => {
+        // TODO 2
+    })
+    .catch((error) => {
+        // TODO 3
+    });
+            </textarea>
+        </div>
+
+        <div class="status-bar">
+            <div class="cursor-pos">
+                <span class="line-info" data-editor="practice-4-axios">Ln 1, Col 1</span>
+            </div>
+            <span class="language">JavaScript</span>
+        </div>
+
+        <div class="shortcuts-hint">
+            <span class="shortcut"><kbd>Tab</kbd> Indent</span>
+            <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Run</span>
+            <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>/</kbd> Comment</span>
+        </div>
+
+        <button class="run-button" onclick="runCode('practice-4-axios', 'practice-4-axios-output')">
+            <span class="play-icon">▶</span> Run Code
+        </button>
+        <button class="clear-button" onclick="clearOutput('practice-4-axios-output')">Clear Output</button>
+
+        <div class="output-console" id="practice-4-axios-output">
+            <span class="output-label"><span class="terminal-icon">💻</span> Console Output:</span>
+        </div>
+    </div>
+
+    <div class="tip-box">
+        <strong style="color: var(--success);">Hint:</strong>
+        Use: <code>posts.filter(...).slice(0, 5).forEach(...)</code>
+    </div>
+</div>
+
     </div>
 
     <!-- Navigation -->

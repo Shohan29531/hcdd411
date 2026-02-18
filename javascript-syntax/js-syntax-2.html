@@ -661,11 +661,7 @@
                 </div>
                 <div class="example-card">
                     <h3>⚡ ES6 Features</h3>
-                    <p>let/const, arrow functions, classes</p>
-                </div>
-                <div class="example-card">
-                    <h3>🚀 Modern JS</h3>
-                    <p>Template literals, spread operator</p>
+                    <p>arrow functions, classes</p>
                 </div>
             </div>
         </div>
@@ -1321,88 +1317,7 @@ console.log("Has even number?", hasEven);  // false
                     <span class="output-label"><span class="terminal-icon">💻</span> Console Output:</span>
                 </div>
             </div>
-        </div>
-
-        <!-- Slide 12: ES6 Variables -->
-        <div class="slide" data-slide="12">
-            <h2>ES6 - let & const</h2>
-            <h3>Modern Variable Declaration</h3>
-            <ul>
-                <li><code>const</code> - Must be initialized, cannot be reassigned</li>
-                <li><code>let</code> - Can be reassigned, block-scoped</li>
-                <li>Prefer <code>const</code> by default, use <code>let</code> when needed</li>
-            </ul>
-            <div class="warning-box">
-                <strong style="color: var(--error);">⚠️ let/const vs var:</strong>
-                <ul>
-                    <li>let/const are <strong>block-scoped</strong>, var is not</li>
-                    <li>var can be used before declaration (hoisting)</li>
-                    <li>var allows duplicate names, let/const do not</li>
-                </ul>
-            </div>
-            <div class="code-playground">
-                <span class="playground-label">PRACTICE: let & const</span>
-                <div class="ide-toolbar">
-                    <div class="file-tab">
-                        <span class="file-icon">📄</span>
-                        <span>script.js</span>
-                    </div>
-                    <div class="toolbar-actions">
-                        <button class="toolbar-btn" onclick="formatCode('es6-vars')" title="Format Code">
-                            ✨ Format
-                        </button>
-                        <button class="toolbar-btn" onclick="resetCode('es6-vars')" title="Reset Code">
-                            🔄 Reset
-                        </button>
-                    </div>
-                </div>
-                <div class="editor-wrapper">
-                    <textarea class="code-editor" id="es6-vars">// const - cannot reassign
-const PI = 3.14159;
-console.log("PI:", PI);
-// PI = 3.14;  // This would cause an error!
-
-// But you CAN modify object/array contents
-const student = {name: "Sam", age: 20};
-console.log("Before:", student);
-student.age = 21;  // This is OK!
-console.log("After:", student);
-
-// let - can reassign
-let counter = 0;
-console.log("Counter:", counter);
-counter = 1;
-console.log("Counter:", counter);
-
-// Block scope example
-if (true) {
-    let blockVar = "inside block";
-    console.log("Inside block:", blockVar);
-}
-// console.log(blockVar);  // Would cause error - not accessible outside block
-
-// Try experimenting with const and let!</textarea>
-                </div>
-                <div class="status-bar">
-                    <div class="cursor-pos">
-                        <span class="line-info" data-editor="es6-vars">Ln 1, Col 1</span>
-                    </div>
-                    <span class="language">JavaScript</span>
-                </div>
-                <div class="shortcuts-hint">
-                    <span class="shortcut"><kbd>Tab</kbd> Indent</span>
-                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Run</span>
-                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>/</kbd> Comment</span>
-                </div>
-                <button class="run-button" onclick="runCode('es6-vars', 'es6-vars-output')">
-                    <span class="play-icon">▶</span> Run Code
-                </button>
-                <button class="clear-button" onclick="clearOutput('es6-vars-output')">Clear Output</button>
-                <div class="output-console" id="es6-vars-output">
-                    <span class="output-label"><span class="terminal-icon">💻</span> Console Output:</span>
-                </div>
-            </div>
-        </div>
+        </div>              
 
         <!-- Slide 13: ES6 Classes -->
         <div class="slide" data-slide="13">
@@ -1434,39 +1349,32 @@ if (true) {
                 <div class="editor-wrapper">
                     <textarea class="code-editor" id="es6-class">// Define a class
 class Animal {
+    constructor(name) {
+        this.name = name;
+    }
+    
     eat() {
-        console.log("Animal is eating");
+        console.log(`${this.name} is eating`);
     }
 }
 
 // Extend a class (inheritance)
 class Dog extends Animal {
+    constructor(name, breed) {
+        super(name);  // Call parent constructor
+        this.breed = breed;
+    }
+    
     bark() {
-        console.log("Dog is barking");
+        console.log(`${this.name} the ${this.breed} is barking`);
     }
 }
 
 // Create instance
-const myDog = new Dog();
+const myDog = new Dog("Buddy", "Golden Retriever");
 myDog.eat();   // Inherited from Animal
 myDog.bark();  // Dog's own method
-
-// Class with constructor
-class Person {
-    constructor(name, age) {
-        this.name = name;
-        this.age = age;
-    }
-    
-    introduce() {
-        console.log(`Hi, I'm ${this.name} and I'm ${this.age} years old`);
-    }
-}
-
-const person1 = new Person("Alice", 25);
-person1.introduce();
-
-// Try creating your own classes!</textarea>
+</textarea>
                 </div>
                 <div class="status-bar">
                     <div class="cursor-pos">
@@ -1561,91 +1469,6 @@ console.log("Evens:", evens);</textarea>
                 <div class="output-console" id="arrow-func-output">
                     <span class="output-label"><span class="terminal-icon">💻</span> Console Output:</span>
                 </div>
-            </div>
-        </div>
-
-        <!-- Slide 15: Template Literals & Spread Operator -->
-        <div class="slide" data-slide="15">
-            <h2>ES6 - Strings & Spread Operator</h2>
-            <h3>Template Literals (Backticks)</h3>
-            <ul>
-                <li>Use backticks: <code>``</code></li>
-                <li>Multi-line strings</li>
-                <li>Insert variables with <code>${}</code></li>
-            </ul>
-            <h3>Spread Operator (...)</h3>
-            <ul>
-                <li>Spread arrays or objects</li>
-                <li>Merge, copy, or pass as arguments</li>
-            </ul>
-            <div class="code-playground">
-                <span class="playground-label">EXPLORE: Modern Features</span>
-                <div class="ide-toolbar">
-                    <div class="file-tab">
-                        <span class="file-icon">📄</span>
-                        <span>script.js</span>
-                    </div>
-                    <div class="toolbar-actions">
-                        <button class="toolbar-btn" onclick="formatCode('es6-final')" title="Format Code">
-                            ✨ Format
-                        </button>
-                        <button class="toolbar-btn" onclick="resetCode('es6-final')" title="Reset Code">
-                            🔄 Reset
-                        </button>
-                    </div>
-                </div>
-                <div class="editor-wrapper">
-                    <textarea class="code-editor" id="es6-final">// Template Literals
-let str1 = "Sam";
-let str2 = "Brown";
-let str3 = `My firstname is ${str1}.
-My lastname is ${str2}.
-It's great to see you!`;
-console.log(str3);
-
-// Spread with arrays
-const arr = [100, 200, 300, 400];
-console.log("Array:", arr);
-console.log("Spread:", ...arr);  // 100, 200, 300, 400
-
-// Merge arrays
-const arr1 = [100, 200];
-const arr2 = [500, 600];
-const arr3 = [...arr1, ...arr2];
-console.log("Merged:", arr3);
-
-// Pass array as parameters
-console.log("Max of array:", Math.max(...arr3));
-
-// Spread with objects
-const obj1 = {name: "Sam", age: 20};
-const obj2 = {...obj1, major: "CS"};
-console.log("Extended object:", obj2);
-
-// Try your own examples!</textarea>
-                </div>
-                <div class="status-bar">
-                    <div class="cursor-pos">
-                        <span class="line-info" data-editor="es6-final">Ln 1, Col 1</span>
-                    </div>
-                    <span class="language">JavaScript</span>
-                </div>
-                <div class="shortcuts-hint">
-                    <span class="shortcut"><kbd>Tab</kbd> Indent</span>
-                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Run</span>
-                    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>/</kbd> Comment</span>
-                </div>
-                <button class="run-button" onclick="runCode('es6-final', 'es6-final-output')">
-                    <span class="play-icon">▶</span> Run Code
-                </button>
-                <button class="clear-button" onclick="clearOutput('es6-final-output')">Clear Output</button>
-                <div class="output-console" id="es6-final-output">
-                    <span class="output-label"><span class="terminal-icon">💻</span> Console Output:</span>
-                </div>
-            </div>
-            <div class="tip-box" style="margin-top: 30px;">
-                <strong style="color: var(--success);">🎉 Congratulations!</strong><br>
-                You've completed JavaScript Syntax - Part 2! You now know objects, arrays, array methods, and modern ES6 features. Keep practicing and building projects!
             </div>
         </div>
 
@@ -1795,7 +1618,6 @@ console.log("Extended object:", obj2);
                 <li>Add a <code>describe()</code> method that logs character info</li>
                 <li>Create a <code>Warrior</code> class that extends Character</li>
                 <li>Add a <code>weapon</code> property and an <code>attack()</code> method to Warrior</li>
-                <li>Use arrow functions and template literals where appropriate</li>
             </ul>
 
             <div class="tip-box">

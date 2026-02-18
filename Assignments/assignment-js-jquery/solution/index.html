@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HCDD 411 - jQuery + JavaScript Assignment</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <main class="container">
+
+    <section class="card">
+      <h2>Task (100 pts): Smart List Manager</h2>
+      <p class="hint">
+        Build a small list tool using <b>jQuery events</b>, <b>arrays/objects</b>, and <b>DOM updates</b>.
+      </p>
+
+      <div class="row">
+        <label>Item text
+          <input id="itemText" type="text" placeholder="e.g., Submit HW, Buy milk" />
+        </label>
+
+        <label>Type
+          <select id="itemType">
+            <option value="normal" selected>Normal</option>
+            <option value="important">Important</option>
+          </select>
+        </label>
+
+        <button class="btn" id="addItemBtn">Add Item</button>
+        <button class="btn btn-lite" id="removeDoneBtn">Remove Done</button>
+        <button class="btn btn-lite" id="clearAllBtn">Clear All</button>
+
+        <span class="pill" id="listCount">0 items</span>
+        <span class="pill pill-lite" id="doneCount">0 done</span>
+      </div>
+
+      <ul class="list" id="itemsList"></ul>
+      <div class="msg" id="listMsg"></div>
+
+      <div class="tiny-note">
+        Tip: Click an item to mark it done/undone.
+      </div>
+    </section>
+
+
+  </main>
+
+
+  <!-- jQuery CDN -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

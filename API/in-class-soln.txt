@@ -1,0 +1,119 @@
+// Practice 1: Fetch users and log info
+// Endpoint: https://jsonplaceholder.typicode.com/users
+
+$.ajax({
+    url: "https://jsonplaceholder.typicode.com/users",
+    method: "GET",
+    success: function (users) {
+        // TODO: Log how many users (users.length)
+        console.log("Total users:", users.length);
+
+        // TODO: Log the first user's email (users[0].email)
+        console.log("First user email:", users[0].email);
+
+    },
+    error: function (error) {
+        console.error("Error:", error);
+    }
+});
+
+
+
+
+
+// Practice 2: POST - create a new post
+// Endpoint: https://jsonplaceholder.typicode.com/posts
+
+$.ajax({
+    url: "https://jsonplaceholder.typicode.com/posts",
+    method: "POST",
+    // TODO: Add contentType for JSON
+    contentType: "application/json",
+
+    // TODO: Add data as JSON.stringify({...})
+    // Required keys: title, body, userId
+    data: JSON.stringify({
+        title: "My Practice Post",
+        body: "Hello from Practice 2!",
+        userId: 1
+    }),
+
+    success: function (createdPost) {
+        // TODO: Log the created post id (createdPost.id)
+        console.log("Created post id:", createdPost.id);
+
+        // TODO: Log the full response
+        console.log("Full response:", createdPost);
+
+    },
+    error: function (xhr, status, err) {
+        console.error("Error:", status, err);
+    }
+});
+
+
+
+// Practice 3: PUT - update an existing post (write from scratch)
+// Endpoint: https://jsonplaceholder.typicode.com/posts/1
+
+$.ajax({
+    url: "https://jsonplaceholder.typicode.com/posts/1",
+
+    // TODO (1): Set method to "PUT"
+    method: "PUT",
+
+    // TODO (2): Add contentType for JSON
+    contentType: "application/json",
+
+    // TODO (3): Add data: JSON.stringify({ ... })
+    // Your object MUST include: title, body, userId
+    data: JSON.stringify({
+        title: "Updated Title (Practice 3)",
+        body: "Updated body from Practice 3.",
+        userId: 1
+    }),
+
+    success: function (response) {
+        // TODO (4): Log updated title (response.title)
+        console.log("Updated title:", response.title);
+
+        // TODO (5): Log full response
+        console.log("Full response:", response);
+
+    },
+    error: function (xhr, status, err) {
+        console.error("Error:", status, err);
+    }
+});
+
+
+// Practice 4: Fetch users then filter by name keyword
+
+const keyword = "Leanne"; // Try changing this!
+
+$.ajax({
+    url: "https://jsonplaceholder.typicode.com/users",
+    method: "GET",
+    success: function (users) {
+        // TODO: Make case-insensitive keyword and user.name comparisons
+        const k = keyword.toLowerCase();
+
+        // TODO: Filter users where name contains keyword
+        const matched = users.filter(function (u) {
+            return u.name.toLowerCase().includes(k);
+        });
+
+        // TODO: Log matched names (one per line)
+        if (matched.length === 0) {
+            console.log("No matches found for:", keyword);
+        } else {
+            matched.forEach(function (u) {
+                console.log(u.name);
+            });
+        }
+
+    },
+    error: function (error) {
+        console.error("Error:", error);
+    }
+});

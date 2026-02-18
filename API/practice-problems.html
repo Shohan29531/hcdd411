@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HCDD 411 — Practice Pack (JS + jQuery + API/AJAX)</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+
+  <!-- CodeMirror CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #3B7DD6;
+      --secondary: #5A6C7D;
+      --accent: #D4940C;
+      --code-bg: #F8F9FA;
+      --success: #059669;
+      --error: #DC2626;
+      --bg-gradient-start: #F0F4F8;
+      --bg-gradient-end: #E1E8ED;
+      --slide-bg: rgba(255, 255, 255, 0.95);
+      --border-color: rgba(59, 125, 214, 0.3);
+      --text-primary: #1F2937;
+      --text-secondary: #6B7280;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 140px 0 120px 0;
+    }
+
+    .presentation-container { width: 100%; min-height: 100vh; }
+
+    .slide {
+      width: 90%;
+      max-width: 1200px;
+      min-height: 400px;
+      background: var(--slide-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 30px;
+      padding: 60px;
+      margin: 0 auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transform: translateX(100px);
+      transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      display: none;
+      border: 2px solid var(--border-color);
+    }
+
+    .slide.active { opacity: 1; transform: translateX(0); display: block; }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: 4em;
+      color: var(--primary);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: -2px;
+      line-height: 1.1;
+    }
+
+    h2 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 2.5em;
+      color: var(--accent);
+      margin-bottom: 22px;
+      letter-spacing: -1px;
+    }
+
+    h3 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 500;
+      font-size: 1.5em;
+      color: var(--primary);
+      margin: 22px 0 12px 0;
+    }
+
+    .subtitle {
+      font-size: 1.25em;
+      color: var(--text-secondary);
+      margin-bottom: 30px;
+      font-weight: 300;
+      line-height: 1.5;
+    }
+
+    .code-playground {
+      background: var(--code-bg);
+      border-radius: 15px;
+      padding: 25px;
+      margin: 22px 0;
+      border: 2px solid var(--border-color);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .code-playground::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 30px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 15px 15px 0 0;
+    }
+
+    .playground-label {
+      position: absolute;
+      top: 5px; left: 20px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9em;
+      color: white;
+      font-weight: 700;
+      z-index: 1;
+    }
+
+    .editor-wrapper {
+      margin-top: 15px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid var(--border-color);
+    }
+
+    .CodeMirror {
+      font-family: 'Space Mono', monospace !important;
+      font-size: 0.95em !important;
+      height: auto !important;
+      min-height: 210px;
+      line-height: 1.6 !important;
+      border-radius: 10px;
+    }
+
+    .CodeMirror-scroll { min-height: 210px; }
+    .CodeMirror-gutters { border-right: 2px solid var(--border-color) !important; }
+
+    .ide-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 15px;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 10px 10px 0 0;
+      margin-top: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .ide-toolbar .file-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--primary);
+      color: white;
+      border-radius: 6px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8em;
+      font-weight: 600;
+    }
+
+    .ide-toolbar .toolbar-actions { margin-left: auto; display: flex; gap: 8px; }
+
+    .toolbar-btn {
+      background: rgba(0, 0, 0, 0.05);
+      border: none;
+      color: var(--text-secondary);
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.85em;
+      transition: all 0.2s ease;
+    }
+
+    .toolbar-btn:hover { background: rgba(0, 0, 0, 0.1); color: var(--text-primary); }
+
+    .run-button {
+      background: linear-gradient(135deg, var(--success), #10B981);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.05em;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .run-button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); }
+
+    .clear-button {
+      background: linear-gradient(135deg, var(--secondary), #6B7280);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 25px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.95em;
+      cursor: pointer;
+      margin-top: 15px;
+      margin-left: 10px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .clear-button:hover { transform: translateY(-3px); }
+
+    .output-console {
+      background: #1F2937;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+      min-height: 120px;
+      max-height: 320px;
+      overflow-y: auto;
+      font-family: 'Space Mono', monospace;
+      color: #10B981;
+      border: 1px solid var(--success);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .output-console .error { color: #EF4444; }
+    .output-console .warn { color: #F59E0B; }
+
+    .output-label { color: #F59E0B; font-weight: 700; margin-bottom: 10px; }
+
+    .navigation {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      z-index: 1000;
+    }
+
+    .nav-button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 15px 35px;
+      border-radius: 50px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .nav-button:hover { background: var(--secondary); transform: scale(1.05); }
+    .nav-button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .slide-indicator {
+      position: fixed;
+      top: 40px;
+      right: 40px;
+      background: var(--primary);
+      padding: 15px 25px;
+      border-radius: 50px;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 1em;
+      z-index: 1000;
+      color: white;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .info-box {
+      background: rgba(212, 148, 12, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 18px;
+      margin: 18px 0;
+      border-radius: 10px;
+    }
+
+    .tip-box {
+      background: rgba(5, 150, 105, 0.1);
+      border-left: 4px solid var(--success);
+      padding: 18px;
+      margin: 18px 0;
+      border-radius: 10px;
+    }
+
+    ul { margin: 16px 0; padding-left: 26px; }
+    li { margin: 10px 0; font-size: 1.08em; line-height: 1.55; }
+    p { font-size: 1.1em; line-height: 1.6; }
+
+    code {
+      font-family: 'Space Mono', monospace;
+      background: rgba(59, 125, 214, 0.15);
+      padding: 3px 8px;
+      border-radius: 5px;
+      color: var(--primary);
+    }
+
+    .penn-state-badge {
+      position: fixed;
+      top: 40px;
+      left: 40px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: 1.2em;
+      color: var(--primary);
+      z-index: 1000;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 15px;
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 0 0 10px 10px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8em;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+    }
+
+    .status-bar .language { color: var(--primary); font-weight: 600; }
+
+    /* Mini sandbox for jQuery problems */
+    .sandbox {
+      border: 2px dashed rgba(59, 125, 214, 0.35);
+      border-radius: 16px;
+      padding: 16px;
+      margin: 10px 0 20px 0;
+      background: rgba(255,255,255,0.65);
+    }
+
+    .sandbox-title {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 10px;
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .box-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+
+    .box {
+      min-width: 120px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 2px solid rgba(90, 108, 125, 0.35);
+      background: rgba(240, 244, 248, 0.9);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .highlight {
+      border-color: rgba(212, 148, 12, 0.75) !important;
+      box-shadow: 0 10px 22px rgba(212, 148, 12, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .mini-input {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 2px solid rgba(59, 125, 214, 0.3);
+      font-family: 'Space Mono', monospace;
+      width: min(420px, 100%);
+      outline: none;
+    }
+
+    .mini-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+
+    .mini-btn:hover { background: var(--secondary); }
+
+    .mini-list { margin-top: 12px; padding-left: 22px; }
+    .muted { color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+  <div class="penn-state-badge">HCDD 411</div>
+
+  <div class="slide-indicator">
+    <span id="currentSlide">1</span> / <span id="totalSlides">0</span>
+  </div>
+
+  <div class="presentation-container">
+
+    <!-- Slide 1: Intro -->
+    <div class="slide active" data-slide="1">
+      <h1>PRACTICE PACK</h1>
+      <h2>JS • jQuery • API/AJAX (Fetch + Axios)</h2>
+      <p class="subtitle">
+        8 quick, easy–medium practice problems.
+        Each slide has <strong>one</strong> problem, hints for both <strong>idea</strong> and <strong>syntax</strong>, and a runnable editor.
+      </p>
+
+      <div class="info-box">
+        <strong>How to use:</strong>
+        <ul style="margin-top: 10px;">
+          <li>Read the task → use the hints → complete the TODOs.</li>
+          <li>Press <code>▶ Run Code</code> to see output here.</li>
+          <li>Keyboard: <code>Ctrl/Cmd + Enter</code> runs the code.</li>
+          <li>For jQuery event problems: click the small buttons inside the sandbox after you run once.</li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <strong style="color: var(--success);">What you’ll practice:</strong>
+        <ul style="margin-top: 10px;">
+          <li><strong>JS (2):</strong> arrays, objects, filter/map</li>
+          <li><strong>jQuery (2):</strong> selectors + DOM updates + events</li>
+          <li><strong>API/AJAX (4):</strong> fetch with <code>.then()</code>, fetch with <code>async/await</code>, axios, and <code>$.ajax</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Slide 2: JS #1 -->
+    <div class="slide" data-slide="2">
+      <h2>Practice 1 — JavaScript: Sum, Average, Max</h2>
+
+      <div class="info-box">
+        <strong>Task:</strong>
+        <ul style="margin-top: 10px;">
+          <li>Given an array of numbers, compute <code>sum</code>, <code>avg</code>, and <code>max</code>.</li>
+          <li>Log exactly 3 lines: <code>Sum:</code>, <code>Avg:</code>, <code>Max:</code>.</li>
+          <li>Make average show 2 decimals (example: <code>10.25</code>).</li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <strong style="color: var(--success);">Hint (Idea):</strong>
+        <ul style="margin-top: 10px;">
+          <li>Loop through the array, add into <code>sum</code>, and update <code>max</code> when you see a bigger number.</li>
+        </ul>
+        <strong style="color: var(--success);">Hint (Syntax):</strong>
+        <ul style="margin-top: 10px;">
+          <li><code>for (let n of nums) { ... }</code></li>
+          <li><code>avg = sum / nums.length</code></li>
+          <li><code>avg.toFixed(2)</code></li>
+        </ul>
+      </div>
+
+      <div class="code-playground">
+        <span class="playground-label">PRACTICE 1: Complete TODOs</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 p1-js.js</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn" onclick="resetCode('p1-js')">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper">
+          <textarea class="code-editor" id="p1-js">const nums = [12, 7, 20, 5, 13];
+
+let sum = 0;        // TODO: compute sum
+let max = nums[0];  // TODO: compute max
+
+// TODO: loop through nums and update sum + max
+
+const avg = sum / nums.length; // TODO: avg should use your real sum
+
+console.log("Sum:", sum);
+console.log("Avg:", avg.toFixed(2));
+console.log("Max:", max);
+</textarea>
+        </div>
+        <div class="status-bar">
+          <span class="line-info" data-editor="p1-js">Ln 1, Col 1</span>
+          <span class="language">JavaScript</span>
+        </div>
+        <button class="run-button" onclick="runCode('p1-js', 'p1-js-output')">▶ Run Code</button>
+        <button class="clear-button" onclick="clearOutput('p1-js-output')">Clear</button>
+        <div class="output-console" id="p1-js-output"><span class="output-label">💻 Console Output:</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 3: JS #2 -->
+    <div class="slide" data-slide="3">
+      <h2>Practice 2 — JavaScript: filter + map</h2>
+
+      <div class="info-box">
+        <strong>Task:</strong>
+        <ul style="margin-top: 10px;">
+          <li>From <code>users</code>, make a new array <code>activeNames</code> that contains only the names of <code>active: true</code> users.</li>
+          <li>Log <code>activeNames</code>. Expected: <code>["Sam", "Ari"]</code></li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <strong style="color: var(--success);">Hint (Idea):</strong>
+        <ul style="margin-top: 10px;">
+          <li>Step 1: keep only active users. Step 2: transform to names.</li>
+        </ul>
+        <strong style="color: var(--success);">Hint (Syntax):</strong>
+        <ul style="margin-top: 10px;">
+          <li><code>users.filter(u =&gt; u.active)</code></li>
+          <li><code>... .map(u =&gt; u.name)</code></li>
+        </ul>
+      </div>
+
+      <div class="code-playground">
+        <span class="playground-label">PRACTICE 2: Complete TODOs</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 p2-js.js</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn" onclick="resetCode('p2-js')">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper">
+          <textarea class="code-editor" id="p2-js">const users = [
+  { name: "Sam", active: true },
+  { name: "Lina", active: false },
+  { name: "Ari", active: true }
+];
+
+// TODO: create activeNames using filter + map
+const activeNames = [];
+
+console.log(activeNames);
+</textarea>
+        </div>
+        <div class="status-bar">
+          <span class="line-info" data-editor="p2-js">Ln 1, Col 1</span>
+          <span class="language">JavaScript</span>
+        </div>
+        <button class="run-button" onclick="runCode('p2-js', 'p2-js-output')">▶ Run Code</button>
+        <button class="clear-button" onclick="clearOutput('p2-js-output')">Clear</button>
+        <div class="output-console" id="p2-js-output"><span class="output-label">💻 Console Output:</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 4: jQuery #1 -->
+    <div class="slide" data-slide="4">
+      <h2>Practice 3 — jQuery: Select + Style + Text</h2>
+
+      <div class="info-box">
+        <strong>Task:</strong>
+        <ul style="margin-top: 10px;">
+          <li>Set the status text to: <code>Status: Ready</code></li>
+          <li>Add the class <code>highlight</code> to all elements with class <code>tag</code>.</li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <strong style="color: var(--success);">Hint (Idea):</strong>
+        <ul style="margin-top: 10px;">
+          <li>Use one selector for the status line and one selector for the tagged boxes.</li>
+        </ul>
+        <strong style="color: var(--success);">Hint (Syntax):</strong>
+        <ul style="margin-top: 10px;">
+          <li><code>$("#id").text("...")</code></li>
+          <li><code>$(".class").addClass("highlight")</code></li>
+        </ul>
+      </div>
+
+      <div class="sandbox" id="sandbox-jq1">
+        <div class="sandbox-title">🧪 Mini Sandbox <span class="muted">(your jQuery code edits this)</span></div>
+        <p id="jq1-status">Status: (not set)</p>
+        <div class="box-row">
+          <div class="box tag">Box A (tag)</div>
+          <div class="box tag">Box B (tag)</div>
+          <div class="box">Box C (no tag)</div>
+        </div>
+      </div>
+
+      <div class="code-playground">
+        <span class="playground-label">PRACTICE 3: Complete TODOs</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 p3-jquery.js</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn" onclick="resetCode('p3-jq')">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper">
+          <textarea class="code-editor" id="p3-jq">$(function () {
+  // TODO: Set the status text
+
+  // TODO: Add class "highlight" to all .tag elements
+
+});
+</textarea>
+        </div>
+        <div class="status-bar">
+          <span class="line-info" data-editor="p3-jq">Ln 1, Col 1</span>
+          <span class="language">JavaScript</span>
+        </div>
+        <button class="run-button" onclick="runCode('p3-jq', 'p3-jq-output')">▶ Run Code</button>
+        <button class="clear-button" onclick="clearOutput('p3-jq-output')">Clear</button>
+        <div class="output-console" id="p3-jq-output"><span class="output-label">💻 Console Output:</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 5: jQuery #2 -->
+    <div class="slide" data-slide="5">
+      <h2>Practice 4 — jQuery: Click → Append to List</h2>
+
+      <div class="info-box">
+        <strong>Task:</strong>
+        <ul style="margin-top: 10px;">
+          <li>When the user clicks <strong>Add</strong>, read the input.</li>
+          <li>If empty: show <code>Type something</code> in the message area.</li>
+          <li>If not empty: append a new <code>&lt;li&gt;</code> to the list, clear the input, clear the message.</li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <strong style="color: var(--success);">Hint (Idea):</strong>
+        <ul style="margin-top: 10px;">
+          <li>Get value → validate → either show a message or append an <code>&lt;li&gt;</code>.</li>
+        </ul>
+        <strong style="color: var(--success);">Hint (Syntax):</strong>
+        <ul style="margin-top: 10px;">
+          <li><code>$("#jq2-addBtn").on("click", function(){ ... })</code></li>
+          <li><code>const text = $("#jq2-text").val().trim()</code></li>
+          <li><code>$("#jq2-list").append("&lt;li&gt;" + text + "&lt;/li&gt;")</code></li>
+        </ul>
+      </div>
+
+      <div class="sandbox" id="sandbox-jq2">
+        <div class="sandbox-title">🧪 Mini Sandbox <span class="muted">(click Add after you run once)</span></div>
+        <input class="mini-input" id="jq2-text" placeholder="Type a new item..." />
+        <button class="mini-btn" id="jq2-addBtn">Add</button>
+        <p id="jq2-msg" class="muted" style="margin-top: 10px;">(message area)</p>
+        <ul id="jq2-list" class="mini-list">
+          <li>Milk</li>
+          <li>Eggs</li>
+        </ul>
+      </div>
+
+      <div class="code-playground">
+        <span class="playground-label">PRACTICE 4: Complete TODOs</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 p4-jquery.js</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn" onclick="resetCode('p4-jq')">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper">
+          <textarea class="code-editor" id="p4-jq">$(function () {
+  $("#jq2-addBtn").on("click", function () {
+    const text = $("#jq2-text").val().trim();
+
+    // TODO: if text is empty -> show "Type something" in #jq2-msg
+
+    // TODO: else -> append <li>text</li> to #jq2-list
+    // TODO: clear input and clear message
+
+  });
+});
+</textarea>
+        </div>
+        <div class="status-bar">
+          <span class="line-info" data-editor="p4-jq">Ln 1, Col 1</span>
+          <span class="language">JavaScript</span>
+        </div>
+        <button class="run-button" onclick="runCode('p4-jq', 'p4-jq-output')">▶ Run Code</button>
+        <button class="clear-button" onclick="clearOutput('p4-jq-output')">Clear</button>
+        <div class="output-console" id="p4-jq-output"><span class="output-label">💻 Console Output:</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 6: API #1 (fetch then/catch) -->
+    <div class="slide" data-slide="6">
+      <h2>Practice 5 — Fetch GET with .then() / .catch()</h2>
+
+      <div class="info-box">
+        <strong>Task:</strong>
+        <ul style="margin-top: 10px;">
+          <li>Fetch user <code>/users/1</code> from JSONPlaceholder.</li>
+          <li>Parse JSON correctly.</li>
+          <li>Log: <code>Name:</code> and <code>Email:</code></li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <strong style="color: var(--success);">Hint (Idea):</strong>
+        <ul style="margin-top: 10px;">
+          <li>Fetch returns a Promise → first <code>.then</code> converts to JSON → second <code>.then</code> uses the data.</li>
+        </ul>
+        <strong style="color: var(--success);">Hint (Syntax):</strong>
+        <ul style="margin-top: 10px;">
+          <li><code>fetch(url).then(res =&gt; res.json()).then(data =&gt; ...).catch(err =&gt; ...)</code></li>
+        </ul>
+      </div>
+
+      <div class="code-playground">
+        <span class="playground-label">PRACTICE 5: Complete TODOs</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 p5-fetch-then.js</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn" onclick="resetCode('p5-fetch')">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper">
+          <textarea class="code-editor" id="p5-fetch">fetch("https://jsonplaceholder.typicode.com/users/1")
+  .then((res) => {
+    // TODO: return res.json();
+  })
+  .then((user) => {
+    if (!user) {
+      console.warn("TODO: You forgot to return res.json() in the first .then()!");
+      return;
+    }
+
+    // TODO: Log Name and Email
+    // console.log("Name:", user.name);
+    // console.log("Email:", user.email);
+  })
+  .catch((err) => {
+    console.error("Fetch failed:", err.message);
+  });
+</textarea>
+        </div>
+        <div class="status-bar">
+          <span class="line-info" data-editor="p5-fetch">Ln 1, Col 1</span>
+          <span class="language">JavaScript</span>
+        </div>
+        <button class="run-button" onclick="runCode('p5-fetch', 'p5-fetch-output')">▶ Run Code</button>
+        <button class="clear-button" onclick="clearOutput('p5-fetch-output')">Clear</button>
+        <div class="output-console" id="p5-fetch-output"><span class="output-label">💻 Console Output:</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 7: API #2 (fetch async/await) -->
+    <div class="slide" data-slide="7">
+      <h2>Practice 6 — Fetch + async/await + query params</h2>
+
+      <div class="info-box">
+        <strong>Task:</strong>
+        <ul style="margin-top: 10px;">
+          <li>Fetch posts for <code>userId=2</code> using a query string.</li>
+          <li>Parse JSON.</li>
+          <li>Log 2 lines: total count, and the first post’s title.</li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <strong style="color: var(--success);">Hint (Idea):</strong>
+        <ul style="margin-top: 10px;">
+          <li>In <code>async</code> functions, you can write async code like sync code (await Promise results).</li>
+        </ul>
+        <strong style="color: var(--success);">Hint (Syntax):</strong>
+        <ul style="margin-top: 10px;">
+          <li><code>const res = await fetch(url)</code></li>
+          <li><code>const data = await res.json()</code></li>
+          <li><code>".../posts?userId=2"</code></li>
+        </ul>
+      </div>
+
+      <div class="code-playground">
+        <span class="playground-label">PRACTICE 6: Complete TODOs</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 p6-fetch-async.js</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn" onclick="resetCode('p6-fetch')">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper">
+          <textarea class="code-editor" id="p6-fetch">async function getPostsForUser2() {
+  try {
+    const url = "https://jsonplaceholder.typicode.com/posts?userId=2";
+
+    let posts = null; // TODO: set this to the parsed JSON array
+
+    // TODO: fetch the url
+    // TODO: parse JSON and assign to posts
+
+    // Guard so starter code doesn't crash before you finish.
+    if (!Array.isArray(posts)) {
+      console.warn("TODO: Set 'posts' to the parsed JSON array (await res.json()).");
+      return;
+    }
+
+    console.log("Total posts:", posts.length);
+    console.log("First title:", posts[0]?.title);
+
+  } catch (err) {
+    console.error("Error:", err.message);
+  }
+}
+
+getPostsForUser2();
+</textarea>
+        </div>
+        <div class="status-bar">
+          <span class="line-info" data-editor="p6-fetch">Ln 1, Col 1</span>
+          <span class="language">JavaScript</span>
+        </div>
+        <button class="run-button" onclick="runCode('p6-fetch', 'p6-fetch-output')">▶ Run Code</button>
+        <button class="clear-button" onclick="clearOutput('p6-fetch-output')">Clear</button>
+        <div class="output-console" id="p6-fetch-output"><span class="output-label">💻 Console Output:</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 8: API #3 (axios POST) -->
+    <div class="slide" data-slide="8">
+      <h2>Practice 7 — Axios POST (Create)</h2>
+
+      <div class="info-box">
+        <strong>Task:</strong>
+        <ul style="margin-top: 10px;">
+          <li>Use <code>axios.post</code> to create a new post.</li>
+          <li>Send <code>title</code>, <code>body</code>, and <code>userId</code>.</li>
+          <li>Log: created <code>id</code> and the returned <code>title</code>.</li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <strong style="color: var(--success);">Hint (Idea):</strong>
+        <ul style="margin-top: 10px;">
+          <li>Axios automatically gives parsed JSON in <code>response.data</code>.</li>
+        </ul>
+        <strong style="color: var(--success);">Hint (Syntax):</strong>
+        <ul style="margin-top: 10px;">
+          <li><code>const res = await axios.post(url, payload)</code></li>
+          <li><code>console.log(res.data)</code></li>
+        </ul>
+      </div>
+
+      <div class="code-playground">
+        <span class="playground-label">PRACTICE 7: Complete TODOs</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 p7-axios-post.js</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn" onclick="resetCode('p7-axios')">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper">
+          <textarea class="code-editor" id="p7-axios">async function createPost() {
+  try {
+    const url = "https://jsonplaceholder.typicode.com/posts";
+
+    let response; // TODO: assign this using axios.post(...)
+
+    // TODO: call axios.post(url, { title: "...", body: "...", userId: 1 })
+
+    if (!response) {
+      console.warn("TODO: Call axios.post(...) and store the result in 'response'.");
+      return;
+    }
+
+    console.log("Created id:", response.data.id);
+    console.log("Title:", response.data.title);
+  } catch (err) {
+    console.error("Error:", err.message);
+  }
+}
+
+createPost();
+</textarea>
+        </div>
+        <div class="status-bar">
+          <span class="line-info" data-editor="p7-axios">Ln 1, Col 1</span>
+          <span class="language">JavaScript</span>
+        </div>
+        <button class="run-button" onclick="runCode('p7-axios', 'p7-axios-output')">▶ Run Code</button>
+        <button class="clear-button" onclick="clearOutput('p7-axios-output')">Clear</button>
+        <div class="output-console" id="p7-axios-output"><span class="output-label">💻 Console Output:</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 9: API #4 ($.ajax) -->
+    <div class="slide" data-slide="9">
+      <h2>Practice 8 — jQuery $.ajax GET (Callbacks)</h2>
+
+      <div class="info-box">
+        <strong>Task:</strong>
+        <ul style="margin-top: 10px;">
+          <li>Use <code>$.ajax</code> to fetch comments for <code>postId=1</code>.</li>
+          <li>In <code>success</code>, log: total comments, and first comment’s email.</li>
+          <li>In <code>error</code>, log a helpful message.</li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        <strong style="color: var(--success);">Hint (Idea):</strong>
+        <ul style="margin-top: 10px;">
+          <li>This is the "classic" callback style: success gets the data, error handles failure.</li>
+        </ul>
+        <strong style="color: var(--success);">Hint (Syntax):</strong>
+        <ul style="margin-top: 10px;">
+          <li><code>$.ajax({ url: "...", success: function(data){...}, error: function(xhr){...} })</code></li>
+        </ul>
+      </div>
+
+      <div class="code-playground">
+        <span class="playground-label">PRACTICE 8: Complete TODOs</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 p8-ajax.js</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn" onclick="resetCode('p8-ajax')">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper">
+          <textarea class="code-editor" id="p8-ajax">$.ajax({
+  url: "https://jsonplaceholder.typicode.com/comments?postId=1",
+  method: "GET",
+  success: function (comments) {
+    // TODO: log total comments
+    // TODO: log first comment email
+    // console.log("Total:", comments.length);
+    // console.log("First email:", comments[0].email);
+  },
+  error: function (xhr) {
+    console.error("Request failed:", xhr.status);
+  }
+});
+</textarea>
+        </div>
+        <div class="status-bar">
+          <span class="line-info" data-editor="p8-ajax">Ln 1, Col 1</span>
+          <span class="language">JavaScript</span>
+        </div>
+        <button class="run-button" onclick="runCode('p8-ajax', 'p8-ajax-output')">▶ Run Code</button>
+        <button class="clear-button" onclick="clearOutput('p8-ajax-output')">Clear</button>
+        <div class="output-console" id="p8-ajax-output"><span class="output-label">💻 Console Output:</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Navigation -->
+  <div class="navigation">
+    <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+    <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+  </div>
+
+  <!-- External libs -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <!-- CodeMirror JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = document.querySelectorAll('.slide').length;
+    const editors = {};
+    const originalCode = {};
+
+    document.getElementById('totalSlides').textContent = totalSlides;
+
+    function initializeEditors() {
+      document.querySelectorAll('.code-editor').forEach(textarea => {
+        const id = textarea.id;
+        originalCode[id] = textarea.value;
+
+        const editor = CodeMirror.fromTextArea(textarea, {
+          mode: 'javascript',
+          theme: 'eclipse',
+          lineNumbers: true,
+          autoCloseBrackets: true,
+          indentUnit: 4,
+          tabSize: 4,
+          lineWrapping: true,
+          styleActiveLine: true,
+          extraKeys: {
+            'Tab': cm => cm.somethingSelected() ? cm.indentSelection('add') : cm.replaceSelection('    ', 'end'),
+            'Ctrl-Enter': () => runCode(id, id + '-output'),
+            'Cmd-Enter': () => runCode(id, id + '-output'),
+            'Ctrl-/': 'toggleComment',
+            'Cmd-/': 'toggleComment'
+          }
+        });
+
+        editors[id] = editor;
+
+        editor.on('cursorActivity', () => {
+          const cursor = editor.getCursor();
+          const lineInfo = document.querySelector(`.line-info[data-editor="${id}"]`);
+          if (lineInfo) lineInfo.textContent = `Ln ${cursor.line + 1}, Col ${cursor.ch + 1}`;
+        });
+      });
+    }
+
+    function refreshEditorsInActiveSlide() {
+      const active = document.querySelector('.slide.active');
+      if (!active) return;
+      active.querySelectorAll('textarea.code-editor').forEach(t => {
+        const id = t.id;
+        if (editors[id]) editors[id].refresh();
+      });
+    }
+
+    function showSlide(n) {
+      const slides = document.querySelectorAll('.slide');
+      if (n > totalSlides) currentSlide = totalSlides;
+      if (n < 1) currentSlide = 1;
+
+      slides.forEach(slide => slide.classList.remove('active'));
+      slides[currentSlide - 1].classList.add('active');
+
+      document.getElementById('currentSlide').textContent = currentSlide;
+      document.getElementById('prevBtn').disabled = (currentSlide === 1);
+      document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(refreshEditorsInActiveSlide, 120);
+    }
+
+    function changeSlide(direction) {
+      currentSlide += direction;
+      showSlide(currentSlide);
+    }
+
+    document.addEventListener('keydown', e => {
+      if (document.activeElement?.closest?.('.CodeMirror')) return;
+      if (e.key === 'ArrowLeft') changeSlide(-1);
+      else if (e.key === 'ArrowRight') changeSlide(1);
+    });
+
+    function safeStringify(arg) {
+      if (typeof arg === 'string') return arg;
+      if (typeof arg !== 'object' || arg === null) return String(arg);
+      try { return JSON.stringify(arg, null, 2); } catch { return String(arg); }
+    }
+
+    function makeTrackedThenable(thenable, pending) {
+      if (!thenable || typeof thenable.then !== 'function') return thenable;
+      pending.add(thenable);
+      return new Proxy(thenable, {
+        get(target, prop) {
+          if (['then', 'catch', 'finally'].includes(prop)) {
+            return (...args) => makeTrackedThenable(target[prop](...args), pending);
+          }
+          return Reflect.get(target, prop);
+        }
+      });
+    }
+
+    async function drainPending(pending, timeout) {
+      const start = Date.now();
+      let lastSize = -1;
+      while (Date.now() - start < timeout) {
+        if (pending.size === 0) break;
+        if (pending.size === lastSize) {
+          await new Promise(r => setTimeout(r, 50));
+          if (pending.size === lastSize) break;
+        }
+        lastSize = pending.size;
+        await Promise.race([
+          Promise.allSettled([...pending]),
+          new Promise(r => setTimeout(r, 500))
+        ]);
+      }
+    }
+
+    async function runCode(editorId, outputId) {
+      const editor = editors[editorId];
+      const code = editor ? editor.getValue() : document.getElementById(editorId).value;
+      const output = document.getElementById(outputId);
+      output.innerHTML = '<span class="output-label">💻 Console Output:</span><br>';
+
+      const logs = [];
+      const origLog = console.log, origWarn = console.warn, origError = console.error;
+      console.log = (...a) => { logs.push({ type: 'log', content: a.map(safeStringify).join(' ') }); origLog(...a); };
+      console.warn = (...a) => { logs.push({ type: 'warn', content: a.map(safeStringify).join(' ') }); origWarn(...a); };
+      console.error = (...a) => { logs.push({ type: 'error', content: a.map(safeStringify).join(' ') }); origError(...a); };
+
+      const pending = new Set();
+      const origFetch = window.fetch;
+      const restore = [];
+
+      try {
+        // Track fetch
+        if (typeof window.fetch === 'function') {
+          window.fetch = (...a) => makeTrackedThenable(origFetch(...a), pending);
+          restore.push(() => window.fetch = origFetch);
+        }
+
+        // Track $.ajax
+        if (window.$ && $.ajax) {
+          const origAjax = $.ajax;
+          $.ajax = (...a) => makeTrackedThenable(origAjax(...a), pending);
+          restore.push(() => $.ajax = origAjax);
+        }
+
+        // Track axios
+        if (window.axios) {
+          const methods = ['get', 'post', 'put', 'delete'];
+          const saved = {};
+          methods.forEach(m => {
+            if (typeof axios[m] === 'function') {
+              saved[m] = axios[m].bind(axios);
+              axios[m] = (...args) => makeTrackedThenable(saved[m](...args), pending);
+            }
+          });
+          restore.push(() => Object.entries(saved).forEach(([m, fn]) => axios[m] = fn));
+        }
+
+        const ret = new Function(code)();
+        makeTrackedThenable(ret, pending);
+        await drainPending(pending, 7000);
+
+        output.innerHTML += logs.length
+          ? logs.map(l => `<span class="${l.type === 'error' ? 'error' : l.type === 'warn' ? 'warn' : ''}">${l.content}</span>`).join('<br>')
+          : '<span style="color:#D4940C;">✓ Code executed (no output)</span>';
+      } catch (e) {
+        output.innerHTML += `<span class="error">❌ Error: ${e.message}</span>`;
+      } finally {
+        console.log = origLog; console.warn = origWarn; console.error = origError;
+        restore.forEach(fn => fn());
+      }
+    }
+
+    function clearOutput(outputId) {
+      document.getElementById(outputId).innerHTML = '<span class="output-label">💻 Console Output:</span>';
+    }
+
+    function resetCode(editorId) {
+      editors[editorId]?.setValue(originalCode[editorId] || '');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeEditors();
+      showSlide(currentSlide);
+    });
+  </script>
+</body>
+</html>

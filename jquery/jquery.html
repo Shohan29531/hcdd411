@@ -171,6 +171,16 @@
             font-weight: 600;
         }
 
+        .ide-toolbar .file-tab.inactive {
+            background: rgba(0, 0, 0, 0.15);
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .ide-toolbar .file-tab.inactive:hover {
+            background: rgba(0, 0, 0, 0.25);
+        }
+
         .ide-toolbar .toolbar-actions {
             margin-left: auto;
             display: flex;
@@ -601,19 +611,72 @@
             color: var(--text-secondary);
             margin-top: 5px;
         }
+
+        /* Split editor layout */
+        .split-editor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .split-editor-container .code-playground {
+            margin: 0;
+        }
+
+        @media (max-width: 900px) {
+            .split-editor-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Live preview iframe */
+        .live-preview-frame {
+            width: 100%;
+            min-height: 200px;
+            border: none;
+            background: white;
+            border-radius: 8px;
+        }
+
+        /* Verbose code highlight */
+        .verbose-highlight {
+            background: rgba(220, 38, 38, 0.1);
+            border: 2px dashed var(--error);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .verbose-highlight code {
+            background: rgba(220, 38, 38, 0.15);
+            color: #991B1B;
+        }
+
+        .concise-highlight {
+            background: rgba(4, 120, 87, 0.1);
+            border: 2px dashed var(--success);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .concise-highlight code {
+            background: rgba(4, 120, 87, 0.15);
+            color: #065F46;
+        }
     </style>
 </head>
 <body>
     <div class="penn-state-badge">HCDD 411</div>
     <div class="slide-indicator">
-        <span id="currentSlide">1</span> / <span id="totalSlides">14</span>
+        <span id="currentSlide">1</span> / <span id="totalSlides">16</span>
     </div>
 
     <div class="presentation-container">
         <!-- Slide 1: Title -->
         <div class="slide active" style="background: #ffffff !important;" data-slide="1">
             <h1>jQuery</h1>
-            <!-- <p class="subtitle">Understanding the Library That Shaped Modern Web Development</p> -->
             <h2>Md Touhidul Islam</h2>
             <div class="warning-box" style="margin-top: 40px;">
                 While jQuery is <strong>not recommended for new projects</strong>, you'll encounter it in:
@@ -624,38 +687,193 @@
             </div>
         </div>
 
-        
 
-        <!-- Slide 2: What You'll Learn -->
-        <div class="slide" style="background: #ffffff !important;" data-slide="2">
-            <h2>What You'll Learn</h2>
-            <div class="example-grid">
-                <div class="example-card">
-                    <h3>📜 History & Context</h3>
-                    <p>Why jQuery existed and why it declined</p>
+        <!-- NEW Slide 5: HTML + CSS Basics -->
+        <div class="slide" style="background: #ffffff !important;" data-slide="5">
+            <h2>Quick Review: HTML + CSS</h2>
+            <p class="subtitle">How structure and style work together</p>
+
+            <div class="info-box">
+                <strong>Remember:</strong> HTML defines the <em>structure</em> (what elements exist), and CSS defines the <em>style</em> (how they look). They're separate but work together. Try editing both below!
+            </div>
+
+            <div class="split-editor-container">
+                <div class="code-playground">
+                    <span class="playground-label">HTML</span>
+                    <div class="ide-toolbar">
+                        <div class="file-tab">
+                            <span>📄</span>
+                            <span>index.html</span>
+                        </div>
+                        <div class="toolbar-actions">
+                            <button class="toolbar-btn" onclick="resetCode('html-css-html')">🔄 Reset</button>
+                        </div>
+                    </div>
+                    <div class="editor-wrapper">
+                        <textarea class="code-editor" id="html-css-html" data-mode="htmlmixed"><div class="card">
+  <h2 class="title">Hello World</h2>
+  <p class="description">
+    This is a simple card component.
+  </p>
+  <button id="my-button">Click Me</button>
+</div></textarea>
+                    </div>
+                    <div class="status-bar">
+                        <span class="line-info" data-editor="html-css-html">Ln 1, Col 1</span>
+                        <span class="language">HTML</span>
+                    </div>
                 </div>
-                <div class="example-card">
-                    <h3>🎯 Selectors</h3>
-                    <p>The famous $() syntax</p>
-                </div>
-                <div class="example-card">
-                    <h3>🔧 DOM Manipulation</h3>
-                    <p>Reading and modifying HTML elements</p>
-                </div>
-                <div class="example-card">
-                    <h3>⚡ Events</h3>
-                    <p>Handling user interactions</p>
-                </div>
-                <div class="example-card">
-                    <h3>🔄 jQuery vs Vanilla JS</h3>
-                    <p>Side-by-side comparisons</p>
-                </div>
-                <div class="example-card">
-                    <h3>🛠️ Practical Skills</h3>
-                    <p>Reading and maintaining legacy code</p>
+
+                <div class="code-playground">
+                    <span class="playground-label">CSS</span>
+                    <div class="ide-toolbar">
+                        <div class="file-tab">
+                            <span>🎨</span>
+                            <span>styles.css</span>
+                        </div>
+                        <div class="toolbar-actions">
+                            <button class="toolbar-btn" onclick="resetCode('html-css-css')">🔄 Reset</button>
+                        </div>
+                    </div>
+                    <div class="editor-wrapper">
+                        <textarea class="code-editor" id="html-css-css" data-mode="css">.card {
+  background: #f0f9ff;
+  border: 2px solid #3b82f6;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 300px;
+}
+
+.title {
+  color: #1e40af;
+  margin: 0 0 10px 0;
+}
+
+.description {
+  color: #475569;
+  line-height: 1.5;
+}
+
+#my-button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+#my-button:hover {
+  background: #2563eb;
+}</textarea>
+                    </div>
+                    <div class="status-bar">
+                        <span class="line-info" data-editor="html-css-css">Ln 1, Col 1</span>
+                        <span class="language">CSS</span>
+                    </div>
                 </div>
             </div>
+
+            <button class="run-button" onclick="updateHtmlCssPreview()">
+                <span>▶</span> Update Preview
+            </button>
+
+            <div class="live-preview" id="html-css-preview">
+                <span class="live-preview-label">🎨 Live Preview:</span>
+                <div id="html-css-preview-content">
+                    <style id="html-css-preview-style"></style>
+                    <div id="html-css-preview-html"></div>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <strong>💡 Try this:</strong> Change the <code>.card</code> background color, or change the button text in the HTML. Hit "Update Preview" to see your changes!
+            </div>
         </div>
+
+        <!-- NEW Slide 6: Vanilla JS DOM Manipulation (The Problem) -->
+        <div class="slide" style="background: #ffffff !important;" data-slide="6">
+            <h2>The Problem: Vanilla JS is Verbose</h2>
+            <p class="subtitle">Changing content dynamically requires a lot of code</p>
+
+            <div class="info-box">
+                <strong>The Challenge:</strong> What if we want to change content <em>after</em> the page loads? We need JavaScript to manipulate the DOM. But vanilla JS can be... wordy.
+            </div>
+
+            <h3>Example: Change text, style, and add an element</h3>
+
+            <div class="code-playground">
+                <span class="playground-label">TRY IT: Vanilla JS</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">
+                        <span>📄</span>
+                        <span>script.js</span>
+                    </div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('vanilla-js')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="vanilla-js">// Change the heading text
+var heading = document.getElementById("main-heading");
+heading.textContent = "Updated with Vanilla JS!";
+
+// Change all items - need a loop!
+var items = document.getElementsByClassName("item");
+for (var i = 0; i < items.length; i++) {
+    items[i].style.color = "blue";
+    items[i].style.fontWeight = "bold";
+}
+
+// Create and add a new element (so many steps!)
+var newPara = document.createElement("p");
+newPara.textContent = "Added dynamically!";
+newPara.style.background = "#10B981";
+newPara.style.color = "white";
+newPara.style.padding = "10px";
+newPara.style.borderRadius = "5px";
+newPara.style.marginTop = "10px";
+document.getElementById("vanilla-container").appendChild(newPara);
+
+console.log("Done! But that was a lot of code...");</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="vanilla-js">Ln 1, Col 1</span>
+                    <span class="language">JavaScript (Vanilla)</span>
+                </div>
+                <button class="run-button" onclick="runCodeWithPreview('vanilla-js', 'vanilla-js-output', 'vanilla-js-preview')">
+                    <span>▶</span> Run Code
+                </button>
+                <button class="clear-button" onclick="resetPreview('vanilla-js-preview', 'vanilla-js-preview-html')">Reset Preview</button>
+                <div class="output-console" id="vanilla-js-output">
+                    <span class="output-label">💻 Console Output:</span>
+                </div>
+                <div class="live-preview" id="vanilla-js-preview">
+                    <span class="live-preview-label">🎨 Live Preview:</span>
+                    <div id="vanilla-js-preview-html">
+                        <div id="vanilla-container">
+                            <h3 id="main-heading">Original Heading</h3>
+                            <ul style="padding-left: 20px;">
+                                <li class="item">Item One</li>
+                                <li class="item">Item Two</li>
+                                <li class="item">Item Three</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>⚠️ Notice the pain points:</strong>
+                <ul style="margin-bottom: 0;">
+                    <li><code>document.getElementById()</code> and <code>document.getElementsByClassName()</code> — long method names</li>
+                    <li>Need a <code>for</code> loop just to change multiple elements</li>
+                    <li>Creating elements requires multiple lines: <code>createElement</code>, set properties, then <code>appendChild</code></li>
+                </ul>
+            </div>
+        </div>
+
 
         <!-- Slide 3: What is jQuery? -->
         <div class="slide" style="background: #ffffff !important;" data-slide="3">
@@ -701,8 +919,8 @@
             </div>
         </div>
 
-        <!-- Slide 3: About jQuery - History -->
-        <div class="slide" style="background: #ffffff !important;" data-slide="3">
+        <!-- Slide 4: About jQuery - History -->
+        <div class="slide" style="background: #ffffff !important;" data-slide="4">
             <h2>The Rise and Fall of jQuery</h2>
             
             <div class="timeline">
@@ -734,8 +952,8 @@
             </div>
         </div>
 
-        <!-- Slide 4: Including jQuery -->
-        <div class="slide" style="background: #ffffff !important;" data-slide="4">
+        <!-- Slide 7: Including jQuery -->
+        <div class="slide" style="background: #ffffff !important;" data-slide="7">
             <h2>Including jQuery</h2>
             
             <h3>Option 1: CDN (Recommended)</h3>
@@ -771,10 +989,19 @@
                 <strong>💡 The $ Symbol</strong><br>
                 <code>$</code> is just an alias for <code>jQuery</code>. When you see <code>$("...")</code> in code, that's jQuery!
             </div>
+
+            <div class="concise-highlight">
+                <strong>Compare: The same task with jQuery</strong>
+                <pre style="margin: 10px 0; font-family: 'Space Mono', monospace; font-size: 0.9em; line-height: 1.6;"><code>// All that vanilla JS... becomes this:
+$("#main-heading").text("New Title!");
+$(".item").css({"color": "blue", "font-weight": "bold"});
+$("#container").append("&lt;p style='background:#10B981;color:white;padding:10px'&gt;Added!&lt;/p&gt;");</code></pre>
+                <p style="margin: 10px 0 0 0; color: var(--success);"><strong>3 lines instead of 15+!</strong> That's the power of jQuery.</p>
+            </div>
         </div>
 
-        <!-- Slide 5: Selectors - The Core -->
-        <div class="slide" style="background: #ffffff !important;" data-slide="5">
+        <!-- Slide 8: Selectors - The Core -->
+        <div class="slide" style="background: #ffffff !important;" data-slide="8">
             <h2>jQuery Selectors</h2>
             <p class="subtitle">The foundation of jQuery - selecting elements</p>
 
@@ -857,8 +1084,8 @@ console.log("Found items:", $(".demo-item").length);</textarea>
             </div>
         </div>
 
-<!-- Slide 6: DOM Manipulation - Content -->
-        <div class="slide" style="background: #ffffff !important;" data-slide="6">
+        <!-- Slide 9: DOM Manipulation - Content -->
+        <div class="slide" style="background: #ffffff !important;" data-slide="9">
             <h2>DOM Manipulation - Content</h2>
             <p class="subtitle">Reading and changing element content</p>
             
@@ -933,8 +1160,8 @@ $("#name-input").val("Updated by jQuery!");</textarea>
             </div>
         </div>
 
-        <!-- Slide 7: DOM Manipulation - CSS & Classes -->
-        <div class="slide" style="background: #ffffff !important;" data-slide="7">
+        <!-- Slide 10: DOM Manipulation - CSS & Classes -->
+        <div class="slide" style="background: #ffffff !important;" data-slide="10">
             <h2>DOM Manipulation - Styling</h2>
             <p class="subtitle">Changing CSS and toggling classes</p>
             
@@ -1016,8 +1243,8 @@ $("#toggle-box").toggleClass("active");</textarea>
             </div>
         </div>
 
-        <!-- Slide 8: DOM Manipulation - Elements -->
-        <div class="slide" style="background: #ffffff !important;" data-slide="8">
+        <!-- Slide 11: DOM Manipulation - Elements -->
+        <div class="slide" style="background: #ffffff !important;" data-slide="11">
             <h2>DOM Manipulation - Elements</h2>
             <p class="subtitle">Adding and removing elements from the page</p>
             
@@ -1101,8 +1328,196 @@ $("#element-container").append(newDiv);</textarea>
             </div>
         </div>
 
-        <!-- Slide 9: Event Handling -->
-        <div class="slide" style="background: #ffffff !important;" data-slide="9">
+<!-- PRACTICE SLIDE 1: After DOM Manipulation - Elements -->
+<!-- Covers: Selectors, Content, Styling -->
+<div class="slide" style="background: #ffffff !important;" data-slide="12">
+    <h2>🎯 Practice: Selectors & Styling</h2>
+    <p class="subtitle">Try it yourself! Complete the tasks below.</p>
+
+    <div class="info-box">
+        <strong>Your Tasks:</strong>
+        <ol style="margin-bottom: 0;">
+            <li>Select the element with ID <code>greeting</code> and change its text to "Hello, jQuery!"</li>
+            <li>Select ALL elements with class <code>box</code> and give them a blue background (<code>#3B82F6</code>)</li>
+            <li>Select the element with ID <code>special</code> and add the class <code>highlight</code></li>
+        </ol>
+    </div>
+
+    <div class="tip-box">
+        <strong>💡 Hints:</strong>
+        <ul style="margin-bottom: 0;">
+            <li>Use <code>$("#id")</code> to select by ID</li>
+            <li>Use <code>$(".class")</code> to select by class</li>
+            <li>Use <code>.text("...")</code> to change text</li>
+            <li>Use <code>.css("property", "value")</code> to change styles</li>
+            <li>Use <code>.addClass("className")</code> to add a class</li>
+        </ul>
+    </div>
+
+    <div class="code-playground">
+        <span class="playground-label">YOUR CODE</span>
+        <div class="ide-toolbar">
+            <div class="file-tab">
+                <span>📄</span>
+                <span>practice.js</span>
+            </div>
+            <div class="toolbar-actions">
+                <button class="toolbar-btn" onclick="resetCode('practice-1')">🔄 Reset</button>
+                <button class="toolbar-btn" onclick="showSolution('practice-1', 'solution-1')">👁️ Show Solution</button>
+            </div>
+        </div>
+        <div class="editor-wrapper">
+            <textarea class="code-editor" id="practice-1">// Task 1: Change the greeting text to "Hello, jQuery!"
+
+
+// Task 2: Give all .box elements a blue background (#3B82F6)
+
+
+// Task 3: Add the "highlight" class to #special
+
+</textarea>
+        </div>
+        <div class="status-bar">
+            <span class="line-info" data-editor="practice-1">Ln 1, Col 1</span>
+            <span class="language">JavaScript + jQuery</span>
+        </div>
+        <button class="run-button" onclick="runCodeWithPreview('practice-1', 'practice-1-output', 'practice-1-preview')">
+            <span>▶</span> Run Code
+        </button>
+        <button class="clear-button" onclick="resetPreview('practice-1-preview', 'practice-1-preview-html')">Reset Preview</button>
+        
+        <!-- Hidden solution -->
+        <div id="solution-1" style="display: none; margin-top: 15px; padding: 15px; background: rgba(4, 120, 87, 0.1); border-radius: 10px; border: 2px solid var(--success);">
+            <strong style="color: var(--success);">✅ Solution:</strong>
+            <pre style="margin: 10px 0 0 0; font-family: 'Space Mono', monospace; font-size: 0.9em;"><code>// Task 1
+$("#greeting").text("Hello, jQuery!");
+
+// Task 2
+$(".box").css("background", "#3B82F6");
+
+// Task 3
+$("#special").addClass("highlight");</code></pre>
+        </div>
+        
+        <div class="output-console" id="practice-1-output">
+            <span class="output-label">💻 Console Output:</span>
+        </div>
+        <div class="live-preview" id="practice-1-preview">
+            <span class="live-preview-label">🎨 Live Preview:</span>
+            <style>
+                .highlight { background: #F59E0B !important; color: white !important; font-weight: bold; }
+            </style>
+            <div id="practice-1-preview-html">
+                <h3 id="greeting" style="margin-bottom: 15px;">Welcome to the page</h3>
+                <div class="box" style="padding: 10px; margin: 5px 0; background: #eee; border-radius: 5px;">Box 1</div>
+                <div class="box" style="padding: 10px; margin: 5px 0; background: #eee; border-radius: 5px;">Box 2</div>
+                <div class="box" style="padding: 10px; margin: 5px 0; background: #eee; border-radius: 5px;">Box 3</div>
+                <div id="special" style="padding: 10px; margin: 10px 0; background: #ddd; border-radius: 5px;">I'm special!</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- PRACTICE SLIDE 2: After DOM Manipulation - Elements -->
+<!-- Covers: Content methods, Adding/Removing elements -->
+<div class="slide" style="background: #ffffff !important;" data-slide="13">
+    <h2>🎯 Practice: Content & Elements</h2>
+    <p class="subtitle">Manipulate content and add new elements!</p>
+
+    <div class="info-box">
+        <strong>Your Tasks:</strong>
+        <ol style="margin-bottom: 0;">
+            <li>Get the value from the input with ID <code>username</code> and log it to the console</li>
+            <li>Change the HTML inside <code>#message</code> to: <code>&lt;strong&gt;Updated!&lt;/strong&gt;</code></li>
+            <li>Add a new list item <code>&lt;li&gt;Item 4&lt;/li&gt;</code> to the end of <code>#todo-list</code></li>
+        </ol>
+    </div>
+
+    <div class="tip-box">
+        <strong>💡 Hints:</strong>
+        <ul style="margin-bottom: 0;">
+            <li>Use <code>.val()</code> to get input values</li>
+            <li>Use <code>.html("...")</code> to set HTML content (renders tags)</li>
+            <li>Use <code>.append("...")</code> to add content at the end</li>
+            <li>Use <code>console.log(...)</code> to output to the console</li>
+        </ul>
+    </div>
+
+    <div class="code-playground">
+        <span class="playground-label">YOUR CODE</span>
+        <div class="ide-toolbar">
+            <div class="file-tab">
+                <span>📄</span>
+                <span>practice.js</span>
+            </div>
+            <div class="toolbar-actions">
+                <button class="toolbar-btn" onclick="resetCode('practice-2')">🔄 Reset</button>
+                <button class="toolbar-btn" onclick="showSolution('practice-2', 'solution-2')">👁️ Show Solution</button>
+            </div>
+        </div>
+        <div class="editor-wrapper">
+            <textarea class="code-editor" id="practice-2">// Task 1: Get the username input value and log it
+
+
+// Task 2: Change #message HTML to "<strong>Updated!</strong>"
+
+
+// Task 3: Append a new item to #todo-list
+
+</textarea>
+        </div>
+        <div class="status-bar">
+            <span class="line-info" data-editor="practice-2">Ln 1, Col 1</span>
+            <span class="language">JavaScript + jQuery</span>
+        </div>
+        <button class="run-button" onclick="runCodeWithPreview('practice-2', 'practice-2-output', 'practice-2-preview')">
+            <span>▶</span> Run Code
+        </button>
+        <button class="clear-button" onclick="resetPreview('practice-2-preview', 'practice-2-preview-html')">Reset Preview</button>
+        
+        <!-- Hidden solution -->
+        <div id="solution-2" style="display: none; margin-top: 15px; padding: 15px; background: rgba(4, 120, 87, 0.1); border-radius: 10px; border: 2px solid var(--success);">
+            <strong style="color: var(--success);">✅ Solution:</strong>
+            <pre style="margin: 10px 0 0 0; font-family: 'Space Mono', monospace; font-size: 0.9em;"><code>// Task 1
+var name = $("#username").val();
+console.log("Username:", name);
+
+// Task 2
+$("#message").html("&lt;strong&gt;Updated!&lt;/strong&gt;");
+
+// Task 3
+$("#todo-list").append("&lt;li&gt;Item 4&lt;/li&gt;");</code></pre>
+        </div>
+        
+        <div class="output-console" id="practice-2-output">
+            <span class="output-label">💻 Console Output:</span>
+        </div>
+        <div class="live-preview" id="practice-2-preview">
+            <span class="live-preview-label">🎨 Live Preview:</span>
+            <div id="practice-2-preview-html">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Username:</label>
+                    <input type="text" id="username" value="john_doe" style="padding: 8px; width: 200px; border: 1px solid #ccc; border-radius: 5px;">
+                </div>
+                <div id="message" style="padding: 15px; background: #f0f0f0; border-radius: 5px; margin-bottom: 15px;">
+                    Original message here
+                </div>
+                <div>
+                    <strong>To-Do List:</strong>
+                    <ul id="todo-list" style="background: #f0f0f0; padding: 15px 15px 15px 35px; border-radius: 5px; margin-top: 10px;">
+                        <li>Item 1</li>
+                        <li>Item 2</li>
+                        <li>Item 3</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <!-- Slide 12: Event Handling -->
+        <div class="slide" style="background: #ffffff !important;" data-slide="12">
             <h2>Event Handling</h2>
             <p class="subtitle">Responding to user interactions</p>
             
@@ -1190,8 +1605,8 @@ $("#event-list li").click(function() {
             </div>
         </div>
 
-        <!-- Slide 10: Traversal Methods -->
-        <div class="slide" style="background: #ffffff !important;" data-slide="10">
+        <!-- Slide 13: Traversal Methods -->
+        <div class="slide" style="background: #ffffff !important;" data-slide="13">
             <h2>DOM Traversal</h2>
             <p class="subtitle">Navigating between related elements</p>
             
@@ -1275,8 +1690,8 @@ $("#nav-container").find("li").css("background", "#f0f0f0");</textarea>
             </div>
         </div>
 
-        <!-- Slide 11: Animations -->
-        <div class="slide" style="background: #ffffff !important;" data-slide="11">
+        <!-- Slide 14: Animations -->
+        <div class="slide" style="background: #ffffff !important;" data-slide="14">
             <h2>Animations</h2>
             <p class="subtitle">Built-in effects for showing, hiding, and transitioning</p>
             
@@ -1363,8 +1778,8 @@ $("#btn-slide").click(function() {
             </div>
         </div>
 
-        <!-- Slide 12: jQuery vs Modern JS -->
-        <div class="slide" style="background: #ffffff !important;" data-slide="12">
+        <!-- Slide 15: jQuery vs Modern JS -->
+        <div class="slide" style="background: #ffffff !important;" data-slide="15">
             <h2>jQuery vs Modern JavaScript</h2>
             <p class="subtitle">Side-by-side comparison — everything jQuery does, vanilla JS can do too</p>
 
@@ -1417,8 +1832,8 @@ $("#btn-slide").click(function() {
             </div>
         </div>
 
-        <!-- Slide 13: Document Ready -->
-        <div class="slide" style="background: #ffffff !important;" data-slide="13">
+        <!-- Slide 16: Document Ready -->
+        <div class="slide" style="background: #ffffff !important;" data-slide="16">
             <h2>Document Ready</h2>
             <p class="subtitle">Ensuring the DOM is loaded before your code runs</p>
             
@@ -1475,73 +1890,224 @@ $(function() {
             </div>
         </div>
 
-        <!-- Slide 14: Summary & Practice -->
-        <div class="slide" style="background: #ffffff !important;" data-slide="14">
-            <h2>Summary & Practice</h2>
-            <p class="subtitle">What you've learned and how to apply it</p>
+        <!-- PRACTICE SLIDE 3: Final comprehensive practice -->
+<!-- Covers: Events, Animations, Traversal -->
+<div class="slide" style="background: #ffffff !important;" data-slide="18">
+    <h2>🎯 Final Practice: Events & Interactions</h2>
+    <p class="subtitle">Make the page interactive!</p>
 
-            <div class="example-grid">
-                <div class="example-card">
-                    <h3>✅ Selectors</h3>
-                    <p><code>$("#id")</code>, <code>$(".class")</code>, <code>$("tag")</code></p>
-                </div>
-                <div class="example-card">
-                    <h3>✅ Content</h3>
-                    <p><code>.html()</code>, <code>.text()</code>, <code>.val()</code></p>
-                </div>
-                <div class="example-card">
-                    <h3>✅ Styling</h3>
-                    <p><code>.css()</code>, <code>.addClass()</code>, <code>.toggleClass()</code></p>
-                </div>
-                <div class="example-card">
-                    <h3>✅ Elements</h3>
-                    <p><code>.append()</code>, <code>.prepend()</code>, <code>.remove()</code></p>
-                </div>
-                <div class="example-card">
-                    <h3>✅ Events</h3>
-                    <p><code>.click()</code>, <code>.on()</code>, <code>$(this)</code></p>
-                </div>
-                <div class="example-card">
-                    <h3>✅ Animations</h3>
-                    <p><code>.show()</code>, <code>.fadeIn()</code>, <code>.slideToggle()</code></p>
-                </div>
+    <div class="info-box">
+        <strong>Your Tasks:</strong>
+        <ol style="margin-bottom: 0;">
+            <li>When <code>#color-btn</code> is clicked, change <code>#color-box</code> background to green (<code>#10B981</code>)</li>
+            <li>When <code>#fade-btn</code> is clicked, fade out <code>#fade-box</code></li>
+            <li>When any <code>.list-item</code> is clicked, add the class <code>selected</code> to it</li>
+        </ol>
+    </div>
+
+    <div class="tip-box">
+        <strong>💡 Hints:</strong>
+        <ul style="margin-bottom: 0;">
+            <li>Use <code>.click(function() { ... })</code> to handle clicks</li>
+            <li>Use <code>.fadeOut()</code> to fade an element</li>
+            <li>Use <code>$(this)</code> inside an event handler to refer to the clicked element</li>
+        </ul>
+    </div>
+
+    <div class="code-playground">
+        <span class="playground-label">YOUR CODE (run first, then interact)</span>
+        <div class="ide-toolbar">
+            <div class="file-tab">
+                <span>📄</span>
+                <span>practice.js</span>
             </div>
-
-            <h3>Practice: What does this code do?</h3>
-            <div class="code-playground">
-                <span class="playground-label">ANALYZE: Legacy jQuery Code</span>
-                <div class="ide-toolbar">
-                    <div class="file-tab">
-                        <span>📄</span>
-                        <span>legacy-code.js</span>
-                    </div>
-                </div>
-                <div class="editor-wrapper">
-                    <textarea class="code-editor" id="practice1" data-readonly="true">$(function() {
-    $(".menu-item").click(function() {
-        $(this).siblings().removeClass("active");
-        $(this).addClass("active");
-        var target = $(this).data("target");
-        $(".panel").hide();
-        $("#" + target).fadeIn(300);
-    });
-});</textarea>
-                </div>
-                <div class="status-bar">
-                    <span class="line-info">Can you explain each line?</span>
-                    <span class="language">jQuery</span>
-                </div>
-            </div>
-
-            <div class="tip-box" style="margin-top: 20px;">
-                <strong>🎉 You're ready!</strong><br>
-                You can now read and understand jQuery code in legacy projects. For new projects, use modern vanilla JS or frameworks like React, Vue, or Angular.
+            <div class="toolbar-actions">
+                <button class="toolbar-btn" onclick="resetCode('practice-3')">🔄 Reset</button>
+                <button class="toolbar-btn" onclick="showSolution('practice-3', 'solution-3')">👁️ Show Solution</button>
             </div>
         </div>
+        <div class="editor-wrapper">
+            <textarea class="code-editor" id="practice-3">// Task 1: When #color-btn is clicked, change #color-box to green
+
+
+// Task 2: When #fade-btn is clicked, fade out #fade-box
+
+
+// Task 3: When any .list-item is clicked, add "selected" class to it
+
+</textarea>
+        </div>
+        <div class="status-bar">
+            <span class="line-info" data-editor="practice-3">Ln 1, Col 1</span>
+            <span class="language">JavaScript + jQuery</span>
+        </div>
+        <button class="run-button" onclick="runCodeWithPreview('practice-3', 'practice-3-output', 'practice-3-preview')">
+            <span>▶</span> Run Code
+        </button>
+        <button class="clear-button" onclick="resetPreview('practice-3-preview', 'practice-3-preview-html')">Reset Preview</button>
         
+        <!-- Hidden solution -->
+        <div id="solution-3" style="display: none; margin-top: 15px; padding: 15px; background: rgba(4, 120, 87, 0.1); border-radius: 10px; border: 2px solid var(--success);">
+            <strong style="color: var(--success);">✅ Solution:</strong>
+            <pre style="margin: 10px 0 0 0; font-family: 'Space Mono', monospace; font-size: 0.9em;"><code>// Task 1
+$("#color-btn").click(function() {
+    $("#color-box").css("background", "#10B981");
+});
+
+// Task 2
+$("#fade-btn").click(function() {
+    $("#fade-box").fadeOut();
+});
+
+// Task 3
+$(".list-item").click(function() {
+    $(this).addClass("selected");
+});</code></pre>
+        </div>
+        
+        <div class="output-console" id="practice-3-output">
+            <span class="output-label">💻 Console Output:</span>
+        </div>
+        <div class="live-preview" id="practice-3-preview">
+            <span class="live-preview-label">🎨 Live Preview (interact after running!):</span>
+            <style>
+                .selected { background: #3B82F6 !important; color: white !important; }
+            </style>
+            <div id="practice-3-preview-html">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button id="color-btn" style="padding: 10px 20px; cursor: pointer;">Change Color</button>
+                    <button id="fade-btn" style="padding: 10px 20px; cursor: pointer;">Fade Out</button>
+                </div>
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div id="color-box" style="width: 100px; height: 60px; background: #EF4444; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">Color</div>
+                    <div id="fade-box" style="width: 100px; height: 60px; background: #8B5CF6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">Fade</div>
+                </div>
+                <p style="margin-bottom: 10px; font-weight: 500;">Click items to select:</p>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li class="list-item" style="padding: 10px; background: #f0f0f0; margin: 5px 0; border-radius: 5px; cursor: pointer; transition: all 0.2s;">Apple</li>
+                    <li class="list-item" style="padding: 10px; background: #f0f0f0; margin: 5px 0; border-radius: 5px; cursor: pointer; transition: all 0.2s;">Banana</li>
+                    <li class="list-item" style="padding: 10px; background: #f0f0f0; margin: 5px 0; border-radius: 5px; cursor: pointer; transition: all 0.2s;">Cherry</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 
 
+<!-- PRACTICE SLIDE 4: Final comprehensive practice -->
+<!-- Covers: Combining multiple concepts -->
+<div class="slide" style="background: #ffffff !important;" data-slide="19">
+    <h2>🎯 Final Practice: Build a Mini Feature</h2>
+    <p class="subtitle">Combine everything you've learned!</p>
 
+    <div class="info-box">
+        <strong>Build a simple "Add to Cart" feature:</strong>
+        <ol style="margin-bottom: 0;">
+            <li>When <code>#add-btn</code> is clicked, get the text from <code>#product-name</code></li>
+            <li>Create a new list item with that product name</li>
+            <li>Append it to <code>#cart-list</code></li>
+            <li><strong>Bonus:</strong> Clear the input after adding</li>
+        </ol>
+    </div>
+
+    <div class="tip-box">
+        <strong>💡 Hints:</strong>
+        <ul style="margin-bottom: 0;">
+            <li>Use <code>.val()</code> to get input text</li>
+            <li>Use string concatenation: <code>"&lt;li&gt;" + variable + "&lt;/li&gt;"</code></li>
+            <li>Use <code>.append()</code> to add to the list</li>
+            <li>Use <code>.val("")</code> to clear an input</li>
+        </ul>
+    </div>
+
+    <div class="code-playground">
+        <span class="playground-label">YOUR CODE</span>
+        <div class="ide-toolbar">
+            <div class="file-tab">
+                <span>📄</span>
+                <span>practice.js</span>
+            </div>
+            <div class="toolbar-actions">
+                <button class="toolbar-btn" onclick="resetCode('practice-4')">🔄 Reset</button>
+                <button class="toolbar-btn" onclick="showSolution('practice-4', 'solution-4')">👁️ Show Solution</button>
+            </div>
+        </div>
+        <div class="editor-wrapper">
+            <textarea class="code-editor" id="practice-4">// When #add-btn is clicked:
+// 1. Get the product name from #product-name input
+// 2. Create a new <li> with that name
+// 3. Append it to #cart-list
+// 4. Bonus: Clear the input
+
+$("#add-btn").click(function() {
+    // Your code here...
+    
+});
+</textarea>
+        </div>
+        <div class="status-bar">
+            <span class="line-info" data-editor="practice-4">Ln 1, Col 1</span>
+            <span class="language">JavaScript + jQuery</span>
+        </div>
+        <button class="run-button" onclick="runCodeWithPreview('practice-4', 'practice-4-output', 'practice-4-preview')">
+            <span>▶</span> Run Code
+        </button>
+        <button class="clear-button" onclick="resetPreview('practice-4-preview', 'practice-4-preview-html')">Reset Preview</button>
+        
+        <!-- Hidden solution -->
+        <div id="solution-4" style="display: none; margin-top: 15px; padding: 15px; background: rgba(4, 120, 87, 0.1); border-radius: 10px; border: 2px solid var(--success);">
+            <strong style="color: var(--success);">✅ Solution:</strong>
+            <pre style="margin: 10px 0 0 0; font-family: 'Space Mono', monospace; font-size: 0.9em;"><code>$("#add-btn").click(function() {
+    // 1. Get the product name
+    var product = $("#product-name").val();
+    
+    // 2 & 3. Create and append new list item
+    $("#cart-list").append("&lt;li&gt;" + product + "&lt;/li&gt;");
+    
+    // 4. Clear the input
+    $("#product-name").val("");
+});</code></pre>
+        </div>
+        
+        <div class="output-console" id="practice-4-output">
+            <span class="output-label">💻 Console Output:</span>
+        </div>
+        <div class="live-preview" id="practice-4-preview">
+            <span class="live-preview-label">🎨 Live Preview (run code, then try adding products!):</span>
+            <div id="practice-4-preview-html">
+                <div style="background: #f8fafc; padding: 20px; border-radius: 10px; border: 2px solid #e2e8f0;">
+                    <h4 style="margin: 0 0 15px 0; color: #1e293b;">🛒 Shopping Cart</h4>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <input type="text" id="product-name" placeholder="Enter product name..." value="Laptop" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 5px;">
+                        <button id="add-btn" style="padding: 10px 20px; background: #3B82F6; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Add to Cart</button>
+                    </div>
+                    <div style="background: white; border-radius: 5px; padding: 10px;">
+                        <strong style="color: #64748b; font-size: 0.9em;">Cart Items:</strong>
+                        <ul id="cart-list" style="margin: 10px 0 0 0; padding-left: 25px;">
+                            <li>Keyboard</li>
+                            <li>Mouse</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ADD THIS JAVASCRIPT FUNCTION to the main script section -->
+<script>
+// Add this function to handle showing solutions
+function showSolution(practiceId, solutionId) {
+    const solution = document.getElementById(solutionId);
+    if (solution.style.display === 'none') {
+        solution.style.display = 'block';
+    } else {
+        solution.style.display = 'none';
+    }
+}
+</script>
 
     </div>
 
@@ -1555,6 +2121,7 @@ $(function() {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
@@ -1588,7 +2155,13 @@ $(function() {
                 const isReadOnly = textarea.dataset.readonly === 'true';
                 originalCode[id] = textarea.value;
                 
-                const mode = id === 'cdn-example' ? 'htmlmixed' : 'javascript';
+                // Determine mode based on data attribute or id
+                let mode = 'javascript';
+                if (textarea.dataset.mode) {
+                    mode = textarea.dataset.mode;
+                } else if (id === 'cdn-example') {
+                    mode = 'htmlmixed';
+                }
                 
                 const editor = CodeMirror.fromTextArea(textarea, {
                     mode: mode,
@@ -1670,6 +2243,11 @@ $(function() {
                     if (cm) cm.refresh();
                 });
             }, 100);
+
+            // Auto-update HTML/CSS preview when on that slide
+            if (currentSlide === 5) {
+                setTimeout(updateHtmlCssPreview, 200);
+            }
         }
 
         function changeSlide(direction) {
@@ -1761,6 +2339,36 @@ $(function() {
             const htmlContainer = document.getElementById(htmlContainerId);
             if (htmlContainer && originalPreviews[htmlContainerId]) {
                 htmlContainer.innerHTML = originalPreviews[htmlContainerId];
+            }
+        }
+
+        // HTML + CSS preview update function
+        function updateHtmlCssPreview() {
+            const htmlEditor = editors['html-css-html'];
+            const cssEditor = editors['html-css-css'];
+            
+            if (!htmlEditor || !cssEditor) return;
+            
+            const htmlCode = htmlEditor.getValue();
+            const cssCode = cssEditor.getValue();
+            
+            const styleEl = document.getElementById('html-css-preview-style');
+            const htmlEl = document.getElementById('html-css-preview-html');
+            
+            if (styleEl && htmlEl) {
+                // Scope CSS to prevent bleeding
+                const scopedCss = cssCode.replace(/([^{}]+)(\{)/g, (match, selector, brace) => {
+                    // Don't scope @-rules
+                    if (selector.trim().startsWith('@')) return match;
+                    // Add scoping prefix to each selector
+                    const scopedSelectors = selector.split(',').map(s => 
+                        `#html-css-preview-html ${s.trim()}`
+                    ).join(', ');
+                    return scopedSelectors + brace;
+                });
+                
+                styleEl.textContent = scopedCss;
+                htmlEl.innerHTML = htmlCode;
             }
         }
 

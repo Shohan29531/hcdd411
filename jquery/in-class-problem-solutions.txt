@@ -1,0 +1,68 @@
+===============================================
+JQUERY TUTORIAL - IN-CLASS PROBLEM SOLUTIONS
+===============================================
+
+
+-----------------------------------------------
+PRACTICE 1: Selectors & Styling
+-----------------------------------------------
+
+// Task 1: Change the greeting text to "Hello, jQuery!"
+$("#greeting").text("Hello, jQuery!");
+
+// Task 2: Give all .box elements a blue background (#3B82F6)
+$(".box").css("background", "#3B82F6");
+
+// Task 3: Add the "highlight" class to #special
+$("#special").addClass("highlight");
+
+
+-----------------------------------------------
+PRACTICE 2: Content & Elements
+-----------------------------------------------
+
+// Task 1: Get the username input value and log it
+var name = $("#username").val();
+console.log("Username:", name);
+
+// Task 2: Change #message HTML to "<strong>Updated!</strong>"
+$("#message").html("<strong>Updated!</strong>");
+
+// Task 3: Append a new item to #todo-list
+$("#todo-list").append("<li>Item 4</li>");
+
+
+-----------------------------------------------
+PRACTICE 3: Events & Interactions
+-----------------------------------------------
+
+// Task 1: When #color-btn is clicked, change #color-box to green
+$("#color-btn").click(function() {
+    $("#color-box").css("background", "#10B981");
+});
+
+// Task 2: When #fade-btn is clicked, fade out #fade-box
+$("#fade-btn").click(function() {
+    $("#fade-box").fadeOut();
+});
+
+// Task 3: When any .list-item is clicked, add "selected" class to it
+$(".list-item").click(function() {
+    $(this).addClass("selected");
+});
+
+
+-----------------------------------------------
+PRACTICE 4: Build a Mini Feature (Add to Cart)
+-----------------------------------------------
+
+$("#add-btn").click(function() {
+    // 1. Get the product name
+    var product = $("#product-name").val();
+    
+    // 2 & 3. Create and append new list item
+    $("#cart-list").append("<li>" + product + "</li>");
+    
+    // 4. Clear the input
+    $("#product-name").val("");
+});

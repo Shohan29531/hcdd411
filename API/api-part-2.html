@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCDD 411 - API (Part 2)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #3B7DD6;
+            --secondary: #5A6C7D;
+            --accent: #D4940C;
+            --code-bg: #F8F9FA;
+            --success: #059669;
+            --error: #DC2626;
+            --bg-gradient-start: #F0F4F8;
+            --bg-gradient-end: #E1E8ED;
+            --slide-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(59, 125, 214, 0.3);
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 140px 0 120px 0;
+        }
+
+        .presentation-container { width: 100%; min-height: 100vh; }
+
+        .slide {
+            width: 90%;
+            max-width: 1200px;
+            min-height: 400px;
+            background: var(--slide-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 60px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: none;
+            border: 2px solid var(--border-color);
+        }
+
+        .slide.active { opacity: 1; transform: translateX(0); display: block; }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 4em;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            line-height: 1.1;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 2.5em;
+            color: var(--accent);
+            margin-bottom: 30px;
+            letter-spacing: -1px;
+        }
+
+        h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            font-size: 1.5em;
+            color: var(--primary);
+            margin: 25px 0 15px 0;
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        .code-playground {
+            background: var(--code-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-playground::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 30px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 15px 15px 0 0;
+        }
+
+        .playground-label {
+            position: absolute;
+            top: 5px; left: 20px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9em;
+            color: white;
+            font-weight: 700;
+            z-index: 1;
+        }
+
+        .editor-wrapper {
+            margin-top: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+        }
+
+        .CodeMirror {
+            font-family: 'Space Mono', monospace !important;
+            font-size: 0.95em !important;
+            height: auto !important;
+            min-height: 200px;
+            line-height: 1.6 !important;
+            border-radius: 10px;
+        }
+
+        .CodeMirror-scroll { min-height: 200px; }
+        .CodeMirror-gutters { border-right: 2px solid var(--border-color) !important; }
+
+        .ide-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px 10px 0 0;
+            margin-top: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .ide-toolbar .file-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--primary);
+            color: white;
+            border-radius: 6px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .ide-toolbar .toolbar-actions { margin-left: auto; display: flex; gap: 8px; }
+
+        .toolbar-btn {
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s ease;
+        }
+
+        .toolbar-btn:hover { background: rgba(0, 0, 0, 0.1); color: var(--text-primary); }
+
+        .run-button {
+            background: linear-gradient(135deg, var(--success), #10B981);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .run-button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); }
+
+        .clear-button {
+            background: linear-gradient(135deg, var(--secondary), #6B7280);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 15px;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .clear-button:hover { transform: translateY(-3px); }
+
+        .output-console {
+            background: #1F2937;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 120px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Space Mono', monospace;
+            color: #10B981;
+            border: 1px solid var(--success);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-console .error { color: #EF4444; }
+        .output-console .warn { color: #F59E0B; }
+
+        .output-label { color: #F59E0B; font-weight: 700; margin-bottom: 10px; }
+
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-button:hover { background: var(--secondary); transform: scale(1.05); }
+        .nav-button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .slide-indicator {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            background: var(--primary);
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 1em;
+            z-index: 1000;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .info-box {
+            background: rgba(212, 148, 12, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        .tip-box {
+            background: rgba(5, 150, 105, 0.1);
+            border-left: 4px solid var(--success);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        .warning-box {
+            background: rgba(220, 38, 38, 0.1);
+            border-left: 4px solid var(--error);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        ul { margin: 20px 0; padding-left: 30px; }
+        li { margin: 12px 0; font-size: 1.1em; line-height: 1.6; }
+        p { font-size: 1.1em; line-height: 1.6; }
+
+        code {
+            font-family: 'Space Mono', monospace;
+            background: rgba(59, 125, 214, 0.15);
+            padding: 3px 8px;
+            border-radius: 5px;
+            color: var(--primary);
+        }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .example-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .penn-state-badge {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 1.2em;
+            color: var(--primary);
+            z-index: 1000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 15px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 0 0 10px 10px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .status-bar .language { color: var(--primary); font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="penn-state-badge">HCDD 411</div>
+    <div class="slide-indicator">
+        <span id="currentSlide">1</span> / <span id="totalSlides">0</span>
+    </div>
+
+    <div class="presentation-container">
+
+        <!-- Slide 1 -->
+        <div class="slide active" data-slide="1">
+            <h1>WORKING WITH APIs - Part 2</h1>
+            <h2>Md Touhidul Islam</h2>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="slide" data-slide="2">
+            <h2>Summary of Part 2</h2>
+            <p>In Part 1, you learned HTTP verbs and used <code>$.ajax</code> with <code>success</code>/<code>error</code> callbacks.</p>
+
+            <div class="info-box">
+                <strong>Part 2 goal:</strong>
+                <ul style="margin-top: 10px;">
+                    <li>Keep the same HTTP ideas… but write API code that is <strong>easier to read</strong> and <strong>easier to chain</strong>.</li>
+                    <li>Learn the modern tools you’ll see in real projects: <strong>Fetch</strong> and <strong>Axios</strong>.</li>
+                </ul>
+            </div>
+
+            <div class="tip-box">
+                <strong style="color: var(--success);">Today’s roadmap (in order):</strong>
+                <ul style="margin-top: 10px;">
+                    <li><strong>Problem:</strong> chaining multiple API calls with callbacks gets messy</li>
+                    <li><strong>Bridge concept:</strong> Promises (what Fetch/Axios return)</li>
+                    <li><strong>Default tool:</strong> Fetch (built-in) ✅</li>
+                    <li><strong>Cleanest style:</strong> Fetch + <code>async/await</code></li>
+                    <li><strong>Optional tool:</strong> Axios (convenience library)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="slide" data-slide="3">
+            <h2>The Problem: Callback Hell</h2>
+            <p>When requests depend on earlier results, callbacks often get nested.</p>
+
+            <div class="warning-box">
+                <strong>Why this hurts:</strong>
+                <ul style="margin-top: 10px;">
+                    <li>Hard to read (deep indentation)</li>
+                    <li>Error handling becomes repetitive</li>
+                    <li>Harder to debug and modify</li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">BEFORE: Nested callbacks (Part 1 style)</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 callback-hell.js</div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="callback-hell">// Goal:
+// 1) Get user 1
+// 2) Get posts for that user
+// 3) Get comments for the first post
+// 4) Log how many comments
+
+$.ajax({
+    url: "https://jsonplaceholder.typicode.com/users/1",
+    method: "GET",
+    success: function(user) {
+        $.ajax({
+            url: "https://jsonplaceholder.typicode.com/posts?userId=" + user.id,
+            method: "GET",
+            success: function(posts) {
+                $.ajax({
+                    url: "https://jsonplaceholder.typicode.com/comments?postId=" + posts[0].id,
+                    method: "GET",
+                    success: function(comments) {
+                        console.log("Finally got comments:", comments.length);
+                    },
+                    error: function() {
+                        console.error("Comments request failed");
+                    }
+                });
+            },
+            error: function() {
+                console.error("Posts request failed");
+            }
+        });
+    },
+    error: function() {
+        console.error("User request failed");
+    }
+});
+                    </textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="language">JavaScript</span>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <strong style="color: var(--success);">Fix:</strong>
+                <p style="margin-top: 10px;">
+                    Modern JavaScript solves this with <strong>Promises</strong> (and <code>async/await</code>).
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="slide" data-slide="4">
+            <h2>The Bridge Concept: Promises</h2>
+
+            <div class="info-box">
+                <strong>One clean translation:</strong>
+                <ul style="margin-top: 10px;">
+                    <li><code>success: ...</code> in <code>$.ajax</code> ⟶ <code>.then(...)</code></li>
+                    <li><code>error: ...</code> in <code>$.ajax</code> ⟶ <code>.catch(...)</code></li>
+                    <li><strong>Fetch returns a Promise</strong> ✅</li>
+                    <li><strong>Axios returns a Promise</strong> ✅</li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">RUN: Fetch returns a Promise (timing)</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 promise-demo.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('promise-demo')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="promise-demo">console.log("1) Before fetch");
+
+fetch("https://jsonplaceholder.typicode.com/users/1")
+  .then((res) => res.json())
+  .then((user) => {
+    console.log("3) .then(): got user ->", user.name);
+  })
+  .catch((err) => {
+    console.error("Fetch failed:", err.message);
+  });
+
+console.log("2) After fetch (code keeps running)");</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="promise-demo">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('promise-demo', 'promise-demo-output')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('promise-demo-output')">Clear</button>
+                <div class="output-console" id="promise-demo-output">
+                    <span class="output-label">💻 Console Output:</span>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <strong style="color: var(--success);">Meaning:</strong>
+                <p style="margin-top: 10px;">
+                    A Promise is just: “I’ll give you the result later.” You attach your callback later with <code>.then</code>/<code>.catch</code>.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 5 -->
+        <div class="slide" data-slide="5">
+            <h2>How Everything Connects</h2>
+
+            <div class="info-box">
+                <strong>One mental model:</strong>
+                <ul style="margin-top: 10px;">
+                    <li><strong>Fetch</strong> = built-in HTTP client that returns a <strong>Promise</strong></li>
+                    <li><strong>Axios</strong> = library HTTP client that returns a <strong>Promise</strong></li>
+                    <li><code>async/await</code> = nicer syntax for the same Promise idea</li>
+                </ul>
+            </div>
+
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>Same meaning</h3>
+                    <ul>
+                        <li><code>promise.then(...).catch(...)</code></li>
+                        <li><code>async function(){ try { await ... } catch(e) {} }</code></li>
+                    </ul>
+                </div>
+                <div class="example-card">
+                    <h3>Why we care</h3>
+                    <ul>
+                        <li>Less nesting</li>
+                        <li>Cleaner flow</li>
+                        <li>Cleaner error handling</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <strong style="color: var(--success);">Next:</strong>
+                <p style="margin-top: 10px;">
+                    We start with <strong>Fetch</strong> first (because it’s built-in), then later show <strong>Axios</strong> as optional convenience.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 6 (Fetch intro moved earlier) -->
+        <div class="slide" data-slide="6">
+            <h2>Fetch API (Built-in) ✅</h2>
+            <ul>
+                <li>Fetch is built into modern browsers (no library needed)</li>
+                <li>Fetch returns a <strong>Promise</strong></li>
+                <li>You usually parse JSON manually: <code>await response.json()</code></li>
+            </ul>
+
+            <div class="tip-box">
+                <strong style="color: var(--success);">Course recommendation:</strong>
+                <p style="margin-top: 10px;">
+                    In this class, your default should be <strong>Fetch + async/await</strong>.
+                </p>
+            </div>
+
+            <div class="warning-box">
+                <strong style="color: var(--error);">Common gotcha:</strong>
+                <ul style="margin-top: 10px;">
+                    <li>Fetch does <strong>not</strong> automatically throw on 404/500</li>
+                    <li>You usually check: <code>if (!response.ok) throw new Error(...)</code></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 7 -->
+        <div class="slide" data-slide="7">
+            <h2>Fetch – GET Request</h2>
+            <div class="code-playground">
+                <span class="playground-label">RUN: Fetch GET</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 fetch-get.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('fetch-get')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="fetch-get">fetch("https://jsonplaceholder.typicode.com/users/1")
+  .then((response) => {
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      return response.json();
+  })
+  .then((data) => {
+      console.log("User name:", data.name);
+      console.log("User email:", data.email);
+  })
+  .catch((error) => {
+      console.error("Error:", error.message);
+  });</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="fetch-get">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('fetch-get', 'fetch-get-output')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('fetch-get-output')">Clear</button>
+                <div class="output-console" id="fetch-get-output">
+                    <span class="output-label">💻 Console Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8 -->
+        <div class="slide" data-slide="8">
+            <h2>Fetch – POST Request</h2>
+            <div class="code-playground">
+                <span class="playground-label">RUN: Fetch POST</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 fetch-post.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('fetch-post')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="fetch-post">fetch("https://jsonplaceholder.typicode.com/posts", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+      title: "My New Post",
+      body: "This is the content.",
+      userId: 1
+  })
+})
+  .then((response) => {
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      return response.json();
+  })
+  .then((data) => {
+      console.log("Created post id:", data.id);
+      console.log("Full response:", data);
+  })
+  .catch((error) => {
+      console.error("Error:", error.message);
+  });</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="fetch-post">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('fetch-post', 'fetch-post-output')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('fetch-post-output')">Clear</button>
+                <div class="output-console" id="fetch-post-output">
+                    <span class="output-label">💻 Console Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9 -->
+        <div class="slide" data-slide="9">
+            <h2>Fixing Callback Hell (Promise Chaining)</h2>
+            <p>Same workflow. Same endpoints. Now we chain steps instead of nesting.</p>
+
+            <div class="code-playground">
+                <span class="playground-label">AFTER: Promise chain (same example)</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 promise-chain.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('promise-chain')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="promise-chain">// SAME workflow as callback-hell, but with Promises (Fetch)
+// 1) Get user 1
+// 2) Get posts for that user
+// 3) Get comments for the first post
+// 4) Log how many comments
+
+fetch("https://jsonplaceholder.typicode.com/users/1")
+  .then((response) => response.json())
+  .then((user) => {
+    // Return the next Promise so the chain waits
+    return fetch("https://jsonplaceholder.typicode.com/posts?userId=" + user.id);
+  })
+  .then((response) => response.json())
+  .then((posts) => {
+    const firstPostId = posts[0].id;
+    // Return the next Promise so the chain waits
+    return fetch("https://jsonplaceholder.typicode.com/comments?postId=" + firstPostId);
+  })
+  .then((response) => response.json())
+  .then((comments) => {
+    console.log("Finally got comments:", comments.length);
+  })
+  .catch((error) => {
+    console.error("Something failed:", error.message);
+  });</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="promise-chain">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('promise-chain', 'promise-chain-output')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('promise-chain-output')">Clear</button>
+                <div class="output-console" id="promise-chain-output">
+                    <span class="output-label">💻 Console Output:</span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Key rule:</strong>
+                <ul style="margin-top: 10px;">
+                    <li>If you <code>return fetch(...)</code> inside a <code>.then</code>, the next <code>.then</code> waits for it.</li>
+                </ul>
+            </div>
+
+            <div class="tip-box">
+                <strong style="color: var(--success);">Next:</strong>
+                <p style="margin-top: 10px;">
+                    Promise chains work… but <code>async/await</code> reads like normal top-to-bottom code.
+                </p>
+            </div>
+        </div>
+
+<!-- Slide 10 (REPLACE your current Slide 10 with this) -->
+<div class="slide" data-slide="10">
+  <h2>async/await: Cleaner Promises</h2>
+
+  <p>
+    You already learned the core idea: <strong>a Promise means “result comes later.”</strong><br>
+    <code>async/await</code> is just a cleaner way to write Promise-based code (same concept, nicer syntax).
+  </p>
+
+  <div class="info-box">
+    <strong>Translation table</strong>
+    <ul style="margin-top: 10px;">
+      <li><code>.then(result =&gt; ...)</code> ⟶ <code>const result = await ...</code></li>
+      <li><code>.catch(err =&gt; ...)</code> ⟶ <code>try { ... } catch(err) { ... }</code></li>
+      <li><code>async</code> ⟶ “this function returns a Promise”</li>
+      <li><code>await</code> ⟶ “pause inside this async function until the Promise finishes”</li>
+    </ul>
+  </div>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <h3>Important detail</h3>
+      <ul>
+        <li><code>await</code> pauses <strong>only</strong> the async function</li>
+        <li>The rest of your page/script keeps running</li>
+        <li>This is why UI does not “freeze”</li>
+      </ul>
+    </div>
+
+    <div class="example-card">
+      <h3>Most common pattern</h3>
+      <ul>
+        <li>1) <code>await fetch(url)</code></li>
+        <li>2) check <code>response.ok</code></li>
+        <li>3) <code>await response.json()</code></li>
+        <li>4) use the data</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-playground">
+    <span class="playground-label">RUN: async/await GET (+ response.ok best practice)</span>
+    <div class="ide-toolbar">
+      <div class="file-tab">📄 async-basic.js</div>
+      <div class="toolbar-actions">
+        <button class="toolbar-btn" onclick="resetCode('async-basic')">🔄 Reset</button>
+      </div>
+    </div>
+    <div class="editor-wrapper">
+      <textarea class="code-editor" id="async-basic">async function getUserName() {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/users/1");
+
+    // Best practice: Fetch does NOT throw for 404/500 by default
+    if (!response.ok) throw new Error("HTTP " + response.status);
+
+    const user = await response.json();
+    console.log("3) Inside async: got user ->", user.name);
+  } catch (err) {
+    console.error("3) Inside async: error ->", err.message);
+  }
+}
+
+console.log("1) Before calling getUserName()");
+getUserName();
+console.log("2) After calling getUserName() (script continues)");</textarea>
+    </div>
+    <div class="status-bar">
+      <span class="line-info" data-editor="async-basic">Ln 1, Col 1</span>
+      <span class="language">JavaScript</span>
+    </div>
+    <button class="run-button" onclick="runCode('async-basic', 'async-basic-output')">▶ Run Code</button>
+    <button class="clear-button" onclick="clearOutput('async-basic-output')">Clear</button>
+    <div class="output-console" id="async-basic-output">
+      <span class="output-label">💻 Console Output:</span>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong style="color: var(--success);">Key takeaway:</strong>
+    <p style="margin-top: 10px;">
+      <code>async/await</code> doesn’t replace Promises — it’s just a cleaner way to write Promise code.
+    </p>
+  </div>
+</div>
+
+
+<!-- Slide 11 (REPLACE your current Slide 11 with this) -->
+<div class="slide" data-slide="11">
+  <h2>Same Workflow Again: async/await Version</h2>
+  <p>
+    This is the “cleanest” style because it reads top-to-bottom like normal code:
+    <strong>get user → get posts → get comments</strong>.
+  </p>
+
+  <div class="info-box">
+    <strong>Two upgrades compared to earlier:</strong>
+    <ul style="margin-top: 10px;">
+      <li>We use a small helper <code>fetchJson(url)</code> so we don’t repeat JSON parsing</li>
+      <li>We centralize the best practice <code>if (!res.ok) throw ...</code></li>
+    </ul>
+  </div>
+
+  <div class="code-playground">
+    <span class="playground-label">AFTER (cleanest): async/await + fetchJson helper</span>
+    <div class="ide-toolbar">
+      <div class="file-tab">📄 async-chain.js</div>
+      <div class="toolbar-actions">
+        <button class="toolbar-btn" onclick="resetCode('async-chain')">🔄 Reset</button>
+      </div>
+    </div>
+    <div class="editor-wrapper">
+      <textarea class="code-editor" id="async-chain">async function fetchJson(url) {
+  const res = await fetch(url);
+
+  // Best practice: turn HTTP failures into real JS errors
+  if (!res.ok) throw new Error("HTTP " + res.status + " for " + url);
+
+  return res.json(); // returns a Promise -> caller will await it
+}
+
+async function getCommentsCount() {
+  try {
+    // 1) Get user 1
+    const user = await fetchJson("https://jsonplaceholder.typicode.com/users/1");
+
+    // 2) Get posts for that user
+    const posts = await fetchJson("https://jsonplaceholder.typicode.com/posts?userId=" + user.id);
+
+    // 3) Get comments for the first post
+    const firstPostId = posts[0].id;
+    const comments = await fetchJson("https://jsonplaceholder.typicode.com/comments?postId=" + firstPostId);
+
+    // 4) Use the result
+    console.log("User:", user.name);
+    console.log("First post id:", firstPostId);
+    console.log("Finally got comments:", comments.length);
+  } catch (error) {
+    console.error("Something failed:", error.message);
+  }
+}
+
+getCommentsCount();</textarea>
+    </div>
+    <div class="status-bar">
+      <span class="line-info" data-editor="async-chain">Ln 1, Col 1</span>
+      <span class="language">JavaScript</span>
+    </div>
+    <button class="run-button" onclick="runCode('async-chain', 'async-chain-output')">▶ Run Code</button>
+    <button class="clear-button" onclick="clearOutput('async-chain-output')">Clear</button>
+    <div class="output-console" id="async-chain-output">
+      <span class="output-label">💻 Console Output:</span>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong style="color: var(--success);">Read it like English:</strong>
+<p style="
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: rgba(59, 125, 214, 0.10);
+  border-left: 4px solid var(--primary);
+  border-radius: 10px;
+  color: var(--text-primary);
+  line-height: 1.7;
+  font-size: 1.05em;
+">
+  <span style="display:block; font-weight: 800; color: var(--primary); margin-bottom: 8px;">
+    📦 Simple analogy
+  </span>
+
+  <span style="display:block; margin-bottom: 8px;">
+    <code style="background: rgba(59,125,214,0.18); color: var(--primary); padding: 3px 8px; border-radius: 6px; font-weight: 700;">await fetch(url)</code>
+    is like: <span style="font-weight: 600;">“The package has arrived at your door.”</span>
+  </span>
+
+  <span style="display:block;">
+    <code style="background: rgba(59,125,214,0.18); color: var(--primary); padding: 3px 8px; border-radius: 6px; font-weight: 700;">await res.json()</code>
+    is like: <span style="font-weight: 600;">“Open the package and read what’s inside.”</span>
+  </span>
+</p>
+
+  </div>
+</div>
+
+
+
+<!-- Slide 12 (REPLACE your current Slide 12 with this) -->
+<div class="slide" data-slide="12">
+  <h2>Axios: Optional Convenience Library</h2>
+
+  <div class="info-box">
+    <strong>First: What is HTTP?</strong>
+    <ul style="margin-top: 10px;">
+      <li><strong>HTTP</strong> = the “rules” for how a client (browser) talks to a server</li>
+      <li>An HTTP <strong>request</strong> contains: <code>method</code> + <code>URL</code> + <code>headers</code> + (optional) <code>body</code></li>
+      <li>An HTTP <strong>response</strong> contains: <code>status code</code> (200/404/500) + <code>headers</code> + <code>body</code> (often JSON)</li>
+    </ul>
+  </div>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <h3>Concrete example</h3>
+      <ul>
+        <li><strong>Request:</strong> <code>GET /users/1</code></li>
+        <li><strong>Response:</strong> <code>200 OK</code> + JSON body (user object)</li>
+        <li><strong>If missing:</strong> <code>404 Not Found</code></li>
+        <li><strong>If server breaks:</strong> <code>500 Server Error</code></li>
+      </ul>
+    </div>
+
+    <div class="example-card">
+      <h3>Where Fetch/Axios fit</h3>
+      <ul>
+        <li><strong>Fetch</strong> and <strong>Axios</strong> are just tools to send HTTP requests</li>
+        <li>They don’t change HTTP — they change <em>how you write JS</em></li>
+      </ul>
+    </div>
+  </div>
+
+  <p>
+    Axios is an HTTP client library that returns Promises too (so you can use <code>.then</code> OR <code>async/await</code>).
+  </p>
+
+  <div class="warning-box">
+    <strong style="color: var(--error);">Why the line “Axios is NOT a new async concept” is true:</strong>
+    <ul style="margin-top: 10px;">
+      <li>The <strong>async concept</strong> is: “the result comes later” → that’s a <strong>Promise</strong></li>
+      <li><strong>Fetch returns a Promise</strong></li>
+      <li><strong>Axios returns a Promise</strong></li>
+      <li>So Axios isn’t “new async” — it’s just another HTTP tool that uses Promises</li>
+    </ul>
+  </div>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <h3>✅ Why people like Axios</h3>
+      <ul>
+        <li>Auto JSON parsing (data is in <code>response.data</code>)</li>
+        <li>Cleaner syntax</li>
+        <li>Helpful error details</li>
+        <li>Interceptors (auth tokens)</li>
+      </ul>
+    </div>
+
+    <div class="example-card">
+      <h3>Fetch vs Axios (key difference)</h3>
+      <ul>
+        <li><strong>Fetch</strong>: you manually do <code>await res.json()</code></li>
+        <li><strong>Axios</strong>: JSON is already parsed in <code>response.data</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong style="color: var(--success);">Bottom line:</strong>
+    <p style="margin-top: 10px;">
+      HTTP stays the same. Your code style changes: callbacks → Promises → <code>async/await</code>.
+    </p>
+  </div>
+</div>
+
+
+
+        <!-- Slide 13 -->
+        <div class="slide" data-slide="13">
+            <h2>Axios – GET Request</h2>
+            <div class="code-playground">
+                <span class="playground-label">RUN: Axios GET</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 axios-get.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('axios-get')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="axios-get">axios.get("https://jsonplaceholder.typicode.com/users/1")
+  .then((response) => {
+      console.log("User name:", response.data.name);
+      console.log("User email:", response.data.email);
+  })
+  .catch((error) => {
+      console.error("Error:", error.message);
+  });</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="axios-get">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('axios-get', 'axios-get-output')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('axios-get-output')">Clear</button>
+                <div class="output-console" id="axios-get-output">
+                    <span class="output-label">💻 Console Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14 -->
+        <div class="slide" data-slide="14">
+            <h2>Axios – POST Request</h2>
+            <div class="code-playground">
+                <span class="playground-label">RUN: Axios POST</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 axios-post.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('axios-post')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="axios-post">axios.post("https://jsonplaceholder.typicode.com/posts", {
+  title: "My New Post",
+  body: "This is the content.",
+  userId: 1
+})
+  .then((response) => {
+      console.log("Created post id:", response.data.id);
+      console.log("Full response:", response.data);
+  })
+  .catch((error) => {
+      console.error("Error:", error.message);
+  });</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="axios-post">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('axios-post', 'axios-post-output')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('axios-post-output')">Clear</button>
+                <div class="output-console" id="axios-post-output">
+                    <span class="output-label">💻 Console Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15 (Now the explicit recommendation slide) -->
+        <div class="slide" data-slide="15">
+            <h2>So… Which One Should You Use?</h2>
+
+            <div class="tip-box">
+                <strong style="color: var(--success);">✅ Class default recommendation:</strong>
+                <p style="margin-top: 10px;">
+                    Use <strong>Fetch + async/await</strong> for this course.
+                    It’s built-in, teaches the real fundamentals, and avoids extra libraries.
+                </p>
+            </div>
+
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>Pick Fetch when…</h3>
+                    <ul>
+                        <li>You want <strong>no dependencies</strong></li>
+                        <li>You want to learn the fundamentals</li>
+                        <li>You’re writing typical browser API calls</li>
+                    </ul>
+                </div>
+                <div class="example-card">
+                    <h3>Pick Axios when…</h3>
+                    <ul>
+                        <li>You want convenience (less boilerplate)</li>
+                        <li>You need interceptors (auth tokens)</li>
+                        <li>You want consistent error behavior</li>
+                    </ul>
+                </div>
+                <div class="example-card">
+                    <h3>Avoid starting with…</h3>
+                    <ul>
+                        <li><code>$.ajax</code> for new code</li>
+                        <li>(Use it mainly for legacy jQuery projects)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Bottom line:</strong>
+                <p style="margin-top: 10px;">
+                    <strong>HTTP is the same.</strong> Only the JavaScript style changes:
+                    callbacks → Promises → async/await.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 16 (Fetch practice moved to be the “main” practice) -->
+        <div class="slide" data-slide="16">
+            <h2>Practice — Fetch with async/await (Recommended)</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top: 10px;">
+                    <li>Fetch post 1</li>
+                    <li>Parse JSON</li>
+                    <li>Log the title</li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE: Complete async function</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 practice-fetch.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('practice-fetch')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="practice-fetch">async function getPost() {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts/1");
+
+    // TODO: (Optional best practice) if (!response.ok) throw new Error("HTTP " + response.status);
+
+    // TODO: Parse JSON (await response.json())
+
+    // TODO: Log title (post.title)
+
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+}
+
+getPost();</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="practice-fetch">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('practice-fetch', 'practice-fetch-output')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('practice-fetch-output')">Clear</button>
+                <div class="output-console" id="practice-fetch-output">
+                    <span class="output-label">💻 Console Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17 (Axios practice as optional extension) -->
+        <div class="slide" data-slide="17">
+            <h2>Practice — Axios GET (Optional)</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top: 10px;">
+                    <li>Fetch user id 3</li>
+                    <li>Log name and company name</li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE: Complete the code</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 practice-axios.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('practice-axios')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="practice-axios">axios.get("https://jsonplaceholder.typicode.com/users/3")
+  .then((response) => {
+    // TODO: Log the user's name (response.data.name)
+
+    // TODO: Log the company name (response.data.company.name)
+
+  })
+  .catch((error) => {
+    console.error("Error:", error.message);
+  });</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="practice-axios">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('practice-axios', 'practice-axios-output')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('practice-axios-output')">Clear</button>
+                <div class="output-console" id="practice-axios-output">
+                    <span class="output-label">💻 Console Output:</span>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Slide 18 (ADD after Slide 17) -->
+<div class="slide" data-slide="18">
+  <h2>Practice — Fetch POST with async/await</h2>
+
+  <div class="info-box">
+    <strong>Your Task:</strong>
+    <ul style="margin-top: 10px;">
+      <li>Create a new post using <strong>Fetch + async/await</strong></li>
+      <li>Send JSON with <code>method</code>, <code>headers</code>, and <code>body</code></li>
+      <li>Parse JSON and log: <code>id</code> and <code>title</code></li>
+    </ul>
+  </div>
+
+  <div class="code-playground">
+    <span class="playground-label">PRACTICE: Complete the POST request</span>
+    <div class="ide-toolbar">
+      <div class="file-tab">📄 practice-fetch-post.js</div>
+      <div class="toolbar-actions">
+        <button class="toolbar-btn" onclick="resetCode('practice-fetch-post2')">🔄 Reset</button>
+      </div>
+    </div>
+    <div class="editor-wrapper">
+      <textarea class="code-editor" id="practice-fetch-post2">async function createPost() {
+  try {
+    const newPost = {
+      // TODO: Add a title (string)
+      // TODO: Add a body (string)
+      // TODO: Add a userId (number)
+    };
+
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+      // TODO: method: "POST"
+      // TODO: headers: { "Content-Type": "application/json" }
+      // TODO: body: JSON.stringify(newPost)
+    });
+
+    // TODO: Best practice: if (!response.ok) throw new Error("HTTP " + response.status);
+
+    // TODO: Parse JSON -> const data = await response.json();
+
+    // TODO: Log the new id and title:
+    // console.log("Created id:", data.id);
+    // console.log("Created title:", data.title);
+
+  } catch (err) {
+    console.error("Error:", err.message);
+  }
+}
+
+createPost();</textarea>
+    </div>
+    <div class="status-bar">
+      <span class="line-info" data-editor="practice-fetch-post2">Ln 1, Col 1</span>
+      <span class="language">JavaScript</span>
+    </div>
+    <button class="run-button" onclick="runCode('practice-fetch-post2', 'practice-fetch-post2-output')">▶ Run Code</button>
+    <button class="clear-button" onclick="clearOutput('practice-fetch-post2-output')">Clear</button>
+    <div class="output-console" id="practice-fetch-post2-output">
+      <span class="output-label">💻 Console Output:</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- Slide 19 (ADD after Slide 18) -->
+<div class="slide" data-slide="19">
+  <h2>Practice — Axios PUT with async/await</h2>
+
+  <div class="info-box">
+    <strong>Your Task:</strong>
+    <ul style="margin-top: 10px;">
+      <li>Update post <code>/posts/1</code> using <strong>axios.put</strong></li>
+      <li>Send a full body (PUT usually replaces the resource)</li>
+      <li>Log: <code>response.data.id</code> and <code>response.data.title</code></li>
+    </ul>
+  </div>
+
+  <div class="warning-box">
+    <strong style="color: var(--error);">Hint:</strong>
+    <ul style="margin-top: 10px;">
+      <li>Axios already parses JSON → use <code>response.data</code></li>
+      <li>Wrap in <code>try/catch</code> like Fetch</li>
+    </ul>
+  </div>
+
+  <div class="code-playground">
+    <span class="playground-label">PRACTICE: Complete the PUT request</span>
+    <div class="ide-toolbar">
+      <div class="file-tab">📄 practice-axios-put.js</div>
+      <div class="toolbar-actions">
+        <button class="toolbar-btn" onclick="resetCode('practice-axios-put2')">🔄 Reset</button>
+      </div>
+    </div>
+    <div class="editor-wrapper">
+      <textarea class="code-editor" id="practice-axios-put2">async function updatePost() {
+  try {
+
+  } catch (err) {
+    console.error("Error:", err.message);
+  }
+}
+
+updatePost();</textarea>
+    </div>
+    <div class="status-bar">
+      <span class="line-info" data-editor="practice-axios-put2">Ln 1, Col 1</span>
+      <span class="language">JavaScript</span>
+    </div>
+    <button class="run-button" onclick="runCode('practice-axios-put2', 'practice-axios-put2-output')">▶ Run Code</button>
+    <button class="clear-button" onclick="clearOutput('practice-axios-put2-output')">Clear</button>
+    <div class="output-console" id="practice-axios-put2-output">
+      <span class="output-label">💻 Console Output:</span>
+    </div>
+  </div>
+</div>
+
+
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+    </div>
+
+    <!-- External libs -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = document.querySelectorAll('.slide').length;
+        const editors = {};
+        const originalCode = {};
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function initializeEditors() {
+            document.querySelectorAll('.code-editor').forEach(textarea => {
+                const id = textarea.id;
+                originalCode[id] = textarea.value;
+
+                const editor = CodeMirror.fromTextArea(textarea, {
+                    mode: 'javascript',
+                    theme: 'eclipse',
+                    lineNumbers: true,
+                    autoCloseBrackets: true,
+                    indentUnit: 4,
+                    tabSize: 4,
+                    lineWrapping: true,
+                    styleActiveLine: true,
+                    extraKeys: {
+                        'Tab': cm => cm.somethingSelected() ? cm.indentSelection('add') : cm.replaceSelection('    ', 'end'),
+                        'Ctrl-Enter': () => runCode(id, id + '-output'),
+                        'Cmd-Enter': () => runCode(id, id + '-output'),
+                        'Ctrl-/': 'toggleComment',
+                        'Cmd-/': 'toggleComment'
+                    }
+                });
+
+                editors[id] = editor;
+
+                editor.on('cursorActivity', () => {
+                    const cursor = editor.getCursor();
+                    const lineInfo = document.querySelector(`.line-info[data-editor="${id}"]`);
+                    if (lineInfo) lineInfo.textContent = `Ln ${cursor.line + 1}, Col ${cursor.ch + 1}`;
+                });
+            });
+        }
+
+        function refreshEditorsInActiveSlide() {
+            const active = document.querySelector('.slide.active');
+            if (!active) return;
+            active.querySelectorAll('textarea.code-editor').forEach(t => {
+                const id = t.id;
+                if (editors[id]) editors[id].refresh();
+            });
+        }
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            if (n > totalSlides) currentSlide = totalSlides;
+            if (n < 1) currentSlide = 1;
+
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlide - 1].classList.add('active');
+
+            document.getElementById('currentSlide').textContent = currentSlide;
+            document.getElementById('prevBtn').disabled = (currentSlide === 1);
+            document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(refreshEditorsInActiveSlide, 120);
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            showSlide(currentSlide);
+        }
+
+        document.addEventListener('keydown', e => {
+            if (document.activeElement?.closest?.('.CodeMirror')) return;
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            else if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        function safeStringify(arg) {
+            if (typeof arg === 'string') return arg;
+            if (typeof arg !== 'object' || arg === null) return String(arg);
+            try { return JSON.stringify(arg, null, 2); } catch { return String(arg); }
+        }
+
+        function makeTrackedThenable(thenable, pending) {
+            if (!thenable || typeof thenable.then !== 'function') return thenable;
+            pending.add(thenable);
+            return new Proxy(thenable, {
+                get(target, prop) {
+                    if (['then', 'catch', 'finally'].includes(prop)) {
+                        return (...args) => makeTrackedThenable(target[prop](...args), pending);
+                    }
+                    return Reflect.get(target, prop);
+                }
+            });
+        }
+
+        async function drainPending(pending, timeout) {
+            const start = Date.now();
+            let lastSize = -1;
+            while (Date.now() - start < timeout) {
+                if (pending.size === 0) break;
+                if (pending.size === lastSize) {
+                    await new Promise(r => setTimeout(r, 50));
+                    if (pending.size === lastSize) break;
+                }
+                lastSize = pending.size;
+                await Promise.race([Promise.allSettled([...pending]), new Promise(r => setTimeout(r, 500))]);
+            }
+        }
+
+        async function runCode(editorId, outputId) {
+            const editor = editors[editorId];
+            const code = editor ? editor.getValue() : document.getElementById(editorId).value;
+            const output = document.getElementById(outputId);
+            output.innerHTML = '<span class="output-label">💻 Console Output:</span><br>';
+
+            const logs = [];
+            const origLog = console.log, origWarn = console.warn, origError = console.error;
+            console.log = (...a) => { logs.push({ type: 'log', content: a.map(safeStringify).join(' ') }); origLog(...a); };
+            console.warn = (...a) => { logs.push({ type: 'warn', content: a.map(safeStringify).join(' ') }); origWarn(...a); };
+            console.error = (...a) => { logs.push({ type: 'error', content: a.map(safeStringify).join(' ') }); origError(...a); };
+
+            const pending = new Set();
+            const origFetch = window.fetch, origAjax = $.ajax;
+            const restore = [];
+
+            try {
+                window.fetch = (...a) => makeTrackedThenable(origFetch(...a), pending);
+                restore.push(() => window.fetch = origFetch);
+
+                $.ajax = (...a) => makeTrackedThenable(origAjax(...a), pending);
+                restore.push(() => $.ajax = origAjax);
+
+                if (window.axios) {
+                    const methods = ['get', 'post', 'put', 'delete'];
+                    const saved = {};
+                    methods.forEach(m => {
+                        if (typeof axios[m] === 'function') {
+                            saved[m] = axios[m].bind(axios);
+                            axios[m] = (...args) => makeTrackedThenable(saved[m](...args), pending);
+                        }
+                    });
+                    restore.push(() => Object.entries(saved).forEach(([m, fn]) => axios[m] = fn));
+                }
+
+                const ret = new Function(code)();
+                makeTrackedThenable(ret, pending);
+                await drainPending(pending, 7000);
+
+                output.innerHTML += logs.length
+                    ? logs.map(l => `<span class="${l.type === 'error' ? 'error' : l.type === 'warn' ? 'warn' : ''}">${l.content}</span>`).join('<br>')
+                    : '<span style="color:#D4940C;">✓ Code executed (no output)</span>';
+            } catch (e) {
+                output.innerHTML += `<span class="error">❌ Error: ${e.message}</span>`;
+            } finally {
+                console.log = origLog; console.warn = origWarn; console.error = origError;
+                restore.forEach(fn => fn());
+            }
+        }
+
+        function clearOutput(outputId) {
+            document.getElementById(outputId).innerHTML = '<span class="output-label">💻 Console Output:</span>';
+        }
+
+        function resetCode(editorId) {
+            editors[editorId]?.setValue(originalCode[editorId] || '');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeEditors();
+            showSlide(currentSlide);
+        });
+    </script>
+</body>
+</html>
