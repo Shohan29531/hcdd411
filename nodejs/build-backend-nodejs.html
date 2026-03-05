@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HCDD 411 - Building a Backend from Scratch (Node.js)</title>
+
+  <!-- Fonts (match your style) -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root{
+      --primary:#3B7DD6;
+      --secondary:#5A6C7D;
+      --accent:#D4940C;
+      --code-bg:#F8F9FA;
+      --success:#059669;
+      --error:#DC2626;
+      --bg-gradient-start:#F0F4F8;
+      --bg-gradient-end:#E1E8ED;
+      --slide-bg:rgba(255,255,255,0.95);
+      --border-color:rgba(59,125,214,0.30);
+      --text-primary:#1F2937;
+      --text-secondary:#6B7280;
+    }
+
+    body{
+      font-family:'Outfit', sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      color: var(--text-primary);
+      min-height:100vh;
+      padding: 140px 0 120px 0;
+    }
+
+    .penn-state-badge{
+      position: fixed;
+      top: 40px;
+      left: 40px;
+      font-family:'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: 1.2em;
+      color: var(--primary);
+      z-index: 1000;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .slide-indicator{
+      position: fixed;
+      top: 40px;
+      right: 40px;
+      background: var(--primary);
+      padding: 15px 25px;
+      border-radius: 50px;
+      font-family:'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 1em;
+      z-index: 1000;
+      color:white;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    .presentation-container{ width: 100%; min-height: 100vh; }
+
+    .slide{
+      width: 90%;
+      max-width: 1200px;
+      min-height: 400px;
+      background: var(--slide-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 30px;
+      padding: 60px;
+      margin: 0 auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.10);
+      opacity: 0;
+      transform: translateX(100px);
+      transition: all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55);
+      display: none;
+      border: 2px solid var(--border-color);
+    }
+
+    .slide.active{
+      opacity:1;
+      transform: translateX(0);
+      display:block;
+    }
+
+    h1{
+      font-family:'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: 3.7em;
+      color: var(--primary);
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: -2px;
+      line-height:1.1;
+    }
+
+    h2{
+      font-family:'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 2.4em;
+      color: var(--accent);
+      margin-bottom: 22px;
+      letter-spacing: -1px;
+      line-height:1.15;
+    }
+
+    h3{
+      font-family:'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 1.45em;
+      color: var(--primary);
+      margin: 22px 0 12px 0;
+    }
+
+    .subtitle{
+      font-size: 1.25em;
+      color: var(--text-secondary);
+      margin-bottom: 35px;
+      font-weight: 300;
+      line-height:1.45;
+    }
+
+    p{ font-size: 1.1em; line-height: 1.65; }
+    ul{ margin: 18px 0; padding-left: 30px; }
+    li{ margin: 10px 0; font-size: 1.08em; line-height: 1.6; }
+
+    code{
+      font-family:'Space Mono', monospace;
+      background: rgba(59,125,214,0.15);
+      padding: 3px 8px;
+      border-radius: 5px;
+      color: var(--primary);
+    }
+
+    .info-box{
+      background: rgba(212,148,12,0.10);
+      border-left: 4px solid var(--accent);
+      padding: 18px;
+      margin: 18px 0;
+      border-radius: 10px;
+    }
+    .tip-box{
+      background: rgba(5,150,105,0.10);
+      border-left: 4px solid var(--success);
+      padding: 18px;
+      margin: 18px 0;
+      border-radius: 10px;
+    }
+    .warning-box{
+      background: rgba(220,38,38,0.10);
+      border-left: 4px solid var(--error);
+      padding: 18px;
+      margin: 18px 0;
+      border-radius: 10px;
+    }
+
+    .example-grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin: 22px 0;
+    }
+    .example-card{
+      background: rgba(255,255,255,0.72);
+      border: 2px solid var(--border-color);
+      border-radius: 15px;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+    .example-card:hover{
+      transform: translateY(-5px);
+      border-color: var(--primary);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.10);
+    }
+
+    .code-playground{
+      background: var(--code-bg);
+      border-radius: 15px;
+      padding: 22px;
+      margin: 22px 0;
+      border: 2px solid var(--border-color);
+      position: relative;
+      overflow: hidden;
+    }
+    .code-playground::before{
+      content:'';
+      position:absolute;
+      top:0; left:0; right:0;
+      height: 30px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 15px 15px 0 0;
+    }
+    .playground-label{
+      position:absolute;
+      top:5px;
+      left:20px;
+      font-family:'Space Mono', monospace;
+      font-size: 0.9em;
+      color:white;
+      font-weight:700;
+      z-index:1;
+    }
+
+    .ide-toolbar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 15px;
+      background: rgba(0,0,0,0.05);
+      border-radius: 10px 10px 0 0;
+      margin-top: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .file-tab{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding: 6px 12px;
+      background: var(--primary);
+      color:white;
+      border-radius: 6px;
+      font-family:'Space Mono', monospace;
+      font-size: 0.8em;
+      font-weight: 700;
+    }
+    .toolbar-actions{
+      margin-left:auto;
+      display:flex;
+      gap: 8px;
+    }
+    .toolbar-btn{
+      background: rgba(0,0,0,0.05);
+      border:none;
+      color: var(--text-secondary);
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor:pointer;
+      font-size: 0.85em;
+      transition: all 0.2s ease;
+      font-family:'Outfit', sans-serif;
+      font-weight: 700;
+    }
+    .toolbar-btn:hover{
+      background: rgba(0,0,0,0.12);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+    .toolbar-btn.copy{
+      background: linear-gradient(135deg, var(--success), #10B981);
+      color:white;
+    }
+    .toolbar-btn.copy:hover{
+      filter: brightness(0.98);
+    }
+
+    .editor-wrapper{
+      border-radius: 10px;
+      overflow:hidden;
+      border: 2px solid var(--border-color);
+    }
+    .CodeMirror{
+      font-family:'Space Mono', monospace !important;
+      font-size: 0.93em !important;
+      height:auto !important;
+      min-height: 240px;
+      line-height: 1.6 !important;
+      border-radius: 10px;
+    }
+    .CodeMirror-scroll{ min-height: 240px; }
+    .CodeMirror-gutters{
+      border-right: 2px solid var(--border-color) !important;
+      background: rgba(0,0,0,0.02);
+      padding-right: 10px;
+      min-width: 58px;
+    }
+    .CodeMirror-linenumber{
+      padding: 0 8px 0 0;
+      min-width: 38px;
+      text-align: right;
+    }
+    .cm-line-changed{ background: rgba(212,148,12,0.14); }
+    .cm-line-changed .cm-comment{ font-weight: 700; }
+
+    .status-bar{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      padding: 8px 15px;
+      background: rgba(0,0,0,0.03);
+      border-radius: 0 0 10px 10px;
+      font-family:'Space Mono', monospace;
+      font-size: 0.8em;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+    }
+    .status-bar .language{ color: var(--primary); font-weight: 700; }
+
+    .mini-note{
+      font-family:'Space Mono', monospace;
+      background: rgba(0,0,0,0.04);
+      border: 1px dashed rgba(0,0,0,0.15);
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-top: 10px;
+      color: var(--text-secondary);
+      font-size: 0.92em;
+      line-height:1.55;
+    }
+
+    .navigation{
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display:flex;
+      gap: 20px;
+      z-index: 1000;
+    }
+    .nav-button{
+      background: var(--primary);
+      color:white;
+      border:none;
+      padding: 15px 35px;
+      border-radius: 50px;
+      font-family:'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1em;
+      cursor:pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    .nav-button:hover{ background: var(--secondary); transform: scale(1.05); }
+    .nav-button:disabled{ opacity: 0.3; cursor:not-allowed; transform:none; }
+
+    .kbd{
+      font-family:'Space Mono', monospace;
+      background: rgba(59,125,214,0.15);
+      border: 1px solid rgba(59,125,214,0.3);
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="penn-state-badge">HCDD 411</div>
+  <div class="slide-indicator"><span id="currentSlide">1</span> / <span id="totalSlides">20</span></div>
+
+  <div class="presentation-container">
+
+    <!-- 1 -->
+    <div class="slide active" data-slide="1">
+      <h1>Build a Backend</h1>
+      <h2>Node.js (No DB) → JSON File Storage</h2>
+      <p class="subtitle">
+        You already know Node fundamentals. Now we’ll build a real backend <b>incrementally</b>:
+        start a server → add routes → add CRUD → persist data in a JSON file → handle errors cleanly.
+      </p>
+      <div class="tip-box">
+        <b>Goal by the end:</b>
+        <ul style="margin-top:10px;">
+          <li>A small REST API: <code>/notes</code></li>
+          <li>Data stored in <code>data/notes.json</code> (no database)</li>
+          <li>Students can test after <b>every</b> slide</li>
+        </ul>
+      </div>
+      <div class="mini-note">Navigation: <span class="kbd">←</span> / <span class="kbd">→</span> or use the buttons.</div>
+    </div>
+
+    <!-- 2 -->
+    <div class="slide" data-slide="2">
+      <h2>Step 0: Project folder structure</h2>
+      <div class="example-grid">
+        <div class="example-card">
+          <h3>✅ Create these folders/files</h3>
+          <ul>
+            <li><code>backend-notes/</code></li>
+            <li><code>backend-notes/src/server.mjs</code></li>
+            <li><code>backend-notes/data/notes.json</code></li>
+            <li><code>backend-notes/package.json</code></li>
+          </ul>
+        </div>
+        <div class="example-card">
+          <h3>✅ What is this API?</h3>
+          <ul>
+            <li><code>GET /health</code> → quick server check</li>
+            <li><code>GET /notes</code> → list notes</li>
+            <li><code>POST /notes</code> → create</li>
+            <li><code>GET /notes/:id</code> → read one</li>
+            <li><code>PUT /notes/:id</code> → update</li>
+            <li><code>DELETE /notes/:id</code> → delete</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <b>Why JSON file?</b> It forces us to learn how backends do persistence:
+        validate input → read current state → modify → write back atomically → return response.
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="slide" data-slide="3">
+      <h2>Step 1: package.json + scripts</h2>
+      <ul>
+        <li>We’ll run the server with <code>npm run dev</code> (auto-restart) and <code>npm start</code> (normal).</li>
+        <li>Use ESM (<code>.mjs</code>) so <code>import</code> works naturally.</li>
+      </ul>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: package.json</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 package.json</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="pkg">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="pkg">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-pkg"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-pkg">Ln 1, Col 1</span><span class="language">JSON</span></div>
+      </div>
+
+      <div class="tip-box">
+        Run these in terminal:
+        <ul style="margin-top:10px;">
+          <li><code>npm install</code></li>
+          <li><code>npm run dev</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="slide" data-slide="4">
+      <h2>Step 2: Create the first server (health route)</h2>
+      <ul>
+        <li>Start with the smallest possible backend that proves: <b>Node can accept a request and return JSON</b>.</li>
+        <li>Everything after this is “just” adding capability on top of a working baseline.</li>
+      </ul>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: src/server.mjs (v1)</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 src/server.mjs</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="server_v1">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="server_v1">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-server-v1"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-server-v1">Ln 1, Col 1</span><span class="language">JavaScript (Node)</span></div>
+      </div>
+
+      <div class="info-box">
+        <b>What changed (vs nothing):</b>
+        <ul style="margin-top:10px;">
+          <li>We created one endpoint: <code>GET /health</code></li>
+          <li>We return a JSON response with status <code>200</code></li>
+          <li>Unknown routes return <code>404</code></li>
+        </ul>
+        <div class="mini-note">From now on: every step should keep <code>/health</code> working. If it breaks, rollback and fix.</div>
+      </div>
+      <div class="tip-box">
+        Test:
+        <ul style="margin-top:10px;">
+          <li><code>curl http://localhost:3000/health</code></li>
+          <li>Expected: <code>{"ok":true}</code></li>
+        </ul>
+      </div>
+    </div>
+
+<!-- 5 -->
+    <div class="slide" data-slide="5">
+      <h2>Step 3: Add response helpers (consistent JSON)</h2>
+      <ul>
+        <li>Backends repeat the same response patterns hundreds of times.</li>
+        <li>We extract helpers so every endpoint returns consistent headers + JSON shape.</li>
+      </ul>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: src/server.mjs (v2)</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 src/server.mjs</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="server_v2">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="server_v2">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-server-v2"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-server-v2">Ln 1, Col 1</span><span class="language">JavaScript (Node)</span></div>
+      </div>
+
+      <div class="tip-box">
+        <b>What changed from v1 (look for highlighted lines):</b>
+        <ul style="margin-top:10px;">
+          <li><code>json(res, status, payload)</code> — one function to set JSON headers + stringify</li>
+          <li><code>notFound(res)</code> — one place for the standard 404 response</li>
+          <li>Benefit: future routes stay small and readable (no repeated boilerplate)</li>
+        </ul>
+        <div class="mini-note">In the editor, any line tagged with <code>// NEW</code> / <code>// CHANGED</code> is highlighted.</div>
+      </div>
+      
+    </div>
+
+<!-- 6 -->
+    <div class="slide" data-slide="6">
+      <h2>Step 4: Read request body (POST needs it)</h2>
+      <ul>
+        <li>A real backend must accept data from the client (POST/PUT).</li>
+        <li>Node request bodies are streams → we collect chunks and then parse JSON.</li>
+      </ul>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: src/server.mjs (v3)</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 src/server.mjs</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="server_v3">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="server_v3">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-server-v3"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-server-v3">Ln 1, Col 1</span><span class="language">JavaScript (Node)</span></div>
+      </div>
+
+      <div class="info-box">
+        <b>What changed from v2:</b>
+        <ul style="margin-top:10px;">
+          <li><code>readBody(req)</code> added to read streaming request bodies</li>
+          <li><code>new URL(req.url, ...)</code> added (clean path parsing)</li>
+          <li>New practice route: <code>POST /echo</code> returns the JSON you sent</li>
+        </ul>
+      </div>
+      <div class="tip-box">
+        Test:
+        <ul style="margin-top:10px;">
+          <li><code>curl -X POST http://localhost:3000/echo -H "Content-Type: application/json" -d '{"msg":"hi"}'</code></li>
+          <li>Expected: <code>{"received":{"msg":"hi"}}</code></li>
+        </ul>
+      </div>
+    </div>
+
+<!-- 7 -->
+    <div class="slide" data-slide="7">
+      <h2>Step 5: Create the JSON “database” file</h2>
+      <p>Start with an empty array. Every note will be an object with <code>id</code>, <code>text</code>, <code>createdAt</code>, <code>updatedAt</code>.</p>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: data/notes.json</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 data/notes.json</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="notes_json">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="notes_json">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-notes-json"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-notes-json">Ln 1, Col 1</span><span class="language">JSON</span></div>
+      </div>
+
+      <div class="warning-box">
+        <b>Important:</b> This “JSON file DB” is good for learning, not production.
+        Concurrency is tricky (two requests writing at the same time). We’ll still build it correctly for class.
+      </div>
+    </div>
+
+    <!-- 8 -->
+    <div class="slide" data-slide="8">
+      <h2>Step 6: Load + save notes from the JSON file</h2>
+      <ul>
+        <li>Now the backend needs persistence (state survives restarts).</li>
+        <li>We’ll treat <code>data/notes.json</code> as our “database”.</li>
+      </ul>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: src/server.mjs (v4)</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 src/server.mjs</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="server_v4">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="server_v4">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-server-v4"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-server-v4">Ln 1, Col 1</span><span class="language">JavaScript (Node)</span></div>
+      </div>
+
+      <div class="tip-box">
+        <b>What changed from v3:</b>
+        <ul style="margin-top:10px;">
+          <li>Added <code>loadNotes()</code> and <code>saveNotes()</code> using <code>fs/promises</code></li>
+          <li>Added <code>NOTES_PATH</code> built from <code>import.meta.url</code> so it works from any working directory</li>
+          <li>Added first real resource endpoint: <code>GET /notes</code></li>
+        </ul>
+        <div class="mini-note">Backend pattern: <b>read current state → compute new state → write back → respond</b>.</div>
+      </div>
+      <div class="tip-box">
+        Test:
+        <ul style="margin-top:10px;">
+          <li><code>curl http://localhost:3000/notes</code> → <code>[]</code> (for now)</li>
+        </ul>
+      </div>
+    </div>
+
+<!-- 9 -->
+    <div class="slide" data-slide="9">
+      <h2>Step 7: POST /notes (Create a note)</h2>
+      <ul>
+        <li>Create means: validate input → add a new object → persist to file → return the created resource.</li>
+        <li>We also generate ids that stay correct after restart.</li>
+      </ul>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: src/server.mjs (v5)</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 src/server.mjs</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="server_v5">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="server_v5">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-server-v5"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-server-v5">Ln 1, Col 1</span><span class="language">JavaScript (Node)</span></div>
+      </div>
+
+      <div class="info-box">
+        <b>What changed from v4:</b>
+        <ul style="margin-top:10px;">
+          <li>Re-introduced <code>readBody()</code> (we need it for POST)</li>
+          <li>Added <code>nextId(notes)</code> (max+1) so ids survive server restarts</li>
+          <li>Added <code>POST /notes</code> with validation (<code>text</code> required)</li>
+        </ul>
+      </div>
+      <div class="tip-box">
+        Test:
+        <ul style="margin-top:10px;">
+          <li><code>curl -X POST http://localhost:3000/notes -H "Content-Type: application/json" -d '{"text":"first note"}'</code></li>
+          <li>Then: <code>curl http://localhost:3000/notes</code></li>
+        </ul>
+      </div>
+    </div>
+
+<!-- 10 -->
+    <div class="slide" data-slide="10">
+      <h2>Step 8: GET /notes/:id (Read one note)</h2>
+      <ul>
+        <li>We need a route parameter: <code>/notes/3</code> means “note with id=3”.</li>
+        <li>If the id is invalid → <code>400</code>; if not found → <code>404</code>.</li>
+      </ul>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: src/server.mjs (v6)</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 src/server.mjs</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="server_v6">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="server_v6">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-server-v6"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-server-v6">Ln 1, Col 1</span><span class="language">JavaScript (Node)</span></div>
+      </div>
+
+      <div class="tip-box">
+        <b>What changed from v5:</b>
+        <ul style="margin-top:10px;">
+          <li>Added <code>parseId()</code> to extract ids from paths</li>
+          <li>Added <code>GET /notes/:id</code> and implemented “not found” logic</li>
+        </ul>
+        <div class="mini-note">Route params are core backend skill: almost every REST API uses them.</div>
+      </div>
+      <div class="tip-box">
+        Test:
+        <ul style="margin-top:10px;">
+          <li><code>curl http://localhost:3000/notes/1</code></li>
+          <li><code>curl http://localhost:3000/notes/999</code> → 404</li>
+        </ul>
+      </div>
+    </div>
+
+<!-- 11 -->
+    <div class="slide" data-slide="11">
+      <h2>Step 9: PUT /notes/:id (Update)</h2>
+      <ul>
+        <li>Update means: find resource → validate input → mutate → persist → return updated resource.</li>
+        <li>We also update <code>updatedAt</code>.</li>
+      </ul>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: src/server.mjs (v7)</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 src/server.mjs</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="server_v7">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="server_v7">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-server-v7"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-server-v7">Ln 1, Col 1</span><span class="language">JavaScript (Node)</span></div>
+      </div>
+
+      <div class="info-box">
+        <b>What changed from v6:</b>
+        <ul style="margin-top:10px;">
+          <li>Added <code>PUT /notes/:id</code></li>
+          <li>Validated <code>text</code> again (never trust client input)</li>
+          <li>Persisted back to <code>notes.json</code></li>
+        </ul>
+      </div>
+      <div class="tip-box">
+        Test:
+        <ul style="margin-top:10px;">
+          <li><code>curl -X PUT http://localhost:3000/notes/1 -H "Content-Type: application/json" -d '{"text":"updated note"}'</code></li>
+          <li><code>curl http://localhost:3000/notes/1</code></li>
+        </ul>
+      </div>
+    </div>
+
+<!-- 12 -->
+    <div class="slide" data-slide="12">
+      <h2>Step 10: DELETE /notes/:id (Delete)</h2>
+      <ul>
+        <li>Delete means: confirm it exists → remove it → persist → return a clear status code.</li>
+        <li>REST convention: return <code>204 No Content</code> on success.</li>
+      </ul>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: src/server.mjs (v8)</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 src/server.mjs</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="server_v8">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="server_v8">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-server-v8"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-server-v8">Ln 1, Col 1</span><span class="language">JavaScript (Node)</span></div>
+      </div>
+
+      <div class="tip-box">
+        <b>What changed from v7:</b>
+        <ul style="margin-top:10px;">
+          <li>Added <code>DELETE /notes/:id</code></li>
+          <li>On success: no JSON body, status <code>204</code></li>
+        </ul>
+      </div>
+      <div class="tip-box">
+        Test:
+        <ul style="margin-top:10px;">
+          <li><code>curl -i -X DELETE http://localhost:3000/notes/1</code> → status 204</li>
+          <li><code>curl http://localhost:3000/notes</code></li>
+        </ul>
+      </div>
+    </div>
+
+<!-- 13 -->
+    <div class="slide" data-slide="13">
+      <h2>Step 11: One “backend truth” — validate everything</h2>
+      <div class="example-grid">
+        <div class="example-card">
+          <h3>Common invalid inputs</h3>
+          <ul>
+            <li>Missing JSON body</li>
+            <li>Invalid JSON</li>
+            <li><code>text</code> missing or empty</li>
+            <li><code>id</code> is not a number</li>
+          </ul>
+        </div>
+        <div class="example-card">
+          <h3>How our server responds</h3>
+          <ul>
+            <li><code>400 Bad Request</code> + JSON error message</li>
+            <li><code>404 Not Found</code> for missing resource</li>
+            <li><code>500</code> only when server has a bug</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        The “API contract” is how frontend and backend stay aligned.
+        If the backend returns inconsistent shapes, the frontend becomes fragile.
+      </div>
+    </div>
+
+    <!-- 14 -->
+    <div class="slide" data-slide="14">
+      <h2>Step 12: Add CORS (only if you plan a browser frontend)</h2>
+      <ul>
+        <li>Browsers block cross-origin requests unless the server allows them (CORS).</li>
+        <li>If you only test with curl/Postman, you can skip this step.</li>
+      </ul>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: src/server.mjs (v9 - with CORS)</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 src/server.mjs</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="server_v9">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="server_v9">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-server-v9"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-server-v9">Ln 1, Col 1</span><span class="language">JavaScript (Node)</span></div>
+      </div>
+
+      <div class="warning-box">
+        <b>What changed from v8:</b>
+        <ul style="margin-top:10px;">
+          <li>Added <code>setCors(res)</code> headers</li>
+          <li>Handled <code>OPTIONS</code> preflight requests</li>
+          <li>Made <code>PORT</code> configurable (env var)</li>
+        </ul>
+        <div class="mini-note">In production, never allow every origin. Restrict to the frontend domain(s).</div>
+      </div>
+      
+    </div>
+
+<!-- 15 -->
+    <div class="slide" data-slide="15">
+      <h2>Quick test suite (copy these curl commands)</h2>
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: terminal commands</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 terminal.txt</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="curl_suite">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="curl_suite">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-curl-suite"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-curl-suite">Ln 1, Col 1</span><span class="language">Text</span></div>
+      </div>
+
+      <div class="tip-box">
+        When a backend “works”, it means:
+        <ul style="margin-top:10px;">
+          <li>Correct status codes</li>
+          <li>Correct JSON response shapes</li>
+          <li>Data actually persists after restart</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 16 -->
+    <div class="slide" data-slide="16">
+      <h2>Common student bugs (and how to debug fast)</h2>
+      <div class="example-grid">
+        <div class="example-card">
+          <h3>Port already in use</h3>
+          <ul>
+            <li>Another server is running on 3000</li>
+            <li>Fix: stop it, or change <code>PORT</code> env var</li>
+          </ul>
+        </div>
+        <div class="example-card">
+          <h3>Invalid JSON errors</h3>
+          <ul>
+            <li>Trailing commas in JSON</li>
+            <li>Missing quotes</li>
+            <li>Fix: check the <code>-d</code> payload in curl</li>
+          </ul>
+        </div>
+        <div class="example-card">
+          <h3>notes.json path issues</h3>
+          <ul>
+            <li>Running node from wrong directory</li>
+            <li>Fix: we use absolute path built from <code>import.meta.url</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mini-note">Tip: When stuck, add temporary <code>console.log()</code> on the server, then re-run the request.</div>
+    </div>
+
+    <!-- 17 -->
+    <div class="slide" data-slide="17">
+      <h2>Mini exercise (10–15 minutes)</h2>
+      <div class="info-box">
+        <b>Add two small features:</b>
+        <ul style="margin-top:10px;">
+          <li><b>Search:</b> <code>GET /notes?contains=word</code> filters by substring (case-insensitive)</li>
+          <li><b>Limit:</b> <code>GET /notes?limit=5</code> returns only first N notes</li>
+        </ul>
+      </div>
+
+      <div class="tip-box">
+        Hint: parse query params using:
+        <ul style="margin-top:10px;">
+          <li><code>const url = new URL(req.url, 'http://localhost');</code></li>
+          <li><code>url.searchParams.get('contains')</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 18 -->
+    <div class="slide" data-slide="18">
+      <h2>What you built (backend checklist)</h2>
+      <div class="example-grid">
+        <div class="example-card">
+          <h3>Server fundamentals</h3>
+          <ul>
+            <li>HTTP server</li>
+            <li>Routes + params</li>
+            <li>Status codes</li>
+            <li>JSON responses</li>
+          </ul>
+        </div>
+        <div class="example-card">
+          <h3>Backend fundamentals</h3>
+          <ul>
+            <li>Validation</li>
+            <li>Persistence (file I/O)</li>
+            <li>CRUD</li>
+            <li>Error handling</li>
+          </ul>
+        </div>
+        <div class="example-card">
+          <h3>Next step (later)</h3>
+          <ul>
+            <li>Replace JSON file with a real DB</li>
+            <li>Express to simplify routing + middleware</li>
+            <li>Authentication + authorization</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 19 -->
+    <div class="slide" data-slide="19">
+      <h2>Full final code (one last time)</h2>
+      <p>If you want students to “jump to the end”, use this final version.</p>
+
+      <div class="code-playground">
+        <span class="playground-label">FINAL: src/server.mjs</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 src/server.mjs</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="server_v9">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="server_v9">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-server-final"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-server-final">Ln 1, Col 1</span><span class="language">JavaScript (Node)</span></div>
+      </div>
+
+      <div class="code-playground">
+        <span class="playground-label">FINAL: data/notes.json</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 data/notes.json</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="notes_json">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="notes_json">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-notes-final"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-notes-final">Ln 1, Col 1</span><span class="language">JSON</span></div>
+      </div>
+    </div>
+
+    <!-- 20 -->
+    <div class="slide" data-slide="20">
+      <h2>Done ✅</h2>
+      <div class="tip-box">
+        <b>In class flow suggestion:</b>
+        <ul style="margin-top:10px;">
+          <li>Slides 1–6: server basics (everyone runs)</li>
+          <li>Slides 7–12: CRUD + persistence (everyone runs)</li>
+          <li>Slide 15: paste test suite and verify</li>
+          <li>Slide 17: mini exercise</li>
+        </ul>
+      </div>
+
+      <div class="info-box">
+        If you want, I can also create:
+        <ul style="margin-top:10px;">
+          <li>A tiny <b>frontend</b> page that calls <code>/notes</code> with jQuery AJAX (same style as your API slides)</li>
+          <li>A “starter vs solution” version of the server for grading</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="navigation">
+    <button class="nav-button" id="prevBtn">← Previous</button>
+    <button class="nav-button" id="nextBtn">Next →</button>
+  </div>
+
+  <!-- CodeMirror JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+
+  <script>
+    // =========================
+    // Slide navigation
+    // =========================
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const totalSlides = slides.length;
+    document.getElementById('totalSlides').textContent = totalSlides;
+
+    let current = 0;
+    function refreshEditorsInSlide(slideEl){
+      if (!slideEl) return;
+      slideEl.querySelectorAll('.CodeMirror').forEach(cmEl => {
+        if (cmEl && cmEl.CodeMirror) cmEl.CodeMirror.refresh();
+      });
+    }
+
+    function showSlide(i){
+      slides[current].classList.remove('active');
+      current = Math.max(0, Math.min(totalSlides-1, i));
+      slides[current].classList.add('active');
+      document.getElementById('currentSlide').textContent = (current + 1).toString();
+      document.getElementById('prevBtn').disabled = current === 0;
+      document.getElementById('nextBtn').disabled = current === totalSlides - 1;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // IMPORTANT: CodeMirror editors created while hidden need refresh on show
+      setTimeout(() => refreshEditorsInSlide(slides[current]), 0);
+    }
+    document.getElementById('prevBtn').addEventListener('click', () => showSlide(current - 1));
+    document.getElementById('nextBtn').addEventListener('click', () => showSlide(current + 1));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') showSlide(current - 1);
+      if (e.key === 'ArrowRight') showSlide(current + 1);
+    });
+    // (showSlide happens after CodeMirror init)
+
+    // =========================
+    // Code snippets (for reset + copy)
+    // =========================
+    const snippets = {
+      pkg: `{
+  "name": "backend-notes",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/server.mjs",
+    "start": "node src/server.mjs"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}
+`,
+      server_v1: `// src/server.mjs (v1)
+import { createServer } from 'node:http';
+
+const PORT = 3000;
+
+createServer((req, res) => {
+  if (req.method === 'GET' && req.url === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+
+  res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify({ error: 'Not found' }));
+}).listen(PORT, () => {
+  console.log('Server running on http://localhost:' + PORT);
+});
+`,
+      server_v2: `// src/server.mjs (v2)
+import { createServer } from 'node:http';
+
+const PORT = 3000;
+
+function json(res, status, payload) { // NEW: consistent JSON response helper
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify(payload));
+}
+
+function notFound(res) { // NEW: one place for 404 shape
+  return json(res, 404, { error: 'Not found' });
+}
+
+createServer((req, res) => {
+  if (req.method === 'GET' && req.url === '/health') {
+    return json(res, 200, { ok: true }); // CHANGED: uses helper
+  }
+
+  return notFound(res); // CHANGED: consistent 404
+}).listen(PORT, () => {
+  console.log('Server running on http://localhost:' + PORT);
+});
+`,
+      server_v3: `// src/server.mjs (v3)
+import { createServer } from 'node:http';
+
+const PORT = 3000;
+
+function json(res, status, payload) {
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify(payload));
+}
+function notFound(res) { return json(res, 404, { error: 'Not found' }); }
+
+function readBody(req) { // NEW: read request body (POST/PUT)
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', (chunk) => (data += chunk));
+    req.on('end', () => resolve(data));
+    req.on('error', reject);
+  });
+}
+
+createServer(async (req, res) => {
+  const url = new URL(req.url, 'http://localhost'); // NEW: URL parser
+
+  if (req.method === 'GET' && url.pathname === '/health') {
+    return json(res, 200, { ok: true });
+  }
+
+  // POST /echo  (practice: see body parsing)
+  if (req.method === 'POST' && url.pathname === '/echo') { // NEW: test route
+    try {
+      const raw = await readBody(req);
+      const body = raw ? JSON.parse(raw) : {};
+      return json(res, 200, { received: body });
+    } catch {
+      return json(res, 400, { error: 'Invalid JSON' });
+    }
+  }
+
+  return notFound(res);
+}).listen(PORT, () => console.log('http://localhost:' + PORT));
+`,
+      notes_json: `[]
+`,
+      server_v4: `// src/server.mjs (v4)
+import { createServer } from 'node:http';
+import { readFile, writeFile } from 'node:fs/promises'; // NEW: file persistence
+import path from 'node:path'; // NEW
+import { fileURLToPath } from 'node:url'; // NEW
+
+const PORT = 3000;
+
+// NEW: build an absolute path to data/notes.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const NOTES_PATH = path.join(__dirname, '..', 'data', 'notes.json');
+
+function json(res, status, payload) {
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify(payload));
+}
+function notFound(res) { return json(res, 404, { error: 'Not found' }); }
+
+async function loadNotes() { // NEW
+  const raw = await readFile(NOTES_PATH, 'utf8');
+  return JSON.parse(raw || '[]');
+}
+
+async function saveNotes(notes) { // NEW
+  // pretty print for humans (nice for class)
+  await writeFile(NOTES_PATH, JSON.stringify(notes, null, 2), 'utf8');
+}
+
+createServer(async (req, res) => {
+  const url = new URL(req.url, 'http://localhost');
+
+  if (req.method === 'GET' && url.pathname === '/health') {
+    return json(res, 200, { ok: true });
+  }
+
+  // NEW: GET /notes
+  if (req.method === 'GET' && url.pathname === '/notes') {
+    const notes = await loadNotes();
+    return json(res, 200, notes);
+  }
+
+  return notFound(res);
+}).listen(PORT, () => console.log('http://localhost:' + PORT));
+`,
+      server_v5: `// src/server.mjs (v5)
+import { createServer } from 'node:http';
+import { readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const PORT = 3000;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const NOTES_PATH = path.join(__dirname, '..', 'data', 'notes.json');
+
+function json(res, status, payload) {
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify(payload));
+}
+function notFound(res) { return json(res, 404, { error: 'Not found' }); }
+
+function readBody(req) { // NEW: bring body parsing back (we need POST)
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', (chunk) => (data += chunk));
+    req.on('end', () => resolve(data));
+    req.on('error', reject);
+  });
+}
+
+async function loadNotes() {
+  const raw = await readFile(NOTES_PATH, 'utf8');
+  return JSON.parse(raw || '[]');
+}
+async function saveNotes(notes) {
+  await writeFile(NOTES_PATH, JSON.stringify(notes, null, 2), 'utf8');
+}
+
+function nextId(notes) { // NEW: deterministic ids across restarts
+  const max = notes.reduce((m, n) => Math.max(m, n.id || 0), 0);
+  return max + 1;
+}
+
+createServer(async (req, res) => {
+  const url = new URL(req.url, 'http://localhost');
+
+  if (req.method === 'GET' && url.pathname === '/health') {
+    return json(res, 200, { ok: true });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/notes') {
+    const notes = await loadNotes();
+    return json(res, 200, notes);
+  }
+
+  // NEW: POST /notes
+  if (req.method === 'POST' && url.pathname === '/notes') {
+    const notes = await loadNotes();
+
+    let body;
+    try {
+      const raw = await readBody(req);
+      body = raw ? JSON.parse(raw) : {};
+    } catch {
+      return json(res, 400, { error: 'Invalid JSON' });
+    }
+
+    const text = String(body.text ?? '').trim();
+    if (!text) return json(res, 400, { error: 'text is required' });
+
+    const now = Date.now();
+    const note = { id: nextId(notes), text, createdAt: now, updatedAt: now };
+
+    notes.push(note);
+    await saveNotes(notes);
+    return json(res, 201, note);
+  }
+
+  return notFound(res);
+}).listen(PORT, () => console.log('http://localhost:' + PORT));
+`,
+      server_v6: `// src/server.mjs (v6)
+import { createServer } from 'node:http';
+import { readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const PORT = 3000;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const NOTES_PATH = path.join(__dirname, '..', 'data', 'notes.json');
+
+function json(res, status, payload) {
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify(payload));
+}
+function notFound(res) { return json(res, 404, { error: 'Not found' }); }
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', (chunk) => (data += chunk));
+    req.on('end', () => resolve(data));
+    req.on('error', reject);
+  });
+}
+
+async function loadNotes() {
+  const raw = await readFile(NOTES_PATH, 'utf8');
+  return JSON.parse(raw || '[]');
+}
+async function saveNotes(notes) {
+  await writeFile(NOTES_PATH, JSON.stringify(notes, null, 2), 'utf8');
+}
+function nextId(notes) {
+  const max = notes.reduce((m, n) => Math.max(m, n.id || 0), 0);
+  return max + 1;
+}
+
+function parseId(pathname) { // NEW: support /notes/:id
+  const parts = pathname.split('/').filter(Boolean);
+  if (parts.length !== 2) return null;
+  const id = Number(parts[1]);
+  return Number.isFinite(id) ? id : null;
+}
+
+createServer(async (req, res) => {
+  const url = new URL(req.url, 'http://localhost');
+
+  if (req.method === 'GET' && url.pathname === '/health') {
+    return json(res, 200, { ok: true });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/notes') {
+    const notes = await loadNotes();
+    return json(res, 200, notes);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/notes') {
+    const notes = await loadNotes();
+
+    let body;
+    try {
+      const raw = await readBody(req);
+      body = raw ? JSON.parse(raw) : {};
+    } catch {
+      return json(res, 400, { error: 'Invalid JSON' });
+    }
+
+    const text = String(body.text ?? '').trim();
+    if (!text) return json(res, 400, { error: 'text is required' });
+
+    const now = Date.now();
+    const note = { id: nextId(notes), text, createdAt: now, updatedAt: now };
+
+    notes.push(note);
+    await saveNotes(notes);
+    return json(res, 201, note);
+  }
+
+  // NEW: GET /notes/:id
+  if (req.method === 'GET' && url.pathname.startsWith('/notes/')) {
+    const id = parseId(url.pathname);
+    if (id === null) return json(res, 400, { error: 'Invalid id' });
+
+    const notes = await loadNotes();
+    const note = notes.find((n) => n.id === id);
+    if (!note) return json(res, 404, { error: 'Not found' });
+
+    return json(res, 200, note);
+  }
+
+  return notFound(res);
+}).listen(PORT, () => console.log('http://localhost:' + PORT));
+`,
+      server_v7: `// src/server.mjs (v7)
+import { createServer } from 'node:http';
+import { readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const PORT = 3000;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const NOTES_PATH = path.join(__dirname, '..', 'data', 'notes.json');
+
+function json(res, status, payload) {
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify(payload));
+}
+function notFound(res) { return json(res, 404, { error: 'Not found' }); }
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', (chunk) => (data += chunk));
+    req.on('end', () => resolve(data));
+    req.on('error', reject);
+  });
+}
+
+async function loadNotes() {
+  const raw = await readFile(NOTES_PATH, 'utf8');
+  return JSON.parse(raw || '[]');
+}
+async function saveNotes(notes) {
+  await writeFile(NOTES_PATH, JSON.stringify(notes, null, 2), 'utf8');
+}
+function nextId(notes) {
+  const max = notes.reduce((m, n) => Math.max(m, n.id || 0), 0);
+  return max + 1;
+}
+function parseId(pathname) {
+  const parts = pathname.split('/').filter(Boolean);
+  if (parts.length !== 2) return null;
+  const id = Number(parts[1]);
+  return Number.isFinite(id) ? id : null;
+}
+
+createServer(async (req, res) => {
+  const url = new URL(req.url, 'http://localhost');
+
+  if (req.method === 'GET' && url.pathname === '/health') {
+    return json(res, 200, { ok: true });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/notes') {
+    const notes = await loadNotes();
+    return json(res, 200, notes);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/notes') {
+    const notes = await loadNotes();
+
+    let body;
+    try {
+      const raw = await readBody(req);
+      body = raw ? JSON.parse(raw) : {};
+    } catch {
+      return json(res, 400, { error: 'Invalid JSON' });
+    }
+
+    const text = String(body.text ?? '').trim();
+    if (!text) return json(res, 400, { error: 'text is required' });
+
+    const now = Date.now();
+    const note = { id: nextId(notes), text, createdAt: now, updatedAt: now };
+
+    notes.push(note);
+    await saveNotes(notes);
+    return json(res, 201, note);
+  }
+
+  if (req.method === 'GET' && url.pathname.startsWith('/notes/')) {
+    const id = parseId(url.pathname);
+    if (id === null) return json(res, 400, { error: 'Invalid id' });
+
+    const notes = await loadNotes();
+    const note = notes.find((n) => n.id === id);
+    if (!note) return json(res, 404, { error: 'Not found' });
+
+    return json(res, 200, note);
+  }
+
+  // NEW: PUT /notes/:id
+  if (req.method === 'PUT' && url.pathname.startsWith('/notes/')) {
+    const id = parseId(url.pathname);
+    if (id === null) return json(res, 400, { error: 'Invalid id' });
+
+    let body;
+    try {
+      const raw = await readBody(req);
+      body = raw ? JSON.parse(raw) : {};
+    } catch {
+      return json(res, 400, { error: 'Invalid JSON' });
+    }
+
+    const text = String(body.text ?? '').trim();
+    if (!text) return json(res, 400, { error: 'text is required' });
+
+    const notes = await loadNotes();
+    const idx = notes.findIndex((n) => n.id === id);
+    if (idx === -1) return json(res, 404, { error: 'Not found' });
+
+    notes[idx] = { ...notes[idx], text, updatedAt: Date.now() };
+    await saveNotes(notes);
+
+    return json(res, 200, notes[idx]);
+  }
+
+  return notFound(res);
+}).listen(PORT, () => console.log('http://localhost:' + PORT));
+`,
+      server_v8: `// src/server.mjs (v8)
+import { createServer } from 'node:http';
+import { readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const PORT = 3000;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const NOTES_PATH = path.join(__dirname, '..', 'data', 'notes.json');
+
+function json(res, status, payload) {
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify(payload));
+}
+function notFound(res) { return json(res, 404, { error: 'Not found' }); }
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', (chunk) => (data += chunk));
+    req.on('end', () => resolve(data));
+    req.on('error', reject);
+  });
+}
+
+async function loadNotes() {
+  const raw = await readFile(NOTES_PATH, 'utf8');
+  return JSON.parse(raw || '[]');
+}
+async function saveNotes(notes) {
+  await writeFile(NOTES_PATH, JSON.stringify(notes, null, 2), 'utf8');
+}
+function nextId(notes) {
+  const max = notes.reduce((m, n) => Math.max(m, n.id || 0), 0);
+  return max + 1;
+}
+function parseId(pathname) {
+  const parts = pathname.split('/').filter(Boolean);
+  if (parts.length !== 2) return null;
+  const id = Number(parts[1]);
+  return Number.isFinite(id) ? id : null;
+}
+
+createServer(async (req, res) => {
+  const url = new URL(req.url, 'http://localhost');
+
+  if (req.method === 'GET' && url.pathname === '/health') {
+    return json(res, 200, { ok: true });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/notes') {
+    const notes = await loadNotes();
+    return json(res, 200, notes);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/notes') {
+    const notes = await loadNotes();
+
+    let body;
+    try {
+      const raw = await readBody(req);
+      body = raw ? JSON.parse(raw) : {};
+    } catch {
+      return json(res, 400, { error: 'Invalid JSON' });
+    }
+
+    const text = String(body.text ?? '').trim();
+    if (!text) return json(res, 400, { error: 'text is required' });
+
+    const now = Date.now();
+    const note = { id: nextId(notes), text, createdAt: now, updatedAt: now };
+
+    notes.push(note);
+    await saveNotes(notes);
+    return json(res, 201, note);
+  }
+
+  if (req.method === 'GET' && url.pathname.startsWith('/notes/')) {
+    const id = parseId(url.pathname);
+    if (id === null) return json(res, 400, { error: 'Invalid id' });
+
+    const notes = await loadNotes();
+    const note = notes.find((n) => n.id === id);
+    if (!note) return json(res, 404, { error: 'Not found' });
+
+    return json(res, 200, note);
+  }
+
+  if (req.method === 'PUT' && url.pathname.startsWith('/notes/')) {
+    const id = parseId(url.pathname);
+    if (id === null) return json(res, 400, { error: 'Invalid id' });
+
+    let body;
+    try {
+      const raw = await readBody(req);
+      body = raw ? JSON.parse(raw) : {};
+    } catch {
+      return json(res, 400, { error: 'Invalid JSON' });
+    }
+
+    const text = String(body.text ?? '').trim();
+    if (!text) return json(res, 400, { error: 'text is required' });
+
+    const notes = await loadNotes();
+    const idx = notes.findIndex((n) => n.id === id);
+    if (idx === -1) return json(res, 404, { error: 'Not found' });
+
+    notes[idx] = { ...notes[idx], text, updatedAt: Date.now() };
+    await saveNotes(notes);
+    return json(res, 200, notes[idx]);
+  }
+
+  // NEW: DELETE /notes/:id
+  if (req.method === 'DELETE' && url.pathname.startsWith('/notes/')) {
+    const id = parseId(url.pathname);
+    if (id === null) return json(res, 400, { error: 'Invalid id' });
+
+    const notes = await loadNotes();
+    const idx = notes.findIndex((n) => n.id === id);
+    if (idx === -1) return json(res, 404, { error: 'Not found' });
+
+    notes.splice(idx, 1);
+    await saveNotes(notes);
+
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  return notFound(res);
+}).listen(PORT, () => console.log('http://localhost:' + PORT));
+`,
+      server_v9: `// src/server.mjs (v9 - includes minimal CORS)
+import { createServer } from 'node:http';
+import { readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const PORT = Number(process.env.PORT ?? 3000); // NEW: configurable port
+
+// NEW: allow a browser frontend later (CORS)
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? 'http://localhost:5173';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const NOTES_PATH = path.join(__dirname, '..', 'data', 'notes.json');
+
+function setCors(res) { // NEW
+  res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
+function json(res, status, payload) {
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify(payload));
+}
+function notFound(res) { return json(res, 404, { error: 'Not found' }); }
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', (chunk) => (data += chunk));
+    req.on('end', () => resolve(data));
+    req.on('error', reject);
+  });
+}
+
+async function loadNotes() {
+  const raw = await readFile(NOTES_PATH, 'utf8');
+  return JSON.parse(raw || '[]');
+}
+async function saveNotes(notes) {
+  await writeFile(NOTES_PATH, JSON.stringify(notes, null, 2), 'utf8');
+}
+function nextId(notes) {
+  const max = notes.reduce((m, n) => Math.max(m, n.id || 0), 0);
+  return max + 1;
+}
+function parseId(pathname) {
+  const parts = pathname.split('/').filter(Boolean);
+  if (parts.length !== 2) return null;
+  const id = Number(parts[1]);
+  return Number.isFinite(id) ? id : null;
+}
+
+createServer(async (req, res) => {
+  setCors(res); // NEW
+
+  if (req.method === 'OPTIONS') { // NEW: browser preflight
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  const url = new URL(req.url, 'http://localhost');
+
+  if (req.method === 'GET' && url.pathname === '/health') {
+    return json(res, 200, { ok: true });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/notes') {
+    const notes = await loadNotes();
+    return json(res, 200, notes);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/notes') {
+    const notes = await loadNotes();
+
+    let body;
+    try {
+      const raw = await readBody(req);
+      body = raw ? JSON.parse(raw) : {};
+    } catch {
+      return json(res, 400, { error: 'Invalid JSON' });
+    }
+
+    const text = String(body.text ?? '').trim();
+    if (!text) return json(res, 400, { error: 'text is required' });
+
+    const now = Date.now();
+    const note = { id: nextId(notes), text, createdAt: now, updatedAt: now };
+
+    notes.push(note);
+    await saveNotes(notes);
+    return json(res, 201, note);
+  }
+
+  if (req.method === 'GET' && url.pathname.startsWith('/notes/')) {
+    const id = parseId(url.pathname);
+    if (id === null) return json(res, 400, { error: 'Invalid id' });
+
+    const notes = await loadNotes();
+    const note = notes.find((n) => n.id === id);
+    if (!note) return json(res, 404, { error: 'Not found' });
+
+    return json(res, 200, note);
+  }
+
+  if (req.method === 'PUT' && url.pathname.startsWith('/notes/')) {
+    const id = parseId(url.pathname);
+    if (id === null) return json(res, 400, { error: 'Invalid id' });
+
+    let body;
+    try {
+      const raw = await readBody(req);
+      body = raw ? JSON.parse(raw) : {};
+    } catch {
+      return json(res, 400, { error: 'Invalid JSON' });
+    }
+
+    const text = String(body.text ?? '').trim();
+    if (!text) return json(res, 400, { error: 'text is required' });
+
+    const notes = await loadNotes();
+    const idx = notes.findIndex((n) => n.id === id);
+    if (idx === -1) return json(res, 404, { error: 'Not found' });
+
+    notes[idx] = { ...notes[idx], text, updatedAt: Date.now() };
+    await saveNotes(notes);
+    return json(res, 200, notes[idx]);
+  }
+
+  if (req.method === 'DELETE' && url.pathname.startsWith('/notes/')) {
+    const id = parseId(url.pathname);
+    if (id === null) return json(res, 400, { error: 'Invalid id' });
+
+    const notes = await loadNotes();
+    const idx = notes.findIndex((n) => n.id === id);
+    if (idx === -1) return json(res, 404, { error: 'Not found' });
+
+    notes.splice(idx, 1);
+    await saveNotes(notes);
+
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  return notFound(res);
+}).listen(PORT, () => console.log('http://localhost:' + PORT));
+`,
+      curl_suite: `# 1) health
+curl http://localhost:3000/health
+
+# 2) list notes (empty at first)
+curl http://localhost:3000/notes
+
+# 3) create 2 notes
+curl -X POST http://localhost:3000/notes -H "Content-Type: application/json" -d '{"text":"buy milk"}'
+curl -X POST http://localhost:3000/notes -H "Content-Type: application/json" -d '{"text":"finish HW"}'
+
+# 4) list again
+curl http://localhost:3000/notes
+
+# 5) get note #1
+curl http://localhost:3000/notes/1
+
+# 6) update note #1
+curl -X PUT http://localhost:3000/notes/1 -H "Content-Type: application/json" -d '{"text":"buy oat milk"}'
+
+# 7) delete note #2 (show headers with -i)
+curl -i -X DELETE http://localhost:3000/notes/2
+
+# 8) verify persistence: stop server + start again, then list
+# (Ctrl+C to stop, npm run dev to restart)
+curl http://localhost:3000/notes
+`
+    };
+
+    // =========================
+    // CodeMirror setup
+    // =========================
+    function highlightTaggedLines(cm){
+      // highlight any line that contains // NEW or // CHANGED (visual cue for incremental changes)
+      cm.eachLine((handle) => {
+        const n = cm.getLineNumber(handle);
+        const line = cm.getLine(n) || '';
+        if (line.includes('// NEW') || line.includes('// CHANGED')) {
+          cm.addLineClass(handle, 'background', 'cm-line-changed');
+        }
+      });
+    }
+
+    function makeEditor(textareaId, mode, initial) {
+      const ta = document.getElementById(textareaId);
+      if (!ta) return null;
+      ta.value = initial;
+
+      const cm = CodeMirror.fromTextArea(ta, {
+        mode,
+        theme: 'eclipse',
+        lineNumbers: true,
+        viewportMargin: Infinity,
+        indentUnit: 2,
+        tabSize: 2
+      });
+
+      cm.on('cursorActivity', () => {
+        const info = cm.getCursor();
+        const label = document.querySelector(`[data-editor="${textareaId}"]`);
+        if (label) label.textContent = `Ln ${info.line + 1}, Col ${info.ch + 1}`;
+      });
+
+      // trigger initial label
+      setTimeout(() => {
+        const label = document.querySelector(`[data-editor="${textareaId}"]`);
+        if (label) label.textContent = 'Ln 1, Col 1';
+        cm.refresh(); // make sure it's visible even if it was created hidden
+      }, 0);
+
+      highlightTaggedLines(cm);
+      return cm;
+    }
+
+    const editors = {};
+    editors.pkg = makeEditor('code-pkg', 'application/json', snippets.pkg);
+    editors.server_v1 = makeEditor('code-server-v1', 'javascript', snippets.server_v1);
+    editors.server_v2 = makeEditor('code-server-v2', 'javascript', snippets.server_v2);
+    editors.server_v3 = makeEditor('code-server-v3', 'javascript', snippets.server_v3);
+    editors.notes_json = makeEditor('code-notes-json', 'application/json', snippets.notes_json);
+    editors.server_v4 = makeEditor('code-server-v4', 'javascript', snippets.server_v4);
+    editors.server_v5 = makeEditor('code-server-v5', 'javascript', snippets.server_v5);
+    editors.server_v6 = makeEditor('code-server-v6', 'javascript', snippets.server_v6);
+    editors.server_v7 = makeEditor('code-server-v7', 'javascript', snippets.server_v7);
+    editors.server_v8 = makeEditor('code-server-v8', 'javascript', snippets.server_v8);
+    editors.server_v9 = makeEditor('code-server-v9', 'javascript', snippets.server_v9);
+    editors.curl_suite = makeEditor('code-curl-suite', 'text/plain', snippets.curl_suite);
+
+    // final slide duplicates
+    editors.server_final = makeEditor('code-server-final', 'javascript', snippets.server_v9);
+    editors.notes_final = makeEditor('code-notes-final', 'application/json', snippets.notes_json);
+
+
+    // Now that CodeMirror editors exist, show the first slide and refresh it.
+    showSlide(0);
+    setTimeout(() => refreshEditorsInSlide(slides[current]), 0);
+    // =========================
+    // Copy + reset buttons
+    // =========================
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        // quick visual feedback
+      });
+    }
+
+    document.querySelectorAll('[data-copy]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-copy');
+        copyToClipboard(snippets[key] ?? '');
+        btn.textContent = '✅ Copied';
+        setTimeout(() => btn.textContent = '📋 Copy', 900);
+      });
+    });
+
+    document.querySelectorAll('[data-reset]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-reset');
+        // reset all editors that currently contain that snippet
+        Object.entries(editors).forEach(([ek, ed]) => {
+          if (!ed) return;
+          // crude mapping: reset by checking textarea ids; only reset if this editor was initialized with this snippet key
+        });
+        // More direct: reset the editor that is in the same code-playground
+        const playground = btn.closest('.code-playground');
+        if (!playground) return;
+        const ta = playground.querySelector('textarea');
+        if (!ta) return;
+        // find CodeMirror instance for this textarea:
+        const cm = ta.nextSibling && ta.nextSibling.CodeMirror ? ta.nextSibling.CodeMirror : null;
+        if (!cm) return;
+        cm.setValue(snippets[key] ?? '');
+        // re-highlight tagged lines after reset
+        if (typeof highlightTaggedLines === 'function') {
+          // clear old line classes (simple: re-create by removing + re-adding isn't trivial; we just re-add)
+          highlightTaggedLines(cm);
+        }
+        cm.refresh();
+      });
+    });
+  </script>
+</body>
+</html>
