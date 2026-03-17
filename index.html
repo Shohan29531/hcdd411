@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCDD 411 — Interactive Web Technologies · Penn State</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #5B8DEE;
+            --secondary: #2C3E50;
+            --accent: #E8B04B;
+            --dark: #1A1D29;
+            --light: #E8EBF0;
+            --code-bg: #252834;
+            --success: #4ECDC4;
+            --error: #E85D75;
+            --bg-gradient-start: #1A1D29;
+            --bg-gradient-end: #2C3E50;
+            --slide-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(91, 141, 238, 0.3);
+            --text-primary: #E8EBF0;
+            --text-secondary: #A8B2C1;
+        }
+
+        [data-theme="light"] {
+            --primary: #3B7DD6;
+            --secondary: #5A6C7D;
+            --accent: #D4940C;
+            --dark: #FFFFFF;
+            --light: #1F2937;
+            --code-bg: #F8F9FA;
+            --success: #059669;
+            --error: #DC2626;
+            --bg-gradient-start: #F0F4F8;
+            --bg-gradient-end: #E1E8ED;
+            --slide-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(59, 125, 214, 0.3);
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 140px 0 120px 0;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .presentation-container {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .slide {
+            width: 90%;
+            max-width: 1200px;
+            min-height: 400px;
+            background: var(--slide-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 60px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: none;
+            border: 2px solid var(--border-color);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            display: block;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 4em;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            animation: slideInDown 0.8s ease-out;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 2.5em;
+            color: var(--accent);
+            margin-bottom: 30px;
+            letter-spacing: -1px;
+        }
+
+        h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            font-size: 1.5em;
+            color: var(--primary);
+            margin: 25px 0 15px 0;
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        ul { margin: 20px 0; padding-left: 30px; }
+        li {
+            margin: 12px 0;
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        code {
+            font-family: 'Space Mono', monospace;
+            background: rgba(91, 141, 238, 0.2);
+            padding: 3px 8px;
+            border-radius: 5px;
+            color: var(--primary);
+        }
+
+        [data-theme="light"] code { background: rgba(59, 125, 214, 0.15); }
+
+        .info-box {
+            background: rgba(232, 176, 75, 0.15);
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        .tip-box {
+            background: rgba(78, 205, 196, 0.15);
+            border-left: 4px solid var(--success);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        .warning-box {
+            background: rgba(232, 93, 117, 0.15);
+            border-left: 4px solid var(--error);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        /* ── Code Playground ── */
+        .code-playground {
+            background: var(--code-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-playground::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 30px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 15px 15px 0 0;
+        }
+
+        .playground-label {
+            position: absolute;
+            top: 5px; left: 20px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9em;
+            color: white;
+            font-weight: 700;
+            z-index: 1;
+        }
+
+        .code-editor {
+            font-family: 'Space Mono', monospace;
+            width: 100%;
+            min-height: 280px;
+            background: rgba(0, 0, 0, 0.4);
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            color: #00ff88;
+            font-size: 0.95em;
+            resize: vertical;
+            margin-top: 15px;
+            outline: none;
+            line-height: 1.5;
+        }
+
+        [data-theme="light"] .code-editor {
+            background: rgba(0, 0, 0, 0.05);
+            color: #5B21B6;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .run-button {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .run-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .output-console {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 120px;
+            font-family: 'Space Mono', monospace;
+            color: var(--success);
+            border: 1px solid var(--success);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        [data-theme="light"] .output-console {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .output-console .error { color: var(--error); }
+
+        .output-label {
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* ── Fixed UI Elements ── */
+        .penn-state-badge {
+            position: fixed;
+            top: 40px; left: 40px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 1.2em;
+            color: var(--primary);
+            z-index: 1000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .interactive-label {
+            display: inline-block;
+            background: var(--success);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-left: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 40px; right: 180px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .theme-toggle:hover { transform: translateY(-2px); }
+
+        .slide-indicator {
+            position: fixed;
+            top: 40px; right: 40px;
+            background: var(--primary);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 1em;
+            z-index: 1000;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 40px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-button:hover { background: var(--secondary); transform: scale(1.05); }
+        .nav-button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* ── Module links on landing slide ── */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+            margin-top: 30px;
+        }
+
+        .module-link {
+            background: rgba(91, 141, 238, 0.1);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 22px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            display: block;
+        }
+
+        .module-link:hover {
+            border-color: var(--primary);
+            background: rgba(91, 141, 238, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .module-link-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.05em;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .module-link-desc {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .module-badge {
+            display: inline-block;
+            background: rgba(78, 205, 196, 0.2);
+            color: var(--success);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7em;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+
+        @keyframes slideInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="penn-state-badge">HCDD 411 <span class="interactive-label">Interactive</span></div>
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <span class="theme-icon">🌙</span>
+        <span class="theme-text">Light Mode</span>
+    </button>
+    <div class="slide-indicator">
+        <span id="currentSlide">1</span> / <span id="totalSlides">3</span>
+    </div>
+
+    <div class="presentation-container">
+
+        <!-- Slide 1: Landing -->
+        <div class="slide active" data-slide="1">
+            <h1>Interactive<br>Web Technologies</h1>
+            <p class="subtitle">HCDD 411 · Penn State University · Md Touhidul Islam</p>
+
+            <div class="tip-box">
+                <strong style="color: var(--success);">💡 These slides run code.</strong><br>
+                Every lecture is a self-contained HTML file. Students write and execute JavaScript, jQuery, and API calls directly inside the slides — no IDE, no switching tabs, no copy-paste. Hit the arrow to see a live example.
+            </div>
+
+            <h3>Course Modules</h3>
+            <div class="module-grid">
+                <a class="module-link" href="client-server/client-server.html">
+                    <div class="module-link-title">🌐 Client-Server Architecture</div>
+                    <div class="module-link-desc">HTTP, REST, databases, APIs — the conceptual foundation.</div>
+                    <span class="module-badge">17 slides</span>
+                </a>
+                <a class="module-link" href="javascript-syntax/js-syntax-1.html">
+                    <div class="module-link-title">⚡ JavaScript Part 1</div>
+                    <div class="module-link-desc">Variables, types, operators, control flow, functions.</div>
+                    <span class="module-badge">15 slides · 12 playgrounds</span>
+                </a>
+                <a class="module-link" href="javascript-syntax/js-syntax-2.html">
+                    <div class="module-link-title">🧩 JavaScript Part 2</div>
+                    <div class="module-link-desc">Objects, arrays, ES6 — map, filter, classes, arrow functions.</div>
+                    <span class="module-badge">16 slides · 13 playgrounds</span>
+                </a>
+                <a class="module-link" href="jquery/jquery.html">
+                    <div class="module-link-title">💲 jQuery</div>
+                    <div class="module-link-desc">Selectors, DOM manipulation, events, animations.</div>
+                    <span class="module-badge">19 slides · 17 playgrounds</span>
+                </a>
+                <a class="module-link" href="API/api.html">
+                    <div class="module-link-title">🔌 APIs & Async JS</div>
+                    <div class="module-link-desc">AJAX, jQuery $.ajax, Fetch, Axios, async/await.</div>
+                    <span class="module-badge">27 slides · 24 playgrounds</span>
+                </a>
+                <a class="module-link" href="nodejs/build-backend-nodejs.html">
+                    <div class="module-link-title">🖥️ Node.js Backend</div>
+                    <div class="module-link-desc">Build a full REST API with Express, step by step.</div>
+                    <span class="module-badge">17 slides · 15 playgrounds</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Slide 2: Variables playground (real slide from JS Part 1) -->
+        <div class="slide" data-slide="2">
+            <h2>JavaScript Variables</h2>
+            <h3>Declaring Variables</h3>
+            <ul>
+                <li>Use <code>var</code> keyword (older style)</li>
+                <li>Use <code>let</code> keyword (modern, recommended)</li>
+                <li>Use <code>const</code> for constants — cannot be reassigned</li>
+                <li>No need to declare a data type!</li>
+            </ul>
+            <div class="warning-box">
+                <strong style="color: var(--error);">⚠️ Variable Naming Rules:</strong>
+                <ul>
+                    <li>Case sensitive: <code>myVar</code> ≠ <code>myvar</code></li>
+                    <li>Can contain: letters, numbers, <code>$</code>, <code>_</code></li>
+                    <li>Cannot start with a number</li>
+                    <li>Cannot use reserved keywords (like <code>if</code>, <code>for</code>, etc.)</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PLAYGROUND: Create Your Variables</span>
+                <textarea class="code-editor" id="variables">// Try creating your own variables!
+var numberOfStudents = 30;
+let studentName = "Sam";
+const COURSE_NAME = "IST 411"; // Constants use UPPER_CASE
+
+console.log("Students:", numberOfStudents);
+console.log("Name:", studentName);
+console.log("Course:", COURSE_NAME);
+
+// Variables can change (except const)
+numberOfStudents = 35;
+studentName = "Alex";
+console.log("Updated students:", numberOfStudents);
+console.log("Updated name:", studentName);
+
+// Try adding your own variables below:
+</textarea>
+                <button class="run-button" onclick="runCode('variables', 'variables-output')">Run Code</button>
+                <div class="output-console" id="variables-output">
+                    <span class="output-label">Output:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Array methods playground (real slide from JS Part 2) -->
+        <div class="slide" data-slide="3">
+            <h2>Array Method: filter()</h2>
+            <p class="subtitle">Creates a new array with only the elements that pass a test</p>
+            <div class="info-box">
+                <strong>How it works:</strong><br>
+                <code>filter()</code> runs a function on each item. If the function returns <code>true</code>, the item is kept. If <code>false</code>, it's removed. The original array is never modified.
+            </div>
+            <ul>
+                <li>Takes a <strong>callback function</strong> that returns <code>true</code> or <code>false</code></li>
+                <li>Returns a <strong>new array</strong> — the original is unchanged</li>
+                <li>Perfect for finding items that match a condition</li>
+            </ul>
+            <div class="code-playground">
+                <span class="playground-label">EXPERIMENT: Filter an Array</span>
+                <textarea class="code-editor" id="filter-demo">const grades = [72, 88, 95, 61, 83, 90, 77, 45, 91];
+
+// Keep only passing grades (>= 70)
+const passing = grades.filter(grade => grade >= 70);
+console.log("All grades:", grades);
+console.log("Passing grades:", passing);
+
+// Chain with map() to convert to letter grades
+const letterGrades = passing.map(g => {
+    if (g >= 90) return "A";
+    if (g >= 80) return "B";
+    return "C";
+});
+console.log("Letter grades:", letterGrades);
+
+// Try it: filter grades above 85
+const highScores = grades.filter(g => g > 85);
+console.log("High scores:", highScores);
+</textarea>
+                <button class="run-button" onclick="runCode('filter-demo', 'filter-output')">Run Code</button>
+                <div class="output-console" id="filter-output">
+                    <span class="output-label">Output:</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)" disabled>← Prev</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 3;
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            if (n > totalSlides) currentSlide = totalSlides;
+            if (n < 1) currentSlide = 1;
+            slides.forEach(s => s.classList.remove('active'));
+            slides[currentSlide - 1].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide;
+            document.getElementById('prevBtn').disabled = (currentSlide === 1);
+            document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function changeSlide(dir) {
+            currentSlide += dir;
+            showSlide(currentSlide);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'TEXTAREA') return;
+            if (e.key === 'ArrowLeft')  changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        function runCode(editorId, outputId) {
+            const code = document.getElementById(editorId).value;
+            const output = document.getElementById(outputId);
+            output.innerHTML = '<span class="output-label">Output:</span><br>';
+            const logs = [];
+            const originalLog = console.log;
+            console.log = function(...args) {
+                logs.push(args.map(arg =>
+                    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+                ).join(' '));
+                originalLog.apply(console, args);
+            };
+            try {
+                eval(code);
+                output.innerHTML += logs.length > 0
+                    ? logs.join('<br>')
+                    : '<span style="color: var(--accent);">Code executed successfully (no console output)</span>';
+            } catch (error) {
+                output.innerHTML += '<span class="error">Error: ' + error.message + '</span>';
+            } finally {
+                console.log = originalLog;
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.querySelector('.theme-icon');
+            const text = document.querySelector('.theme-text');
+            if (body.getAttribute('data-theme') === 'light') {
+                body.removeAttribute('data-theme');
+                icon.textContent = '🌙';
+                text.textContent = 'Light Mode';
+            } else {
+                body.setAttribute('data-theme', 'light');
+                icon.textContent = '☀️';
+                text.textContent = 'Dark Mode';
+            }
+        }
+    </script>
+</body>
+</html>
