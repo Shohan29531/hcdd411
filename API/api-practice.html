@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCDD 411 – API Practice Problems</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #3B7DD6;
+            --secondary: #5A6C7D;
+            --accent: #D4940C;
+            --code-bg: #F8F9FA;
+            --success: #059669;
+            --error: #DC2626;
+            --bg-gradient-start: #F0F4F8;
+            --bg-gradient-end: #E1E8ED;
+            --slide-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(59, 125, 214, 0.3);
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 140px 0 120px 0;
+        }
+
+        .presentation-container { width: 100%; min-height: 100vh; }
+
+        .slide {
+            width: 90%;
+            max-width: 1200px;
+            min-height: 400px;
+            background: var(--slide-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 60px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: none;
+            border: 2px solid var(--border-color);
+        }
+
+        .slide.active { opacity: 1; transform: translateX(0); display: block; }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 4em;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            line-height: 1.1;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 2.5em;
+            color: var(--accent);
+            margin-bottom: 30px;
+            letter-spacing: -1px;
+        }
+
+        h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            font-size: 1.5em;
+            color: var(--primary);
+            margin: 25px 0 15px 0;
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 50px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .badge-easy        { background: rgba(5, 150, 105, 0.12); color: #059669; border: 2px solid #059669; }
+        .badge-easy-medium { background: rgba(59, 125, 214, 0.12); color: #3B7DD6; border: 2px solid #3B7DD6; }
+        .badge-medium      { background: rgba(212, 148, 12, 0.12); color: #D4940C; border: 2px solid #D4940C; }
+        .badge-medium-hard { background: rgba(220, 38, 38, 0.12); color: #DC2626; border: 2px solid #DC2626; }
+
+        .problem-number {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            font-weight: 700;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .code-playground {
+            background: var(--code-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-playground::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 30px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 15px 15px 0 0;
+        }
+
+        .playground-label {
+            position: absolute;
+            top: 5px; left: 20px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9em;
+            color: white;
+            font-weight: 700;
+            z-index: 1;
+        }
+
+        .editor-wrapper {
+            margin-top: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+        }
+
+        .CodeMirror {
+            font-family: 'Space Mono', monospace !important;
+            font-size: 0.95em !important;
+            height: auto !important;
+            min-height: 200px;
+            line-height: 1.6 !important;
+            border-radius: 10px;
+        }
+
+        .CodeMirror-scroll { min-height: 200px; }
+        .CodeMirror-gutters { border-right: 2px solid var(--border-color) !important; }
+
+        .ide-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px 10px 0 0;
+            margin-top: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .ide-toolbar .file-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--primary);
+            color: white;
+            border-radius: 6px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .ide-toolbar .toolbar-actions { margin-left: auto; display: flex; gap: 8px; }
+
+        .toolbar-btn {
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s ease;
+        }
+
+        .toolbar-btn:hover { background: rgba(0, 0, 0, 0.1); color: var(--text-primary); }
+
+        .run-button {
+            background: linear-gradient(135deg, var(--success), #10B981);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .run-button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); }
+
+        .clear-button {
+            background: linear-gradient(135deg, var(--secondary), #6B7280);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 15px;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .clear-button:hover { transform: translateY(-3px); }
+
+        .output-console {
+            background: #1F2937;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 120px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Space Mono', monospace;
+            color: #10B981;
+            border: 1px solid var(--success);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-console .error { color: #EF4444; }
+        .output-console .warn  { color: #F59E0B; }
+
+        .output-label { color: #F59E0B; font-weight: 700; margin-bottom: 10px; }
+
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-button:hover { background: var(--secondary); transform: scale(1.05); }
+        .nav-button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .slide-indicator {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            background: var(--primary);
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 1em;
+            z-index: 1000;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .info-box {
+            background: rgba(212, 148, 12, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        .tip-box {
+            background: rgba(5, 150, 105, 0.1);
+            border-left: 4px solid var(--success);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        .warning-box {
+            background: rgba(220, 38, 38, 0.1);
+            border-left: 4px solid var(--error);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        ul { margin: 20px 0; padding-left: 30px; }
+        li { margin: 12px 0; font-size: 1.1em; line-height: 1.6; }
+        p  { font-size: 1.1em; line-height: 1.6; }
+
+        code {
+            font-family: 'Space Mono', monospace;
+            background: rgba(59, 125, 214, 0.15);
+            padding: 3px 8px;
+            border-radius: 5px;
+            color: var(--primary);
+        }
+
+        .penn-state-badge {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 1.2em;
+            color: var(--primary);
+            z-index: 1000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 15px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 0 0 10px 10px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .status-bar .language { color: var(--primary); font-weight: 600; }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .example-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        /* Title slide accent strip */
+        .title-strip {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .strip { height: 8px; border-radius: 4px; flex: 1; }
+        .strip-easy        { background: #059669; }
+        .strip-easy-medium { background: #3B7DD6; }
+        .strip-medium      { background: #D4940C; }
+        .strip-hard        { background: #DC2626; }
+    </style>
+</head>
+<body>
+    <div class="penn-state-badge">HCDD 411</div>
+    <div class="slide-indicator">
+        <span id="currentSlide">1</span> / <span id="totalSlides">21</span>
+    </div>
+
+    <div class="presentation-container">
+
+        <!-- ─── TITLE SLIDE ──────────────────────────────────── -->
+        <div class="slide active" data-slide="1">
+            <h1>API Practice Problems</h1>
+            <h2>HCDD 411</h2>
+            <p class="subtitle">20 problems — from guided to independent</p>
+            <div class="title-strip">
+                <div class="strip strip-easy"></div>
+                <div class="strip strip-easy-medium"></div>
+                <div class="strip strip-medium"></div>
+                <div class="strip strip-hard"></div>
+            </div>
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3 style="color:#059669;">🟢 Easy (1–5)</h3>
+                    <p>Step-by-step TODOs. Every line is scaffolded for you.</p>
+                </div>
+                <div class="example-card">
+                    <h3 style="color:#3B7DD6;">🔵 Easy-Medium (6–10)</h3>
+                    <p>Less scaffolding. A few hints to point you in the right direction.</p>
+                </div>
+                <div class="example-card">
+                    <h3 style="color:#D4940C;">🟡 Medium (11–15)</h3>
+                    <p>Minimal hints. You're mostly on your own — think it through.</p>
+                </div>
+                <div class="example-card">
+                    <h3 style="color:#DC2626;">🔴 Medium-Hard (16–20)</h3>
+                    <p>No scaffolding. Multi-step problems that combine concepts.</p>
+                </div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">All examples use:</strong>
+                <code>https://jsonplaceholder.typicode.com</code> — a free fake REST API, perfect for practice.
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════
+             EASY  (Problems 1–5)
+        ════════════════════════════════════════════════════ -->
+
+        <!-- Problem 1 -->
+        <div class="slide" data-slide="2">
+            <div class="problem-number">Problem 1 of 20</div>
+            <span class="difficulty-badge badge-easy">🟢 Easy</span>
+            <h2>Fetch a User's Name</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Use <code>fetch()</code> to GET user #1 from the API</li>
+                    <li>Parse the JSON response</li>
+                    <li>Log the user's <code>name</code> to the console</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 1: Fetch GET – user name</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p01-fetch-name.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p01')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p01">// URL to use: "https://jsonplaceholder.typicode.com/users/1"
+
+async function getUserName() {
+  try {
+    // Step 1: Fetch the URL (await the fetch call)
+    const response = await fetch("https://jsonplaceholder.typicode.com/users/1");
+
+    // Step 2: Parse the JSON (await response.json())
+    const user = await response.json();
+
+    // Step 3: Log the user's name
+    // console.log("Name:", ???);
+
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+}
+
+getUserName();</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p01">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p01','p01-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p01-out')">Clear</button>
+                <div class="output-console" id="p01-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">Hints:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Replace <code>???</code> with <code>user.name</code></li>
+                    <li>Expected output: <strong>Leanne Graham</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Problem 2 -->
+        <div class="slide" data-slide="3">
+            <div class="problem-number">Problem 2 of 20</div>
+            <span class="difficulty-badge badge-easy">🟢 Easy</span>
+            <h2>Parse a JSON String</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Use <code>JSON.parse()</code> to convert the string below into a JS object</li>
+                    <li>Log the <code>title</code> and <code>userId</code> fields</li>
+                    <li>Then use <code>JSON.stringify()</code> to convert the object back to a string and log it</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 2: JSON.parse + JSON.stringify</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p02-json.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p02')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p02">const raw = '{"userId":1,"id":42,"title":"Hello World","completed":false}';
+
+// Step 1: Parse the JSON string into a JS object
+// const obj = JSON.parse(???);
+
+// Step 2: Log the title and userId
+// console.log("Title:", ???);
+// console.log("User ID:", ???);
+
+// Step 3: Stringify the object back and log it
+// const backToString = JSON.stringify(???);
+// console.log("As string:", backToString);</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p02">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p02','p02-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p02-out')">Clear</button>
+                <div class="output-console" id="p02-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">Hints:</strong>
+                <ul style="margin-top:10px;">
+                    <li><code>JSON.parse(raw)</code> → turns a string into an object</li>
+                    <li><code>JSON.stringify(obj)</code> → turns an object back into a string</li>
+                    <li>Access properties with dot notation: <code>obj.title</code>, <code>obj.userId</code></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Problem 3 -->
+        <div class="slide" data-slide="4">
+            <div class="problem-number">Problem 3 of 20</div>
+            <span class="difficulty-badge badge-easy">🟢 Easy</span>
+            <h2>jQuery AJAX — Fetch a Post</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Use <code>$.ajax()</code> to GET post #5 from the API</li>
+                    <li>In the <code>success</code> callback, log the post's <code>title</code></li>
+                    <li>Add an <code>error</code> callback that logs <code>"Request failed"</code></li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 3: $.ajax GET</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p03-ajax.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p03')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p03">$.ajax({
+  url: "https://jsonplaceholder.typicode.com/posts/5",
+  method: "GET",         // HTTP method
+
+  success: function(data) {
+    // Step 1: log the post title
+    // console.log("Post title:", ???);
+  },
+
+  error: function(xhr, status, err) {
+    // Step 2: log "Request failed"
+    // console.error(???);
+  }
+});</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p03">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p03','p03-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p03-out')">Clear</button>
+                <div class="output-console" id="p03-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">Hints:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Inside <code>success</code>, the parsed object arrives as <code>data</code></li>
+                    <li>The title field is <code>data.title</code></li>
+                    <li>Expected output: <strong>nesciunt quas odio</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Problem 4 -->
+        <div class="slide" data-slide="5">
+            <div class="problem-number">Problem 4 of 20</div>
+            <span class="difficulty-badge badge-easy">🟢 Easy</span>
+            <h2>Fetch a User's Email</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Fetch user #3 from the API</li>
+                    <li>Log both their <code>name</code> and <code>email</code></li>
+                    <li>Add proper error handling with <code>if (!response.ok)</code></li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 4: Fetch GET – name + email</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p04-email.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p04')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p04">async function getUserInfo() {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/users/3");
+
+    // Check if the request succeeded — throw if not
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    // Parse the JSON
+    const user = await response.json();
+
+    // Log name and email
+    // console.log("Name:", ???);
+    // console.log("Email:", ???);
+
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+}
+
+getUserInfo();</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p04">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p04','p04-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p04-out')">Clear</button>
+                <div class="output-console" id="p04-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">Hints:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Replace <code>???</code> with <code>user.name</code> and <code>user.email</code></li>
+                    <li>Expected name: <strong>Clementine Bauch</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Problem 5 -->
+        <div class="slide" data-slide="6">
+            <div class="problem-number">Problem 5 of 20</div>
+            <span class="difficulty-badge badge-easy">🟢 Easy</span>
+            <h2>Fetch a Todo — async/await</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Use <code>async/await</code> with Fetch to GET todo #7</li>
+                    <li>Log the <code>title</code> and whether it is <code>completed</code></li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 5: async/await – todo</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p05-todo.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p05')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p05">// URL: "https://jsonplaceholder.typicode.com/todos/7"
+
+async function getTodo() {
+  try {
+    // Fetch the todo and parse it in two steps
+    const response = await fetch(???);
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const todo = await response.json();
+
+    // Log title and completed status
+    console.log("Title:", todo.title);
+    console.log("Completed:", ???);
+
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+}
+
+getTodo();</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p05">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p05','p05-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p05-out')">Clear</button>
+                <div class="output-console" id="p05-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">Hints:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Fill in the URL string and replace <code>???</code> with <code>todo.completed</code></li>
+                    <li>Expected output: <strong>illo expedita consequatur quia in</strong>, Completed: false</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════
+             EASY-MEDIUM  (Problems 6–10)
+        ════════════════════════════════════════════════════ -->
+
+        <!-- Problem 6 -->
+        <div class="slide" data-slide="7">
+            <div class="problem-number">Problem 6 of 20</div>
+            <span class="difficulty-badge badge-easy-medium">🔵 Easy-Medium</span>
+            <h2>Count All Posts</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Fetch <strong>all</strong> posts from <code>/posts</code> (no ID — returns an array)</li>
+                    <li>Log the total number of posts using <code>.length</code></li>
+                    <li>Also log the title of the <strong>first</strong> post in the array</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 6: Fetch array + count</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p06-count.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p06')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p06">async function countPosts() {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const posts = await response.json();
+
+    // posts is an array — log its length and the first post's title
+    // Your code here:
+
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+}
+
+countPosts();</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p06">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p06','p06-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p06-out')">Clear</button>
+                <div class="output-console" id="p06-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">Hint:</strong>
+                Arrays have a <code>.length</code> property. Access index 0 with <code>posts[0].title</code>. Expected total: <strong>100</strong>.
+            </div>
+        </div>
+
+        <!-- Problem 7 -->
+        <div class="slide" data-slide="8">
+            <div class="problem-number">Problem 7 of 20</div>
+            <span class="difficulty-badge badge-easy-medium">🔵 Easy-Medium</span>
+            <h2>jQuery AJAX — Create a Post</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Use <code>$.ajax()</code> with <code>method: "POST"</code> to create a new post</li>
+                    <li>Send a JSON body with <code>title</code>, <code>body</code>, and <code>userId</code> fields</li>
+                    <li>Log the <code>id</code> of the newly created post from the response</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 7: $.ajax POST</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p07-ajax-post.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p07')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p07">$.ajax({
+  url: "https://jsonplaceholder.typicode.com/posts",
+  method: "POST",
+  contentType: "application/json",
+  data: JSON.stringify({
+    title:  "My Practice Post",
+    body:   "Learning APIs is fun!",
+    userId: 1
+  }),
+
+  success: function(data) {
+    // Log the id of the created post
+    // Your code here:
+
+  },
+
+  error: function(xhr, status, err) {
+    console.error("POST failed:", err);
+  }
+});</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p07">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p07','p07-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p07-out')">Clear</button>
+                <div class="output-console" id="p07-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">Hint:</strong>
+                The API returns the new post object. The fake server always returns <code>id: 101</code> for a POST to <code>/posts</code>.
+            </div>
+        </div>
+
+        <!-- Problem 8 -->
+        <div class="slide" data-slide="9">
+            <div class="problem-number">Problem 8 of 20</div>
+            <span class="difficulty-badge badge-easy-medium">🔵 Easy-Medium</span>
+            <h2>Fetch POST with Headers</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Use <code>fetch()</code> with <code>method: "POST"</code></li>
+                    <li>Include the correct <code>Content-Type</code> header</li>
+                    <li>Send a JSON-serialized body using <code>JSON.stringify()</code></li>
+                    <li>Log the returned <code>id</code> and <code>title</code></li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 8: Fetch POST + headers</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p08-fetch-post.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p08')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p08">async function createPost() {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      headers: {
+        // Add the Content-Type header here
+      },
+      body: JSON.stringify({
+        title:  "HCDD 411 Practice",
+        body:   "Fetch POST with headers",
+        userId: 5
+      })
+    });
+
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const post = await response.json();
+
+    // Log id and title
+    // Your code here:
+
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+}
+
+createPost();</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p08">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p08','p08-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p08-out')">Clear</button>
+                <div class="output-console" id="p08-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">Hint:</strong>
+                The Content-Type header value is <code>"application/json"</code>. Write it as <code>"Content-Type": "application/json"</code> inside the headers object.
+            </div>
+        </div>
+
+        <!-- Problem 9 -->
+        <div class="slide" data-slide="10">
+            <div class="problem-number">Problem 9 of 20</div>
+            <span class="difficulty-badge badge-easy-medium">🔵 Easy-Medium</span>
+            <h2>Axios GET — User Details</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Use <code>axios.get()</code> to fetch user #4</li>
+                    <li>Log the user's <code>name</code>, <code>phone</code>, and <code>website</code></li>
+                    <li>Remember: with Axios the data lives in <code>response.data</code>, not <code>response</code> directly</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 9: Axios GET – user details</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p09-axios-get.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p09')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p09">axios.get("https://jsonplaceholder.typicode.com/users/4")
+  .then((response) => {
+    // With Axios, data is in response.data
+    const user = response.data;
+
+    // Log name, phone, website
+    // Your code here:
+
+  })
+  .catch((error) => {
+    console.error("Error:", error.message);
+  });</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p09">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p09','p09-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p09-out')">Clear</button>
+                <div class="output-console" id="p09-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">Hint:</strong>
+                Fields are <code>user.name</code>, <code>user.phone</code>, <code>user.website</code>. Expected name: <strong>Patricia Lebsack</strong>.
+            </div>
+        </div>
+
+        <!-- Problem 10 -->
+        <div class="slide" data-slide="11">
+            <div class="problem-number">Problem 10 of 20</div>
+            <span class="difficulty-badge badge-easy-medium">🔵 Easy-Medium</span>
+            <h2>Filter Completed Todos</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Fetch all todos from <code>/todos</code></li>
+                    <li>Filter the array to only keep todos where <code>completed === true</code></li>
+                    <li>Log how many completed todos there are and the title of the first one</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 10: Fetch + array filter</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p10-filter.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p10')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p10">async function getCompletedTodos() {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/todos");
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const todos = await response.json();
+
+    // Filter: keep only todos where completed is true
+    // Hint: todos.filter(todo => todo.completed === true)
+    const done = // Your code here
+
+    console.log("Completed count:", done.length);
+    console.log("First completed title:", done[0].title);
+
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+}
+
+getCompletedTodos();</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p10">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p10','p10-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p10-out')">Clear</button>
+                <div class="output-console" id="p10-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">Hint:</strong>
+                <code>Array.filter()</code> returns a new array with only the items that pass the condition. Expected completed count: <strong>90</strong>.
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════
+             MEDIUM  (Problems 11–15)
+        ════════════════════════════════════════════════════ -->
+
+        <!-- Problem 11 -->
+        <div class="slide" data-slide="12">
+            <div class="problem-number">Problem 11 of 20</div>
+            <span class="difficulty-badge badge-medium">🟡 Medium</span>
+            <h2>Chain Two Requests — User → Posts</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Fetch user #2</li>
+                    <li>Using the user's <code>id</code>, fetch all posts by that user: <code>/posts?userId=&lt;id&gt;</code></li>
+                    <li>Log the user's name and how many posts they have</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 11: Chained requests</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p11-chain.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p11')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p11">async function fetchJson(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  return res.json();
+}
+
+async function userPostCount() {
+  try {
+    // Step 1: get user 2
+    const user = await fetchJson("https://jsonplaceholder.typicode.com/users/2");
+
+    // Step 2: get posts for that user using user.id
+    const posts = await fetchJson(/* build the URL using user.id */);
+
+    // Step 3: log results
+    console.log("User:", user.name);
+    console.log("Number of posts:", posts.length);
+
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+}
+
+userPostCount();</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p11">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p11','p11-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p11-out')">Clear</button>
+                <div class="output-console" id="p11-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">Hint:</strong>
+                Build the URL like: <code>"...typicode.com/posts?userId=" + user.id</code>. Expected: <strong>Ervin Howell</strong>, 10 posts.
+            </div>
+        </div>
+
+        <!-- Problem 12 -->
+        <div class="slide" data-slide="13">
+            <div class="problem-number">Problem 12 of 20</div>
+            <span class="difficulty-badge badge-medium">🟡 Medium</span>
+            <h2>Search Users by Name</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Fetch all users from <code>/users</code></li>
+                    <li>Filter by a keyword — keep only users whose name contains <code>"ch"</code> (case-insensitive)</li>
+                    <li>Log each matching user's name and email</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 12: Filter by name keyword</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p12-search.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p12')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p12">const keyword = "ch";
+
+async function searchUsers() {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/users");
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const users = await response.json();
+
+    // Filter users whose name includes the keyword (case-insensitive)
+    const k = keyword.toLowerCase();
+    const matches = users.filter(/* your condition here */);
+
+    // Log each match
+    matches.forEach(user => {
+      // Your code here
+    });
+
+    console.log("Total matches:", matches.length);
+
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+}
+
+searchUsers();</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p12">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p12','p12-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p12-out')">Clear</button>
+                <div class="output-console" id="p12-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">Hint:</strong>
+                Use <code>user.name.toLowerCase().includes(k)</code> as the filter condition.
+            </div>
+        </div>
+
+        <!-- Problem 13 -->
+        <div class="slide" data-slide="14">
+            <div class="problem-number">Problem 13 of 20</div>
+            <span class="difficulty-badge badge-medium">🟡 Medium</span>
+            <h2>Axios POST — Create a Comment</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Use <code>axios.post()</code> to create a new comment on post 1</li>
+                    <li>The body should include: <code>postId</code>, <code>name</code>, <code>email</code>, <code>body</code></li>
+                    <li>Log the full response object that comes back</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 13: Axios POST – comment</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p13-axios-post.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p13')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p13">// Send a POST to: "https://jsonplaceholder.typicode.com/comments"
+// Body fields: postId, name, email, body
+
+// Your code here — use axios.post() with .then() and .catch()
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p13">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p13','p13-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p13-out')">Clear</button>
+                <div class="output-console" id="p13-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">Hint:</strong>
+                Axios syntax: <code>axios.post(url, bodyObject)</code>. The response data is at <code>response.data</code>. No need to call <code>JSON.stringify()</code> — Axios handles that.
+            </div>
+        </div>
+
+        <!-- Problem 14 -->
+        <div class="slide" data-slide="15">
+            <div class="problem-number">Problem 14 of 20</div>
+            <span class="difficulty-badge badge-medium">🟡 Medium</span>
+            <h2>Three-Step Chain — Post → Comments → Count</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Fetch post #3</li>
+                    <li>Then fetch all comments for that post: <code>/comments?postId=&lt;id&gt;</code></li>
+                    <li>Log the post title, and how many comments it has</li>
+                    <li>Also log the email of the first commenter</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 14: 3-step chain</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p14-three-chain.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p14')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p14">// Use the fetchJson helper from earlier
+
+async function fetchJson(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  return res.json();
+}
+
+async function postComments() {
+  try {
+    // Your three-step logic here
+
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+}
+
+postComments();</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p14">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p14','p14-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p14-out')">Clear</button>
+                <div class="output-console" id="p14-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 15 -->
+        <div class="slide" data-slide="16">
+            <div class="problem-number">Problem 15 of 20</div>
+            <span class="difficulty-badge badge-medium">🟡 Medium</span>
+            <h2>Promise Chain (no async/await)</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Fetch user #5 using <strong>only</strong> <code>.then()</code> and <code>.catch()</code> — no <code>async/await</code></li>
+                    <li>In the first <code>.then()</code>, check <code>response.ok</code> and call <code>response.json()</code></li>
+                    <li>In the second <code>.then()</code>, log the user's name and company name (<code>user.company.name</code>)</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 15: Pure .then() chain</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p15-then-chain.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p15')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p15">// Write this using ONLY .then() / .catch() — no async/await allowed
+
+fetch("https://jsonplaceholder.typicode.com/users/5")
+  .then((response) => {
+    // check response.ok, then return response.json()
+  })
+  .then((user) => {
+    // log user.name and user.company.name
+  })
+  .catch((error) => {
+    console.error("Error:", error.message);
+  });</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p15">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p15','p15-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p15-out')">Clear</button>
+                <div class="output-console" id="p15-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════
+             MEDIUM-HARD  (Problems 16–20)
+        ════════════════════════════════════════════════════ -->
+
+        <!-- Problem 16 -->
+        <div class="slide" data-slide="17">
+            <div class="problem-number">Problem 16 of 20</div>
+            <span class="difficulty-badge badge-medium-hard">🔴 Medium-Hard</span>
+            <h2>Reusable Helper + User Albums</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Write a reusable <code>fetchJson(url)</code> async helper function</li>
+                    <li>Use it to: fetch user #1, then fetch all albums for that user (<code>/albums?userId=&lt;id&gt;</code>)</li>
+                    <li>Log the user's name, total albums, and the title of every album</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 16: Custom helper + chained data</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p16-helper.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p16')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p16">// Write everything from scratch — no scaffolding this time.
+// Endpoints:
+//   User:   https://jsonplaceholder.typicode.com/users/1
+//   Albums: https://jsonplaceholder.typicode.com/albums?userId=<id>
+
+// Your code here
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p16">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p16','p16-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p16-out')">Clear</button>
+                <div class="output-console" id="p16-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="warning-box">
+                <strong style="color:var(--error);">No hints.</strong> You have all the pieces from the earlier problems. Put them together.
+            </div>
+        </div>
+
+        <!-- Problem 17 -->
+        <div class="slide" data-slide="18">
+            <div class="problem-number">Problem 17 of 20</div>
+            <span class="difficulty-badge badge-medium-hard">🔴 Medium-Hard</span>
+            <h2>Parallel Requests with Promise.all</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Fetch users #1 and #2 <strong>at the same time</strong> using <code>Promise.all()</code></li>
+                    <li>Only after both resolve, log both users' names side by side</li>
+                    <li>Add error handling — if either fails, log the error</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 17: Promise.all – parallel fetches</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p17-parallel.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p17')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p17">// Promise.all takes an array of Promises and resolves when ALL complete.
+// Syntax: const [result1, result2] = await Promise.all([promise1, promise2]);
+//
+// Endpoints:
+//   https://jsonplaceholder.typicode.com/users/1
+//   https://jsonplaceholder.typicode.com/users/2
+
+// Your code here
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p17">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p17','p17-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p17-out')">Clear</button>
+                <div class="output-console" id="p17-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 18 -->
+        <div class="slide" data-slide="19">
+            <div class="problem-number">Problem 18 of 20</div>
+            <span class="difficulty-badge badge-medium-hard">🔴 Medium-Hard</span>
+            <h2>Full Pipeline — User → Posts → Comments</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Fetch user #1</li>
+                    <li>Then fetch all posts by that user</li>
+                    <li>Then, for the <strong>first post only</strong>, fetch its comments</li>
+                    <li>Log: user name, first post title, comment count, and all commenter emails</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 18: 3-resource pipeline</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p18-pipeline.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p18')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p18">// Endpoints:
+//   User:     /users/1
+//   Posts:    /posts?userId=<id>
+//   Comments: /comments?postId=<id>
+
+// Your code here
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p18">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p18','p18-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p18-out')">Clear</button>
+                <div class="output-console" id="p18-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 19 -->
+        <div class="slide" data-slide="20">
+            <div class="problem-number">Problem 19 of 20</div>
+            <span class="difficulty-badge badge-medium-hard">🔴 Medium-Hard</span>
+            <h2>POST then Verify — Create &amp; Echo</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Create a new post using a POST request</li>
+                    <li>Log the <code>id</code> returned by the server</li>
+                    <li>Then immediately make a second GET request to <code>/posts/1</code> to read an existing post</li>
+                    <li>Log both: <em>"Created ID"</em> from the POST, and <em>"Verified title"</em> from the GET</li>
+                    <li>All of this inside one <code>async</code> function with proper error handling</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 19: POST then GET</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p19-post-then-get.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p19')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p19">// Your code here
+// POST to:  https://jsonplaceholder.typicode.com/posts
+// GET from: https://jsonplaceholder.typicode.com/posts/1
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p19">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p19','p19-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p19-out')">Clear</button>
+                <div class="output-console" id="p19-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 20 -->
+        <div class="slide" data-slide="21">
+            <div class="problem-number">Problem 20 of 20</div>
+            <span class="difficulty-badge badge-medium-hard">🔴 Medium-Hard</span>
+            <h2>Graceful Error Handling + Retry</h2>
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul style="margin-top:10px;">
+                    <li>Write an async function <code>fetchWithRetry(url, retries)</code></li>
+                    <li>It should try to fetch the URL up to <code>retries</code> times</li>
+                    <li>If a fetch attempt throws, log <code>"Attempt N failed"</code> and try again</li>
+                    <li>If all attempts fail, log <code>"All attempts failed"</code></li>
+                    <li>Test it by calling it with a <strong>bad URL</strong> first, then with a good one</li>
+                </ul>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">PRACTICE 20: Retry logic</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab">📄 p20-retry.js</div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p20')">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p20">async function fetchWithRetry(url, retries = 3) {
+  // Your logic here:
+  // Loop up to `retries` times
+  // On each attempt, try to fetch and parse JSON
+  // If it throws, log the failure and continue the loop
+  // After the loop, log "All attempts failed"
+}
+
+// Test with bad URL (should fail all retries)
+fetchWithRetry("https://jsonplaceholder.typicode.com/NOTREAL/999", 2);
+
+// Test with good URL (should succeed)
+fetchWithRetry("https://jsonplaceholder.typicode.com/posts/1", 3)
+  .then(data => data && console.log("Success:", data.title));</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p20">Ln 1, Col 1</span>
+                    <span class="language">JavaScript</span>
+                </div>
+                <button class="run-button" onclick="runCode('p20','p20-out')">▶ Run Code</button>
+                <button class="clear-button" onclick="clearOutput('p20-out')">Clear</button>
+                <div class="output-console" id="p20-out"><span class="output-label">💻 Console Output:</span></div>
+            </div>
+            <div class="warning-box">
+                <strong style="color:var(--error);">Challenge:</strong>
+                The fake API returns 200 even for unknown resources. Use <code>if (!res.ok) throw new Error(...)</code> inside your loop to force a real failure, then test with a valid endpoint to confirm success.
+            </div>
+        </div>
+
+    </div><!-- /presentation-container -->
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+    </div>
+
+    <!-- External libs -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
+
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = document.querySelectorAll('.slide').length;
+        const editors = {};
+        const originalCode = {};
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function initializeEditors() {
+            document.querySelectorAll('.code-editor').forEach(textarea => {
+                const id = textarea.id;
+                originalCode[id] = textarea.value;
+                const editor = CodeMirror.fromTextArea(textarea, {
+                    mode: 'javascript',
+                    theme: 'eclipse',
+                    lineNumbers: true,
+                    autoCloseBrackets: true,
+                    indentUnit: 4,
+                    tabSize: 4,
+                    lineWrapping: true,
+                    styleActiveLine: true,
+                    extraKeys: {
+                        'Tab': cm => cm.somethingSelected() ? cm.indentSelection('add') : cm.replaceSelection('    ', 'end'),
+                        'Ctrl-Enter': () => runCode(id, id + '-out'),
+                        'Cmd-Enter':  () => runCode(id, id + '-out'),
+                        'Ctrl-/': 'toggleComment',
+                        'Cmd-/':  'toggleComment'
+                    }
+                });
+                editors[id] = editor;
+                editor.on('cursorActivity', () => {
+                    const cursor = editor.getCursor();
+                    const lineInfo = document.querySelector(`.line-info[data-editor="${id}"]`);
+                    if (lineInfo) lineInfo.textContent = `Ln ${cursor.line + 1}, Col ${cursor.ch + 1}`;
+                });
+            });
+        }
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            if (n > totalSlides) currentSlide = totalSlides;
+            if (n < 1) currentSlide = 1;
+            slides.forEach(s => s.classList.remove('active'));
+            slides[currentSlide - 1].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide;
+            document.getElementById('prevBtn').disabled = (currentSlide === 1);
+            document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => {
+                slides[currentSlide - 1].querySelectorAll('.CodeMirror').forEach(w => w.CodeMirror?.refresh());
+            }, 120);
+        }
+
+        function changeSlide(direction) { currentSlide += direction; showSlide(currentSlide); }
+
+        document.addEventListener('keydown', e => {
+            if (document.activeElement?.closest?.('.CodeMirror')) return;
+            if (e.key === 'ArrowLeft')  changeSlide(-1);
+            else if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        function safeStringify(arg) {
+            if (typeof arg === 'string') return arg;
+            if (typeof arg !== 'object' || arg === null) return String(arg);
+            try { return JSON.stringify(arg, null, 2); } catch { return String(arg); }
+        }
+
+        function makeTrackedThenable(thenable, pending) {
+            if (!thenable || typeof thenable.then !== 'function') return thenable;
+            pending.add(thenable);
+            return new Proxy(thenable, {
+                get(target, prop) {
+                    if (['then', 'catch', 'finally'].includes(prop)) {
+                        return (...args) => makeTrackedThenable(target[prop](...args), pending);
+                    }
+                    return Reflect.get(target, prop);
+                }
+            });
+        }
+
+        async function drainPending(pending, timeout) {
+            const start = Date.now();
+            let lastSize = -1;
+            while (Date.now() - start < timeout) {
+                if (pending.size === 0) break;
+                if (pending.size === lastSize) {
+                    await new Promise(r => setTimeout(r, 50));
+                    if (pending.size === lastSize) break;
+                }
+                lastSize = pending.size;
+                await Promise.race([Promise.allSettled([...pending]), new Promise(r => setTimeout(r, 500))]);
+            }
+        }
+
+        async function runCode(editorId, outputId) {
+            const editor = editors[editorId];
+            const code = editor ? editor.getValue() : document.getElementById(editorId).value;
+            const output = document.getElementById(outputId);
+            output.innerHTML = '<span class="output-label">💻 Console Output:</span><br>';
+
+            const logs = [];
+            const origLog = console.log, origWarn = console.warn, origError = console.error;
+            console.log   = (...a) => { logs.push({ type: 'log',   content: a.map(safeStringify).join(' ') }); origLog(...a); };
+            console.warn  = (...a) => { logs.push({ type: 'warn',  content: a.map(safeStringify).join(' ') }); origWarn(...a); };
+            console.error = (...a) => { logs.push({ type: 'error', content: a.map(safeStringify).join(' ') }); origError(...a); };
+
+            const pending = new Set();
+            const origFetch = window.fetch, origAjax = $.ajax;
+            const restore = [];
+
+            try {
+                window.fetch = (...a) => makeTrackedThenable(origFetch(...a), pending);
+                restore.push(() => window.fetch = origFetch);
+                $.ajax = (...a) => makeTrackedThenable(origAjax(...a), pending);
+                restore.push(() => $.ajax = origAjax);
+
+                if (window.axios) {
+                    const methods = ['get', 'post', 'put', 'delete'];
+                    const saved = {};
+                    methods.forEach(m => {
+                        if (typeof axios[m] === 'function') {
+                            saved[m] = axios[m].bind(axios);
+                            axios[m] = (...args) => makeTrackedThenable(saved[m](...args), pending);
+                        }
+                    });
+                    restore.push(() => Object.entries(saved).forEach(([m, fn]) => axios[m] = fn));
+                }
+
+                const ret = new Function(code)();
+                makeTrackedThenable(ret, pending);
+                await drainPending(pending, 8000);
+
+                output.innerHTML += logs.length
+                    ? logs.map(l => `<span class="${l.type === 'error' ? 'error' : l.type === 'warn' ? 'warn' : ''}">${l.content}</span>`).join('<br>')
+                    : '<span style="color:#D4940C;">✓ Code executed (no output)</span>';
+            } catch (e) {
+                output.innerHTML += `<span class="error">❌ Error: ${e.message}</span>`;
+            } finally {
+                console.log = origLog; console.warn = origWarn; console.error = origError;
+                restore.forEach(fn => fn());
+            }
+        }
+
+        function clearOutput(outputId) {
+            document.getElementById(outputId).innerHTML = '<span class="output-label">💻 Console Output:</span>';
+        }
+
+        function resetCode(editorId) {
+            editors[editorId]?.setValue(originalCode[editorId] || '');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeEditors();
+            showSlide(currentSlide);
+        });
+    </script>
+</body>
+</html>

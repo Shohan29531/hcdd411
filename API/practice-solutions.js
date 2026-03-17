@@ -1,11 +1,4 @@
 /* ======================================================
-   Practice Pack (8 Problems) - Instructor Solutions
-   Notes:
-   - Practice 3 & 4 require the corresponding HTML elements to exist on the page.
-   - Practice 7 requires Axios to be loaded (e.g., <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>).
-====================================================== */
-
-/* ======================================================
    PRACTICE 1 (JS)
 ====================================================== */
 // PRACTICE 1 (JS)

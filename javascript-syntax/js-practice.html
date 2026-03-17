@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Practice Problems - HCDD 411</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3B7DD6;
+            --secondary: #5A6C7D;
+            --accent: #D4940C;
+            --code-bg: #F0F4F8;
+            --success: #059669;
+            --error: #DC2626;
+            --bg-gradient-start: #EFF4FB;
+            --bg-gradient-end: #DDE6F0;
+            --slide-bg: rgba(255, 255, 255, 0.97);
+            --border-color: rgba(59, 125, 214, 0.25);
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 120px 0 110px 0;
+        }
+
+        .presentation-container {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .slide {
+            width: 90%;
+            max-width: 1200px;
+            min-height: 400px;
+            background: var(--slide-bg);
+            border-radius: 30px;
+            padding: 60px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(59, 125, 214, 0.1), 0 4px 20px rgba(0,0,0,0.06);
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: none;
+            border: 2px solid var(--border-color);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            display: block;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 3.8em;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            line-height: 1.1;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 2.2em;
+            color: var(--accent);
+            margin-bottom: 25px;
+            letter-spacing: -1px;
+        }
+
+        h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1.3em;
+            color: var(--primary);
+            margin: 22px 0 12px 0;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: var(--text-secondary);
+            font-weight: 300;
+            margin-bottom: 15px;
+        }
+
+        p {
+            font-size: 1.05em;
+            line-height: 1.7;
+            color: var(--text-primary);
+            margin: 8px 0;
+        }
+
+        /* Difficulty badges */
+        .difficulty-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        .badge-easy        { background: #D1FAE5; color: #065F46; }
+        .badge-easy-medium { background: #DBEAFE; color: #1E40AF; }
+        .badge-medium      { background: #FEF3C7; color: #92400E; }
+        .badge-medium-hard { background: #FCE7F3; color: #9D174D; }
+
+        /* Info / tip / warning boxes */
+        .info-box {
+            background: rgba(212, 148, 12, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 18px 20px;
+            margin: 18px 0;
+            border-radius: 10px;
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+
+        .tip-box {
+            background: rgba(5, 150, 105, 0.08);
+            border-left: 4px solid var(--success);
+            padding: 18px 20px;
+            margin: 18px 0;
+            border-radius: 10px;
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+
+        .hint-box {
+            background: rgba(59, 125, 214, 0.08);
+            border-left: 4px solid var(--primary);
+            padding: 18px 20px;
+            margin: 18px 0;
+            border-radius: 10px;
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+
+        ul {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin: 10px 0;
+            font-size: 1.05em;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        code {
+            font-family: 'Space Mono', monospace;
+            background: rgba(59, 125, 214, 0.12);
+            padding: 2px 7px;
+            border-radius: 5px;
+            color: var(--primary);
+            font-size: 0.9em;
+        }
+
+        /* Code playground */
+        .code-playground {
+            background: var(--code-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0 10px 0;
+            border: 2px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-playground::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 13px 13px 0 0;
+        }
+
+        .playground-label {
+            position: absolute;
+            top: 6px;
+            left: 20px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85em;
+            color: white;
+            font-weight: 700;
+            z-index: 1;
+            letter-spacing: 0.5px;
+        }
+
+        .code-editor {
+            font-family: 'Space Mono', monospace;
+            width: 100%;
+            min-height: 220px;
+            background: #fff;
+            border: 1.5px solid rgba(59, 125, 214, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            color: #3730A3;
+            font-size: 0.93em;
+            resize: vertical;
+            margin-top: 15px;
+            outline: none;
+            line-height: 1.6;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.04);
+        }
+
+        .code-editor:focus {
+            border-color: var(--primary);
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.04), 0 0 0 3px rgba(59,125,214,0.12);
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .run-button {
+            background: linear-gradient(135deg, var(--primary), #5B9EF0);
+            color: white;
+            border: none;
+            padding: 11px 28px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 3px 12px rgba(59, 125, 214, 0.25);
+        }
+
+        .run-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(59, 125, 214, 0.35);
+        }
+
+        .run-button:active { transform: translateY(0); }
+
+        .clear-button {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 2px solid var(--border-color);
+            padding: 11px 22px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .clear-button:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .output-console {
+            background: #F8FAFC;
+            border-radius: 10px;
+            padding: 18px;
+            margin-top: 16px;
+            min-height: 90px;
+            font-family: 'Space Mono', monospace;
+            color: #065F46;
+            border: 1.5px solid rgba(5, 150, 105, 0.25);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .output-console .error { color: var(--error); }
+        .output-label {
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: block;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95em;
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(59, 125, 214, 0.3);
+        }
+
+        .nav-button:hover {
+            background: #2563EB;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(59, 125, 214, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Header bar */
+        .slide-indicator {
+            position: fixed;
+            top: 35px;
+            right: 35px;
+            background: var(--primary);
+            padding: 12px 22px;
+            border-radius: 50px;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 0.95em;
+            z-index: 1000;
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 125, 214, 0.25);
+        }
+
+        .course-badge {
+            position: fixed;
+            top: 35px;
+            left: 35px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 1.1em;
+            color: var(--primary);
+            z-index: 1000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(59, 125, 214, 0.15);
+            border: 2px solid var(--border-color);
+        }
+
+        /* Title slide accent */
+        .title-accent {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .progress-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin: 30px 0;
+        }
+
+        .progress-card {
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .progress-card.easy        { background: #D1FAE5; border: 2px solid #6EE7B7; }
+        .progress-card.easy-medium { background: #DBEAFE; border: 2px solid #93C5FD; }
+        .progress-card.medium      { background: #FEF3C7; border: 2px solid #FCD34D; }
+        .progress-card.medium-hard { background: #FCE7F3; border: 2px solid #F9A8D4; }
+
+        .progress-card .number {
+            font-size: 2.5em;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .progress-card.easy        .number { color: #065F46; }
+        .progress-card.easy-medium .number { color: #1E40AF; }
+        .progress-card.medium      .number { color: #92400E; }
+        .progress-card.medium-hard .number { color: #9D174D; }
+
+        .progress-card .label {
+            font-weight: 700;
+            margin-top: 8px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .expected-output {
+            background: #F0FDF4;
+            border: 1.5px dashed #6EE7B7;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 14px 0;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.88em;
+            color: #065F46;
+            line-height: 1.7;
+        }
+
+        .expected-output-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: var(--success);
+            font-size: 0.9em;
+            margin-bottom: 6px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="course-badge">HCDD 411</div>
+    <div class="slide-indicator">
+        <span id="currentSlide">1</span> / <span id="totalSlides">21</span>
+    </div>
+
+    <div class="presentation-container">
+
+        <!-- Slide 1: Title -->
+        <div class="slide active" data-slide="1">
+            <h1><span class="title-accent">JavaScript</span><br>Practice Problems</h1>
+            <p class="subtitle">HCDD 411 — 20 Exercises covering everything from class</p>
+            <div class="progress-grid">
+                <div class="progress-card easy">
+                    <div class="number">5</div>
+                    <div class="label" style="color:#065F46;">Easy</div>
+                    <p style="font-size:0.85em;color:#065F46;margin-top:6px;">Lots of guidance</p>
+                </div>
+                <div class="progress-card easy-medium">
+                    <div class="number">5</div>
+                    <div class="label" style="color:#1E40AF;">Easy–Medium</div>
+                    <p style="font-size:0.85em;color:#1E40AF;margin-top:6px;">Good hints</p>
+                </div>
+                <div class="progress-card medium">
+                    <div class="number">5</div>
+                    <div class="label" style="color:#92400E;">Medium</div>
+                    <p style="font-size:0.85em;color:#92400E;margin-top:6px;">Some hints</p>
+                </div>
+                <div class="progress-card medium-hard">
+                    <div class="number">5</div>
+                    <div class="label" style="color:#9D174D;">Medium–Hard</div>
+                    <p style="font-size:0.85em;color:#9D174D;margin-top:6px;">You're on your own</p>
+                </div>
+            </div>
+            <div class="tip-box">
+                <strong style="color:var(--success);">🎯 How to use this:</strong> Write your code in each editor and press <strong>Run Code</strong> to see the output. Use arrow keys or the buttons below to navigate between problems.
+            </div>
+        </div>
+
+        <!-- ===================== EASY (1–5) ===================== -->
+
+        <!-- Problem 1 -->
+        <div class="slide" data-slide="2">
+            <span class="difficulty-badge badge-easy">⭐ Easy — Problem 1 of 20</span>
+            <h2>Say Hello to the World</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Print the message <code>"Hello, World!"</code> to the console.
+            </div>
+            <h3>Step-by-step instructions:</h3>
+            <ul>
+                <li>Use <code>console.log()</code> to print a message</li>
+                <li>Put your text <em>inside</em> the parentheses, wrapped in quotes</li>
+                <li>Example: <code>console.log("your text here")</code></li>
+            </ul>
+            <div class="tip-box">
+                <strong style="color:var(--success);">💡 Reminder:</strong> You can use either single quotes <code>'...'</code> or double quotes <code>"..."</code> around your text.
+            </div>
+            <div class="expected-output">
+                <span class="expected-output-label">✅ Expected Output:</span>
+                Hello, World!
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p1">// Step 1: Use console.log() to print "Hello, World!"
+// Type your code below:
+
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p1','p1-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p1-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p1-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 2 -->
+        <div class="slide" data-slide="3">
+            <span class="difficulty-badge badge-easy">⭐ Easy — Problem 2 of 20</span>
+            <h2>Variables About You</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Create three variables to store information about a person, then log each one.
+            </div>
+            <h3>Step-by-step instructions:</h3>
+            <ul>
+                <li>Create a variable called <code>name</code> and set it to any name (a string)</li>
+                <li>Create a variable called <code>age</code> and set it to any number</li>
+                <li>Create a variable called <code>isStudent</code> and set it to <code>true</code> or <code>false</code></li>
+                <li>Use <code>console.log()</code> to print all three variables</li>
+            </ul>
+            <div class="tip-box">
+                <strong style="color:var(--success);">💡 Syntax reminder:</strong>
+                <code>let variableName = value;</code> — use <code>let</code> to declare your variables.
+            </div>
+            <div class="expected-output">
+                <span class="expected-output-label">✅ Example Output (your values may differ):</span>
+                Alice
+                22
+                true
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p2">// Step 1: Create a variable called name (string)
+let name = 
+
+// Step 2: Create a variable called age (number)
+let age = 
+
+// Step 3: Create a variable called isStudent (true or false)
+let isStudent = 
+
+// Step 4: Log all three variables
+console.log(name);
+console.log(age);
+console.log(isStudent);
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p2','p2-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p2-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p2-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 3 -->
+        <div class="slide" data-slide="4">
+            <span class="difficulty-badge badge-easy">⭐ Easy — Problem 3 of 20</span>
+            <h2>Positive or Negative?</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Check whether a number is positive, negative, or zero, and print the result.
+            </div>
+            <h3>Step-by-step instructions:</h3>
+            <ul>
+                <li>Create a variable called <code>number</code> and give it any value</li>
+                <li>Use an <code>if</code> statement: if the number is greater than 0, print <code>"Positive"</code></li>
+                <li>Use <code>else if</code>: if the number is less than 0, print <code>"Negative"</code></li>
+                <li>Use <code>else</code>: otherwise print <code>"Zero"</code></li>
+            </ul>
+            <div class="tip-box">
+                <strong style="color:var(--success);">💡 Operators:</strong> Use <code>&gt;</code> for "greater than" and <code>&lt;</code> for "less than".
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p3">// Step 1: Declare the number variable
+let number = -7;
+
+// Step 2: Write your if / else if / else block
+if (number > 0) {
+    // print "Positive"
+
+} else if (number < 0) {
+    // print "Negative"
+
+} else {
+    // print "Zero"
+
+}
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p3','p3-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p3-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p3-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 4 -->
+        <div class="slide" data-slide="5">
+            <span class="difficulty-badge badge-easy">⭐ Easy — Problem 4 of 20</span>
+            <h2>Count to Ten</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Use a <code>for</code> loop to print the numbers 1 through 10, one per line.
+            </div>
+            <h3>Step-by-step instructions:</h3>
+            <ul>
+                <li>A <code>for</code> loop has three parts: <code>for (start; condition; step)</code></li>
+                <li>Start at <code>i = 1</code></li>
+                <li>Keep going while <code>i &lt;= 10</code></li>
+                <li>Increase by 1 each time: <code>i++</code></li>
+                <li>Inside the loop, use <code>console.log(i)</code></li>
+            </ul>
+            <div class="tip-box">
+                <strong style="color:var(--success);">💡 Template:</strong> <code>for (let i = 1; i &lt;= 10; i++) { ... }</code>
+            </div>
+            <div class="expected-output">
+                <span class="expected-output-label">✅ Expected Output:</span>
+                1
+                2
+                3
+                ... (up to 10)
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p4">// Complete the for loop to print 1 through 10
+for (let i = 1; i <= 10; i++) {
+    // log i here
+
+}
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p4','p4-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p4-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p4-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 5 -->
+        <div class="slide" data-slide="6">
+            <span class="difficulty-badge badge-easy">⭐ Easy — Problem 5 of 20</span>
+            <h2>Add Two Numbers</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Write a function called <code>add</code> that takes two numbers and returns their sum. Then call it and print the result.
+            </div>
+            <h3>Step-by-step instructions:</h3>
+            <ul>
+                <li>Declare a function: <code>function add(a, b) { ... }</code></li>
+                <li>Inside, use the <code>return</code> keyword to return <code>a + b</code></li>
+                <li>Call the function with two numbers: <code>add(3, 5)</code></li>
+                <li>Store the result in a variable and print it</li>
+            </ul>
+            <div class="tip-box">
+                <strong style="color:var(--success);">💡 Remember:</strong> <code>return</code> sends a value back. Without it, the function returns <code>undefined</code>.
+            </div>
+            <div class="expected-output">
+                <span class="expected-output-label">✅ Expected Output:</span>
+                8
+                15
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p5">// Step 1: Write the add function
+function add(a, b) {
+    return  // return a + b
+}
+
+// Step 2: Call the function and log the result
+let result1 = add(3, 5);
+console.log(result1);
+
+// Step 3: Try another pair of numbers
+let result2 = add(7, 8);
+console.log(result2);
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p5','p5-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p5-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p5-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- ===================== EASY-MEDIUM (6–10) ===================== -->
+
+        <!-- Problem 6 -->
+        <div class="slide" data-slide="7">
+            <span class="difficulty-badge badge-easy-medium">🔵 Easy–Medium — Problem 6 of 20</span>
+            <h2>Build a Student Object</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Create an object representing a student with specific properties, then access and update them.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Create an object called <code>student</code> with properties: <code>name</code>, <code>age</code>, <code>major</code>, and <code>gpa</code></li>
+                <li>Print the student's name using dot notation: <code>student.name</code></li>
+                <li>Print the student's GPA using bracket notation: <code>student["gpa"]</code></li>
+                <li>Update the GPA to a new value, then print the whole object</li>
+            </ul>
+            <div class="tip-box">
+                <strong style="color:var(--success);">💡 Hint:</strong> Objects look like: <code>let obj = &#123; key: value, key2: value2 &#125;;</code>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p6">// Step 1: Create the student object
+let student = {
+    name: "Taylor",
+    age: 21,
+    // add major and gpa here
+
+};
+
+// Step 2: Print name with dot notation
+console.log(student.name);
+
+// Step 3: Print gpa with bracket notation
+console.log(student["gpa"]);
+
+// Step 4: Update the gpa, then print the full object
+student.gpa = 3.9;
+console.log(student);
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p6','p6-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p6-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p6-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 7 -->
+        <div class="slide" data-slide="8">
+            <span class="difficulty-badge badge-easy-medium">🔵 Easy–Medium — Problem 7 of 20</span>
+            <h2>Fruits Array</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Create an array of fruits and practice adding and removing items using array methods.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Create an array called <code>fruits</code> with 3 fruit names</li>
+                <li>Use <code>push()</code> to add <code>"mango"</code> to the end</li>
+                <li>Use <code>unshift()</code> to add <code>"kiwi"</code> to the beginning</li>
+                <li>Use <code>pop()</code> to remove the last item — store it in a variable and print it</li>
+                <li>Print the final array and its length</li>
+            </ul>
+            <div class="tip-box">
+                <strong style="color:var(--success);">💡 Hint:</strong> <code>push()</code> / <code>unshift()</code> return the new length. <code>pop()</code> / <code>shift()</code> return the removed item.
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p7">// Step 1: Create the fruits array
+let fruits = ["apple", "banana", "orange"];
+console.log("Original:", fruits);
+
+// Step 2: push "mango" to the end
+fruits.push("mango");
+
+// Step 3: unshift "kiwi" to the beginning
+fruits.unshift("kiwi");
+
+// Step 4: pop the last item and store it
+let removed = fruits.pop();
+console.log("Removed:", removed);
+
+// Step 5: print the final array and its length
+console.log("Final array:", fruits);
+console.log("Length:", fruits.length);
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p7','p7-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p7-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p7-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 8 -->
+        <div class="slide" data-slide="9">
+            <span class="difficulty-badge badge-easy-medium">🔵 Easy–Medium — Problem 8 of 20</span>
+            <h2>Grade Classifier</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Write a function that takes a numeric score and returns a letter grade.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Create a function called <code>getGrade</code> that takes a <code>score</code> parameter</li>
+                <li>Return <code>"A"</code> for 90 and above</li>
+                <li>Return <code>"B"</code> for 80–89</li>
+                <li>Return <code>"C"</code> for 70–79</li>
+                <li>Return <code>"D"</code> for 60–69</li>
+                <li>Return <code>"F"</code> for anything below 60</li>
+                <li>Test it with a few different scores</li>
+            </ul>
+            <div class="tip-box">
+                <strong style="color:var(--success);">💡 Hint:</strong> Use <code>if / else if / else</code>. Check from the highest score down so the conditions don't overlap.
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p8">function getGrade(score) {
+    if (score >= 90) {
+        return "A";
+    } else if (score >= 80) {
+        // return "B"
+    } else if (score >= 70) {
+        // return "C"
+    } else if (score >= 60) {
+        // return "D"
+    } else {
+        // return "F"
+    }
+}
+
+// Test your function
+console.log(getGrade(95));   // A
+console.log(getGrade(82));   // B
+console.log(getGrade(74));   // C
+console.log(getGrade(55));   // F
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p8','p8-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p8-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p8-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 9 -->
+        <div class="slide" data-slide="10">
+            <span class="difficulty-badge badge-easy-medium">🔵 Easy–Medium — Problem 9 of 20</span>
+            <h2>Countdown with a While Loop</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Use a <code>while</code> loop to count down from 10 to 1, then print <code>"Blast off!"</code>.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Declare a variable <code>count</code> starting at <code>10</code></li>
+                <li>Write a <code>while</code> loop that runs as long as <code>count &gt; 0</code></li>
+                <li>Inside the loop, print the current value of <code>count</code></li>
+                <li>Decrease <code>count</code> by 1 each iteration using <code>count--</code></li>
+                <li>After the loop, print <code>"Blast off!"</code></li>
+            </ul>
+            <div class="tip-box">
+                <strong style="color:var(--success);">💡 Warning:</strong> Don't forget to decrement <code>count</code> inside the loop — otherwise it will run forever!
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p9">// Step 1: Set count to 10
+let count = 10;
+
+// Step 2: Write the while loop
+while (count > 0) {
+    console.log(count);
+    count--;  // decrease count by 1
+}
+
+// Step 3: Print "Blast off!" after the loop
+console.log("Blast off!");
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p9','p9-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p9-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p9-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 10 -->
+        <div class="slide" data-slide="11">
+            <span class="difficulty-badge badge-easy-medium">🔵 Easy–Medium — Problem 10 of 20</span>
+            <h2>forEach – Print with Index</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Use <code>forEach</code> to iterate over an array of colors and print each one with its index number.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Start with: <code>let colors = ["red", "green", "blue", "yellow"];</code></li>
+                <li>Call <code>colors.forEach()</code> and pass a function with parameters <code>(color, index)</code></li>
+                <li>Inside, print: <code>"0: red"</code>, <code>"1: green"</code>, etc.</li>
+                <li>Use a template literal: <code>`${index}: ${color}`</code> or string concatenation</li>
+            </ul>
+            <div class="tip-box">
+                <strong style="color:var(--success);">💡 Hint:</strong> <code>forEach</code> passes the element first, the index second: <code>arr.forEach(function(element, index) &#123; ... &#125;)</code>
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p10">let colors = ["red", "green", "blue", "yellow"];
+
+// Use forEach to print each color with its index
+colors.forEach(function(color, index) {
+    // print something like "0: red"
+    console.log(index + ": " + color);
+});
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p10','p10-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p10-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p10-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- ===================== MEDIUM (11–15) ===================== -->
+
+        <!-- Problem 11 -->
+        <div class="slide" data-slide="12">
+            <span class="difficulty-badge badge-medium">🟡 Medium — Problem 11 of 20</span>
+            <h2>Double With map()</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Use the <code>map()</code> method to create a new array where every number is doubled.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Start with: <code>let numbers = [1, 2, 3, 4, 5];</code></li>
+                <li>Use <code>numbers.map()</code> to return a new array where each value is multiplied by 2</li>
+                <li>Store the result in <code>doubled</code> and print both the original and the new array</li>
+            </ul>
+            <div class="hint-box">
+                <strong style="color:var(--primary);">🔑 Hint:</strong> <code>map()</code> takes a function that receives each element and <em>returns</em> the new value for that position.
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p11">let numbers = [1, 2, 3, 4, 5];
+
+// Use map() to double each number
+let doubled = numbers.map(function(num) {
+    // return the doubled value
+});
+
+console.log("Original:", numbers);
+console.log("Doubled:", doubled);
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p11','p11-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p11-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p11-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 12 -->
+        <div class="slide" data-slide="13">
+            <span class="difficulty-badge badge-medium">🟡 Medium — Problem 12 of 20</span>
+            <h2>Filter the Evens</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Use <code>filter()</code> to extract only even numbers from an array.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Start with: <code>let nums = [3, 8, 15, 4, 22, 7, 10, 13];</code></li>
+                <li>Use <code>nums.filter()</code> to keep only the numbers where <code>num % 2 === 0</code></li>
+                <li>Store the result in <code>evens</code> and print it</li>
+                <li>As a bonus: also filter out the odd numbers and print those</li>
+            </ul>
+            <div class="hint-box">
+                <strong style="color:var(--primary);">🔑 Hint:</strong> <code>%</code> is the modulo operator. <code>n % 2 === 0</code> is <code>true</code> when <code>n</code> is even.
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p12">let nums = [3, 8, 15, 4, 22, 7, 10, 13];
+
+// Filter for even numbers
+let evens = nums.filter(function(num) {
+    // return true if num is even
+});
+
+console.log("Even numbers:", evens);
+
+// Bonus: filter for odd numbers
+let odds = nums.filter(function(num) {
+    // return true if num is odd
+});
+
+console.log("Odd numbers:", odds);
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p12','p12-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p12-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p12-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 13 -->
+        <div class="slide" data-slide="14">
+            <span class="difficulty-badge badge-medium">🟡 Medium — Problem 13 of 20</span>
+            <h2>Object with a Method</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Create an object that has both data properties <em>and</em> a method (a function inside an object).
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Create an object called <code>rectangle</code> with properties <code>width</code> and <code>height</code></li>
+                <li>Add a method called <code>area</code> that returns <code>width * height</code></li>
+                <li>Add a method called <code>perimeter</code> that returns <code>2 * (width + height)</code></li>
+                <li>Call both methods and print the results</li>
+            </ul>
+            <div class="hint-box">
+                <strong style="color:var(--primary);">🔑 Hint:</strong> Inside a method, use <code>this.width</code> to refer to the object's own properties.
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p13">let rectangle = {
+    width: 8,
+    height: 5,
+
+    area: function() {
+        // return this.width * this.height
+    },
+
+    perimeter: function() {
+        // return 2 * (this.width + this.height)
+    }
+};
+
+console.log("Area:", rectangle.area());
+console.log("Perimeter:", rectangle.perimeter());
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p13','p13-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p13-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p13-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 14 -->
+        <div class="slide" data-slide="15">
+            <span class="difficulty-badge badge-medium">🟡 Medium — Problem 14 of 20</span>
+            <h2>Arrow Functions</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Rewrite two functions using the ES6 arrow function syntax.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Convert <code>function square(n) &#123; return n * n; &#125;</code> into an arrow function</li>
+                <li>Convert <code>function greet(name) &#123; return "Hi, " + name + "!"; &#125;</code> into an arrow function</li>
+                <li>Then use <code>map()</code> with an arrow function to square each number in an array</li>
+            </ul>
+            <div class="hint-box">
+                <strong style="color:var(--primary);">🔑 Hint:</strong> Arrow syntax: <code>const funcName = (param) =&gt; expression;</code>. For a one-liner you can drop the curly braces and <code>return</code> keyword.
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p14">// Convert this to an arrow function:
+// function square(n) { return n * n; }
+const square = (n) => n * n;
+
+// Convert this to an arrow function:
+// function greet(name) { return "Hi, " + name + "!"; }
+const greet = (name) => 
+
+// Test them
+console.log(square(4));       // 16
+console.log(greet("Jordan")); // Hi, Jordan!
+
+// Use an arrow function with map() to square an array
+let nums = [1, 2, 3, 4, 5];
+let squared = nums.map((n) => /* your expression here */);
+console.log("Squared:", squared);
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p14','p14-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p14-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p14-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 15 -->
+        <div class="slide" data-slide="16">
+            <span class="difficulty-badge badge-medium">🟡 Medium — Problem 15 of 20</span>
+            <h2>some() and every()</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Use <code>some()</code> and <code>every()</code> to check conditions across an array of scores.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Start with: <code>let scores = [72, 88, 95, 61, 83, 79];</code></li>
+                <li>Use <code>every()</code> to check if ALL scores are passing (above 60) — print the boolean result</li>
+                <li>Use <code>some()</code> to check if ANY score is an A (90 or above) — print the result</li>
+                <li>Use <code>every()</code> to check if ALL scores are above 90 — print the result</li>
+            </ul>
+            <div class="hint-box">
+                <strong style="color:var(--primary);">🔑 Hint:</strong> <code>every()</code> returns <code>true</code> only if the condition is true for <em>all</em> elements. <code>some()</code> returns <code>true</code> if <em>at least one</em> element satisfies the condition.
+            </div>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p15">let scores = [72, 88, 95, 61, 83, 79];
+
+// Are ALL scores above 60?
+let allPassing = scores.every(/* your function here */);
+console.log("All passing?", allPassing);
+
+// Does ANY score reach 90 or above?
+let hasAnA = scores.some(/* your function here */);
+console.log("Has an A?", hasAnA);
+
+// Are ALL scores above 90?
+let allAs = scores.every(/* your function here */);
+console.log("All A's?", allAs);
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p15','p15-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p15-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p15-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- ===================== MEDIUM-HARD (16–20) ===================== -->
+
+        <!-- Problem 16 -->
+        <div class="slide" data-slide="17">
+            <span class="difficulty-badge badge-medium-hard">🔴 Medium–Hard — Problem 16 of 20</span>
+            <h2>Chain map() and filter()</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                From an array of numbers, first double them all, then keep only the ones greater than 10. Do it in one chained expression.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Start with: <code>let data = [1, 3, 5, 7, 9, 2, 4, 6];</code></li>
+                <li>Chain <code>.map()</code> and <code>.filter()</code> together in a single expression</li>
+                <li>First <code>map</code> to double each number, then <code>filter</code> to keep only values &gt; 10</li>
+                <li>Print the result — no partial hints this time, you know how both methods work!</li>
+            </ul>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p16">let data = [1, 3, 5, 7, 9, 2, 4, 6];
+
+// Chain map() and filter() — double all, then keep > 10
+let result = data
+    .map(/* ... */)
+    .filter(/* ... */);
+
+console.log("Result:", result);
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p16','p16-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p16-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p16-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 17 -->
+        <div class="slide" data-slide="18">
+            <span class="difficulty-badge badge-medium-hard">🔴 Medium–Hard — Problem 17 of 20</span>
+            <h2>Array of Objects + forEach</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                You have an array of student objects. Use <code>forEach</code> to print a formatted summary for each student, and use <code>filter</code> to get only students with a GPA above 3.5.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>The array is provided below — don't change it</li>
+                <li>Use <code>forEach</code> to print each student in the format: <code>"Name: Alice | GPA: 3.8"</code></li>
+                <li>Use <code>filter</code> to create a new array of students with GPA &gt; 3.5</li>
+                <li>Print the names of the filtered students using another <code>forEach</code></li>
+            </ul>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p17">let students = [
+    { name: "Alice", gpa: 3.8 },
+    { name: "Bob",   gpa: 3.1 },
+    { name: "Carol", gpa: 3.9 },
+    { name: "Dan",   gpa: 2.8 },
+    { name: "Eve",   gpa: 3.6 }
+];
+
+// Print each student using forEach
+
+// Filter students with GPA > 3.5
+
+// Print the names of the filtered students
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p17','p17-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p17-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p17-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 18 -->
+        <div class="slide" data-slide="19">
+            <span class="difficulty-badge badge-medium-hard">🔴 Medium–Hard — Problem 18 of 20</span>
+            <h2>Build a Class</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Create a <code>BankAccount</code> class with a balance, and methods to deposit, withdraw, and check the balance.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Define a class <code>BankAccount</code> with a <code>constructor</code> that takes an initial <code>balance</code></li>
+                <li>Add a <code>deposit(amount)</code> method that increases the balance</li>
+                <li>Add a <code>withdraw(amount)</code> method that decreases the balance — but only if there are enough funds. If not, print <code>"Insufficient funds"</code></li>
+                <li>Add a <code>getBalance()</code> method that returns the current balance</li>
+                <li>Create an instance and test all three methods</li>
+            </ul>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p18">class BankAccount {
+    constructor(balance) {
+        // store the balance
+    }
+
+    deposit(amount) {
+        // increase balance by amount
+    }
+
+    withdraw(amount) {
+        // decrease balance only if funds are sufficient
+    }
+
+    getBalance() {
+        // return the balance
+    }
+}
+
+// Test it
+let account = new BankAccount(1000);
+account.deposit(500);
+console.log(account.getBalance());  // 1500
+account.withdraw(200);
+console.log(account.getBalance());  // 1300
+account.withdraw(2000);             // Insufficient funds
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p18','p18-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p18-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p18-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 19 -->
+        <div class="slide" data-slide="20">
+            <span class="difficulty-badge badge-medium-hard">🔴 Medium–Hard — Problem 19 of 20</span>
+            <h2>Word Frequency Counter</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Given an array of words, write a function that returns an object showing how many times each word appears.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Create a function <code>countWords(words)</code> that takes an array of strings</li>
+                <li>Use <code>forEach</code> to loop through the array</li>
+                <li>Build and return an object where each key is a word and each value is its count</li>
+                <li>If the word already exists in the object, increment its count. If not, initialize it to 1</li>
+            </ul>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p19">function countWords(words) {
+    let counts = {};
+
+    words.forEach(function(word) {
+        // if counts[word] already exists, increment it
+        // otherwise set it to 1
+    });
+
+    return counts;
+}
+
+let words = ["apple", "banana", "apple", "cherry", "banana", "apple"];
+console.log(countWords(words));
+// Expected: { apple: 3, banana: 2, cherry: 1 }
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p19','p19-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p19-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p19-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+        <!-- Problem 20 -->
+        <div class="slide" data-slide="21">
+            <span class="difficulty-badge badge-medium-hard">🔴 Medium–Hard — Problem 20 of 20</span>
+            <h2>Student Roster Manager</h2>
+            <div class="info-box">
+                <strong>🎯 Your Challenge:</strong><br>
+                Build a <code>Roster</code> class that manages a list of students. It should support adding students, removing them by name, and computing the average GPA of the class.
+            </div>
+            <h3>Instructions:</h3>
+            <ul>
+                <li>The <code>Roster</code> class should store an array of student objects internally</li>
+                <li><code>addStudent(name, gpa)</code> — push a new <code>&#123; name, gpa &#125;</code> object to the list</li>
+                <li><code>removeStudent(name)</code> — filter out the student with the matching name</li>
+                <li><code>averageGPA()</code> — return the average GPA of all students (return <code>0</code> if the list is empty)</li>
+                <li><code>printRoster()</code> — use <code>forEach</code> to print every student's name and GPA</li>
+            </ul>
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <textarea class="code-editor" id="p20">class Roster {
+    constructor() {
+        this.students = [];
+    }
+
+    addStudent(name, gpa) {
+        // push { name, gpa } to this.students
+    }
+
+    removeStudent(name) {
+        // filter out student with matching name
+    }
+
+    averageGPA() {
+        // return average GPA, or 0 if no students
+    }
+
+    printRoster() {
+        // forEach to print each student
+    }
+}
+
+// Test it
+let roster = new Roster();
+roster.addStudent("Alice", 3.8);
+roster.addStudent("Bob", 3.2);
+roster.addStudent("Carol", 3.9);
+roster.printRoster();
+console.log("Average GPA:", roster.averageGPA());
+roster.removeStudent("Bob");
+console.log("After removing Bob:");
+roster.printRoster();
+console.log("New Average GPA:", roster.averageGPA());
+</textarea>
+                <div class="button-row">
+                    <button class="run-button" onclick="runCode('p20','p20-out')">▶ Run Code</button>
+                    <button class="clear-button" onclick="clearOut('p20-out')">Clear Output</button>
+                </div>
+                <div class="output-console" id="p20-out"><span class="output-label">Output:</span></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = document.querySelectorAll('.slide').length;
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            if (n > totalSlides) currentSlide = totalSlides;
+            if (n < 1) currentSlide = 1;
+            slides.forEach(s => s.classList.remove('active'));
+            slides[currentSlide - 1].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide;
+            document.getElementById('prevBtn').disabled = (currentSlide === 1);
+            document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function changeSlide(dir) {
+            currentSlide += dir;
+            showSlide(currentSlide);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'TEXTAREA') return;
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            else if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        function runCode(editorId, outputId) {
+            const code = document.getElementById(editorId).value;
+            const output = document.getElementById(outputId);
+            output.innerHTML = '<span class="output-label">Output:</span><br>';
+            const logs = [];
+            const origLog = console.log;
+            const origError = console.error;
+            console.log = function(...args) {
+                logs.push({ type: 'log', text: args.map(a => (typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a))).join(' ') });
+                origLog.apply(console, args);
+            };
+            console.error = function(...args) {
+                logs.push({ type: 'error', text: args.map(a => String(a)).join(' ') });
+                origError.apply(console, args);
+            };
+            try {
+                eval(code);
+                if (logs.length > 0) {
+                    output.innerHTML += logs.map(l => l.type === 'error'
+                        ? `<span class="error">${l.text}</span>`
+                        : l.text
+                    ).join('<br>');
+                } else {
+                    output.innerHTML += '<span style="color:var(--accent);">Code ran successfully — no console output.</span>';
+                }
+            } catch (err) {
+                output.innerHTML += `<span class="error">Error: ${err.message}</span>`;
+            } finally {
+                console.log = origLog;
+                console.error = origError;
+            }
+        }
+
+        function clearOut(outputId) {
+            document.getElementById(outputId).innerHTML = '<span class="output-label">Output:</span>';
+        }
+
+        function autoResize(ta) {
+            ta.style.height = 'auto';
+            ta.style.height = ta.scrollHeight + 'px';
+        }
+
+        document.querySelectorAll('.code-editor').forEach(ta => {
+            autoResize(ta);
+            ta.addEventListener('input', function() { autoResize(this); });
+        });
+
+        showSlide(1);
+    </script>
+</body>
+</html>

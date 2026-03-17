@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HCDD 411 — API Assignment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="app.js"></script>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="badge">HCDD 411</div>
+      <div>
+        <h1>API Assignment</h1>
+      </div>
+    </div>
+
+    <div class="status" id="status">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="status-text">Ready. Click “Load Users”.</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Step-by-step UI</h2>
+
+      <div class="grid">
+        <div class="field">
+          <label for="userSelect">1) User</label>
+          <div class="row">
+            <!-- NOTE: event wiring is already done in HTML (onclick). Students implement the JS functions. -->
+            <button id="btnLoadUsers" class="btn primary" type="button" onclick="onLoadUsers()">Load Users</button>
+            <select id="userSelect" disabled onchange="onUserChange()">
+              <option value="">(users not loaded yet)</option>
+            </select>
+          </div>
+          <p class="micro" id="userMeta">Pick a user to load their posts.</p>
+        </div>
+
+        <div class="field">
+          <label for="postSelect">2) Post</label>
+          <select id="postSelect" disabled onchange="onPostChange()">
+            <option value="">(select a user first)</option>
+          </select>
+          <p class="micro" id="postMeta">Pick a post to load its comments.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>3) Comments</h2>
+        <div class="pill" id="commentsCount">0 comments</div>
+      </div>
+
+      <div id="comments" class="comments empty">
+        <p class="muted">No comments yet. Choose a user → choose a post.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>4) Create a Post (POST)</h2>
+        <div class="pill">JSONPlaceholder demo</div>
+      </div>
+
+      <!-- NOTE: event wiring is already done in HTML (onsubmit). -->
+      <form id="createPostForm" class="form" onsubmit="return onCreatePost(event)">
+        <div class="grid">
+          <div class="field">
+            <label for="titleInput">Title</label>
+            <input id="titleInput" name="title" type="text" placeholder="e.g., My first API post" required />
+          </div>
+
+          <div class="field">
+            <label for="bodyInput">Body</label>
+            <textarea id="bodyInput" name="body" rows="4" placeholder="Write a short message..." required></textarea>
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn success" type="submit">Create Post</button>
+          <button class="btn ghost" id="btnClearOutput" type="button" onclick="onClearOutput()">Clear Output</button>
+        </div>
+      </form>
+
+      <div class="output">
+        <div class="output-label">Output</div>
+        <pre id="output" class="mono">(nothing yet)</pre>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p class="muted">
+        API base URL: <span class="mono">https://jsonplaceholder.typicode.com</span>
+      </p>
+    </footer>
+  </main>
+</body>
+</html>

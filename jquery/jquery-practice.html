@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jQuery Practice Problems - HCDD 411</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #2563EB;
+            --secondary: #475569;
+            --accent: #B45309;
+            --success: #047857;
+            --error: #DC2626;
+            --code-bg: #F1F5F9;
+            --border-color: rgba(59, 125, 214, 0.3);
+            --text-primary: #1E293B;
+            --text-secondary: #475569;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #f5f5f5;
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 140px 0 120px 0;
+        }
+
+        .presentation-container { width: 100%; min-height: 100vh; }
+
+        .slide {
+            width: 90%;
+            max-width: 1200px;
+            min-height: 400px;
+            background: #ffffff;
+            border-radius: 30px;
+            padding: 60px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: none;
+            border: 2px solid var(--border-color);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            display: block;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 4em;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            animation: slideInDown 0.8s ease-out;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 2.5em;
+            color: var(--accent);
+            margin-bottom: 30px;
+            letter-spacing: -1px;
+        }
+
+        h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            font-size: 1.5em;
+            color: var(--primary);
+            margin: 25px 0 15px 0;
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        /* Difficulty badges */
+        .difficulty-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 25px;
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 18px;
+        }
+        .badge-easy       { background: #D1FAE5; color: #065F46; border: 2px solid #6EE7B7; }
+        .badge-easy-medium { background: #DBEAFE; color: #1E40AF; border: 2px solid #93C5FD; }
+        .badge-medium     { background: #FEF3C7; color: #92400E; border: 2px solid #FCD34D; }
+        .badge-medium-hard { background: #FEE2E2; color: #991B1B; border: 2px solid #FCA5A5; }
+
+        /* Problem counter strip */
+        .problem-strip {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .problem-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #E2E8F0;
+            color: var(--text-secondary);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8em;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .problem-dot:hover { background: var(--primary); color: white; }
+        .problem-dot.easy-dot       { border-color: #6EE7B7; }
+        .problem-dot.easy-medium-dot { border-color: #93C5FD; }
+        .problem-dot.medium-dot     { border-color: #FCD34D; }
+        .problem-dot.hard-dot       { border-color: #FCA5A5; }
+
+        .code-playground {
+            background: var(--code-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 2px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-playground::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 30px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 15px 15px 0 0;
+        }
+
+        .playground-label {
+            position: absolute;
+            top: 5px; left: 20px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9em;
+            color: white;
+            font-weight: 700;
+            z-index: 1;
+        }
+
+        .ide-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.08);
+            border-radius: 10px 10px 0 0;
+            margin-top: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .ide-toolbar .file-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--primary);
+            color: white;
+            border-radius: 6px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .ide-toolbar .toolbar-actions { margin-left: auto; display: flex; gap: 8px; }
+
+        .toolbar-btn {
+            background: rgba(0,0,0,0.08);
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .toolbar-btn:hover { background: rgba(0,0,0,0.15); color: var(--text-primary); }
+
+        .editor-wrapper {
+            margin-top: 0;
+            border-radius: 0 0 10px 10px;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            border-top: none;
+        }
+
+        .CodeMirror {
+            font-family: 'Space Mono', monospace !important;
+            font-size: 0.95em !important;
+            height: auto !important;
+            min-height: 140px;
+            line-height: 1.6 !important;
+        }
+        .CodeMirror-scroll { min-height: 140px; }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 15px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 0 0 10px 10px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+        .status-bar .language { color: var(--primary); font-weight: 600; }
+
+        .run-button {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .run-button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+
+        .clear-button {
+            background: linear-gradient(135deg, var(--secondary), #34495e);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 15px;
+            margin-left: 10px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .clear-button:hover { transform: translateY(-3px); }
+
+        .output-console {
+            background: #1E293B;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 80px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Space Mono', monospace;
+            color: #4ADE80;
+            border: 1px solid #334155;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .output-console .error { color: #F87171; }
+        .output-console .warn  { color: #FBBF24; }
+
+        .output-label {
+            color: #FBBF24;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .live-preview {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 80px;
+            border: 2px solid var(--border-color);
+            color: #333;
+        }
+
+        .live-preview-label {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .info-box {
+            background: rgba(180, 83, 9, 0.08);
+            border-left: 4px solid var(--accent);
+            padding: 18px 20px;
+            margin: 18px 0;
+            border-radius: 10px;
+            color: var(--text-primary);
+        }
+        .info-box strong { color: var(--accent); }
+
+        .tip-box {
+            background: rgba(4, 120, 87, 0.08);
+            border-left: 4px solid var(--success);
+            padding: 18px 20px;
+            margin: 18px 0;
+            border-radius: 10px;
+            color: var(--text-primary);
+        }
+        .tip-box strong { color: var(--success); }
+
+        .solution-box {
+            display: none;
+            margin-top: 15px;
+            padding: 18px;
+            background: rgba(4, 120, 87, 0.08);
+            border-radius: 10px;
+            border: 2px solid var(--success);
+        }
+        .solution-box strong { color: var(--success); }
+        .solution-box pre {
+            margin: 10px 0 0 0;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+        }
+
+        ul { margin: 12px 0; padding-left: 28px; }
+        li { margin: 8px 0; font-size: 1.05em; line-height: 1.6; color: var(--text-primary); }
+        ol { margin: 12px 0; padding-left: 28px; }
+        ol li { margin: 10px 0; }
+
+        code {
+            font-family: 'Space Mono', monospace;
+            background: rgba(37, 99, 235, 0.1);
+            padding: 2px 7px;
+            border-radius: 4px;
+            color: #1D4ED8;
+            font-weight: 500;
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .nav-button:hover { background: var(--secondary); transform: scale(1.05); }
+        .nav-button:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+        .slide-indicator {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            background: var(--primary);
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 1em;
+            z-index: 1000;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .course-badge {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 1.2em;
+            color: var(--primary);
+            z-index: 1000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        @keyframes slideInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Legend for title slide */
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1em;
+            color: var(--text-secondary);
+        }
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+
+        /* Nice numbered task list */
+        .task-list { list-style: none; padding: 0; margin: 12px 0; }
+        .task-list li {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            margin: 10px 0;
+            padding: 10px 14px;
+            background: rgba(37,99,235,0.04);
+            border-radius: 8px;
+        }
+        .task-num {
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85em;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="course-badge">HCDD 411</div>
+    <div class="slide-indicator">
+        <span id="currentSlide">1</span> / <span id="totalSlides">13</span>
+    </div>
+
+    <div class="presentation-container">
+
+        <!-- ─── SLIDE 1: Title ─────────────────────────────────── -->
+        <div class="slide active" data-slide="1">
+            <h1>jQuery<br>Practice</h1>
+            <p class="subtitle">12 problems — selectors, content, styling, events, animations & more</p>
+
+            <div class="problem-strip" id="title-strip"></div>
+
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#6EE7B7;"></div> Easy (×3)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#93C5FD;"></div> Easy-Medium (×3)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#FCD34D;"></div> Medium (×3)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#FCA5A5;"></div> Medium-Hard (×3)</div>
+            </div>
+
+            <div class="tip-box" style="margin-top:30px;">
+                <strong>💡 How to use these slides:</strong>
+                <ul style="margin-bottom:0;">
+                    <li>Read the task carefully, then write your solution in the code editor</li>
+                    <li>Click <strong>▶ Run Code</strong> (or press <kbd style="background:rgba(0,0,0,0.08);padding:2px 6px;border-radius:4px;font-family:'Space Mono',monospace;">Ctrl+Enter</kbd>) to execute</li>
+                    <li>Stuck? Use the <strong>👁️ Show Solution</strong> button — but try first!</li>
+                    <li>Click <strong>Reset Preview</strong> to restore the original state of the preview</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             EASY  ×3
+        ═══════════════════════════════════════════════════════ -->
+
+        <!-- ─── P1: Easy — Selectors + .text() ─── -->
+        <div class="slide" data-slide="2">
+            <div class="difficulty-badge badge-easy">⭐ Easy — Problem 1 of 12</div>
+            <h2>Change the Heading Text</h2>
+            <p class="subtitle">Practice: ID selector + <code>.text()</code></p>
+
+            <div class="info-box">
+                <strong>Your Task:</strong>
+                <ul class="task-list" style="list-style:none;padding:0;margin-top:10px;">
+                    <li><span class="task-num">1</span><span>Select the element with ID <code>headline</code> and change its text to <strong>"jQuery is awesome!"</strong></span></li>
+                </ul>
+            </div>
+
+            <div class="tip-box">
+                <strong>💡 Hints:</strong>
+                <ul style="margin-bottom:0;">
+                    <li>To select by ID use: <code>$("#your-id")</code></li>
+                    <li>To set text content use: <code>.text("your text here")</code></li>
+                    <li>Put them together: <code>$("#headline").text("...")</code></li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab"><span>📄</span><span>practice.js</span></div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p1')">🔄 Reset</button>
+                        <button class="toolbar-btn" onclick="toggleSolution('sol-1')">👁️ Show Solution</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p1">// Step 1: Select the element with id "headline"
+// Step 2: Call .text() on it with "jQuery is awesome!"
+
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p1">Ln 1, Col 1</span>
+                    <span class="language">JavaScript + jQuery</span>
+                </div>
+                <button class="run-button" onclick="runCode('p1','p1-out','p1-prev')">▶ Run Code</button>
+                <button class="clear-button" onclick="resetPreview('p1-prev-html','p1-prev-html')">Reset Preview</button>
+                <div id="sol-1" class="solution-box">
+                    <strong>✅ Solution:</strong>
+                    <pre><code>$("#headline").text("jQuery is awesome!");</code></pre>
+                </div>
+                <div class="output-console" id="p1-out"><span class="output-label">💻 Console Output:</span></div>
+                <div class="live-preview" id="p1-prev">
+                    <span class="live-preview-label">🎨 Live Preview:</span>
+                    <div id="p1-prev-html">
+                        <h3 id="headline" style="color:#1E293B;font-size:1.6em;margin-bottom:10px;">Original heading text</h3>
+                        <p style="color:#64748B;">This paragraph should stay the same.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── P2: Easy — Class selector + .css() ─── -->
+        <div class="slide" data-slide="3">
+            <div class="difficulty-badge badge-easy">⭐ Easy — Problem 2 of 12</div>
+            <h2>Style All the Boxes</h2>
+            <p class="subtitle">Practice: class selector + <code>.css()</code></p>
+
+            <div class="info-box">
+                <strong>Your Tasks:</strong>
+                <ul class="task-list" style="list-style:none;padding:0;margin-top:10px;">
+                    <li><span class="task-num">1</span><span>Select all elements with class <code>card</code> and change their background color to <code>#DBEAFE</code></span></li>
+                    <li><span class="task-num">2</span><span>Also change their text color to <code>#1E40AF</code></span></li>
+                </ul>
+            </div>
+
+            <div class="tip-box">
+                <strong>💡 Hints:</strong>
+                <ul style="margin-bottom:0;">
+                    <li>To select by class use: <code>$(".class-name")</code></li>
+                    <li>To set one CSS property: <code>.css("property", "value")</code></li>
+                    <li>To set multiple at once: <code>.css({ "property": "value", "property2": "value2" })</code></li>
+                    <li>jQuery applies the change to <em>all</em> matched elements — no loop needed!</li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab"><span>📄</span><span>practice.js</span></div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p2')">🔄 Reset</button>
+                        <button class="toolbar-btn" onclick="toggleSolution('sol-2')">👁️ Show Solution</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p2">// Select all .card elements and change their styles
+
+
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p2">Ln 1, Col 1</span>
+                    <span class="language">JavaScript + jQuery</span>
+                </div>
+                <button class="run-button" onclick="runCode('p2','p2-out','p2-prev')">▶ Run Code</button>
+                <button class="clear-button" onclick="resetPreview('p2-prev','p2-prev-html')">Reset Preview</button>
+                <div id="sol-2" class="solution-box">
+                    <strong>✅ Solution:</strong>
+                    <pre><code>$(".card").css({
+    "background": "#DBEAFE",
+    "color": "#1E40AF"
+});</code></pre>
+                </div>
+                <div class="output-console" id="p2-out"><span class="output-label">💻 Console Output:</span></div>
+                <div class="live-preview" id="p2-prev">
+                    <span class="live-preview-label">🎨 Live Preview:</span>
+                    <div id="p2-prev-html" style="display:flex;gap:12px;flex-wrap:wrap;">
+                        <div class="card" style="padding:16px;background:#f1f5f9;border-radius:8px;flex:1;min-width:120px;text-align:center;font-weight:600;">Card A</div>
+                        <div class="card" style="padding:16px;background:#f1f5f9;border-radius:8px;flex:1;min-width:120px;text-align:center;font-weight:600;">Card B</div>
+                        <div class="card" style="padding:16px;background:#f1f5f9;border-radius:8px;flex:1;min-width:120px;text-align:center;font-weight:600;">Card C</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── P3: Easy — .val() + console.log() ─── -->
+        <div class="slide" data-slide="4">
+            <div class="difficulty-badge badge-easy">⭐ Easy — Problem 3 of 12</div>
+            <h2>Read an Input Value</h2>
+            <p class="subtitle">Practice: <code>.val()</code> + <code>console.log()</code></p>
+
+            <div class="info-box">
+                <strong>Your Tasks:</strong>
+                <ul class="task-list" style="list-style:none;padding:0;margin-top:10px;">
+                    <li><span class="task-num">1</span><span>Get the current value from the input with ID <code>username</code> and store it in a variable</span></li>
+                    <li><span class="task-num">2</span><span>Log it to the console with the label <strong>"Hello,"</strong> — e.g. <code>Hello, Ada</code></span></li>
+                    <li><span class="task-num">3</span><span>Also update the text of <code>#greeting-output</code> to show the same message</span></li>
+                </ul>
+            </div>
+
+            <div class="tip-box">
+                <strong>💡 Hints:</strong>
+                <ul style="margin-bottom:0;">
+                    <li>Get an input's value: <code>var name = $("#username").val();</code></li>
+                    <li>Combine strings: <code>"Hello, " + name</code></li>
+                    <li>Print to console: <code>console.log("Hello, " + name);</code></li>
+                    <li>Set element text: <code>$("#greeting-output").text("Hello, " + name);</code></li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab"><span>📄</span><span>practice.js</span></div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p3')">🔄 Reset</button>
+                        <button class="toolbar-btn" onclick="toggleSolution('sol-3')">👁️ Show Solution</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p3">// Step 1: Get the value of #username and store it in a variable
+var name = 
+
+// Step 2: Log "Hello, " + name to the console
+
+
+// Step 3: Update #greeting-output text to "Hello, " + name
+
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p3">Ln 1, Col 1</span>
+                    <span class="language">JavaScript + jQuery</span>
+                </div>
+                <button class="run-button" onclick="runCode('p3','p3-out','p3-prev')">▶ Run Code</button>
+                <button class="clear-button" onclick="resetPreview('p3-prev','p3-prev-html')">Reset Preview</button>
+                <div id="sol-3" class="solution-box">
+                    <strong>✅ Solution:</strong>
+                    <pre><code>var name = $("#username").val();
+console.log("Hello, " + name);
+$("#greeting-output").text("Hello, " + name);</code></pre>
+                </div>
+                <div class="output-console" id="p3-out"><span class="output-label">💻 Console Output:</span></div>
+                <div class="live-preview" id="p3-prev">
+                    <span class="live-preview-label">🎨 Live Preview:</span>
+                    <div id="p3-prev-html">
+                        <div style="margin-bottom:14px;">
+                            <label style="font-weight:600;display:block;margin-bottom:6px;">Enter your name:</label>
+                            <input id="username" type="text" value="Ada" style="padding:8px 12px;border:2px solid #CBD5E1;border-radius:6px;font-size:1em;width:220px;">
+                        </div>
+                        <div id="greeting-output" style="padding:14px;background:#F8FAFC;border-radius:8px;color:#64748B;font-style:italic;">Greeting will appear here...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             EASY-MEDIUM  ×3
+        ═══════════════════════════════════════════════════════ -->
+
+        <!-- ─── P4: Easy-Medium — .html() ─── -->
+        <div class="slide" data-slide="5">
+            <div class="difficulty-badge badge-easy-medium">🔵 Easy-Medium — Problem 4 of 12</div>
+            <h2>Inject HTML Content</h2>
+            <p class="subtitle">Practice: <code>.html()</code> vs <code>.text()</code></p>
+
+            <div class="info-box">
+                <strong>Your Tasks:</strong>
+                <ul class="task-list" style="list-style:none;padding:0;margin-top:10px;">
+                    <li><span class="task-num">1</span><span>Change the content of <code>#status-box</code> to: <code>&lt;strong&gt;✅ Connected&lt;/strong&gt; — server is online</code></span></li>
+                    <li><span class="task-num">2</span><span>Change the content of <code>#warning-box</code> to: <code>&lt;em style="color:#DC2626"&gt;⚠️ Low battery&lt;/em&gt;</code></span></li>
+                </ul>
+            </div>
+
+            <div class="tip-box">
+                <strong>💡 Hints:</strong>
+                <ul style="margin-bottom:0;">
+                    <li><code>.html("...")</code> renders HTML tags — use this instead of <code>.text()</code> when you want formatting</li>
+                    <li>Example: <code>$("#box").html("&lt;strong&gt;Bold!&lt;/strong&gt;")</code></li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab"><span>📄</span><span>practice.js</span></div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p4')">🔄 Reset</button>
+                        <button class="toolbar-btn" onclick="toggleSolution('sol-4')">👁️ Show Solution</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p4">// Task 1: Update #status-box with HTML
+
+
+// Task 2: Update #warning-box with HTML
+
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p4">Ln 1, Col 1</span>
+                    <span class="language">JavaScript + jQuery</span>
+                </div>
+                <button class="run-button" onclick="runCode('p4','p4-out','p4-prev')">▶ Run Code</button>
+                <button class="clear-button" onclick="resetPreview('p4-prev','p4-prev-html')">Reset Preview</button>
+                <div id="sol-4" class="solution-box">
+                    <strong>✅ Solution:</strong>
+                    <pre><code>$("#status-box").html("&lt;strong&gt;✅ Connected&lt;/strong&gt; — server is online");
+$("#warning-box").html("&lt;em style='color:#DC2626'&gt;⚠️ Low battery&lt;/em&gt;");</code></pre>
+                </div>
+                <div class="output-console" id="p4-out"><span class="output-label">💻 Console Output:</span></div>
+                <div class="live-preview" id="p4-prev">
+                    <span class="live-preview-label">🎨 Live Preview:</span>
+                    <div id="p4-prev-html">
+                        <div id="status-box" style="padding:14px;background:#F1F5F9;border-radius:8px;margin-bottom:12px;color:#64748B;">Status unknown</div>
+                        <div id="warning-box" style="padding:14px;background:#F1F5F9;border-radius:8px;color:#64748B;">No warnings</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── P5: Easy-Medium — .click() + .show() ─── -->
+        <div class="slide" data-slide="6">
+            <div class="difficulty-badge badge-easy-medium">🔵 Easy-Medium — Problem 5 of 12</div>
+            <h2>Show a Hidden Element</h2>
+            <p class="subtitle">Practice: <code>.click()</code> + <code>.show()</code> / <code>.hide()</code></p>
+
+            <div class="info-box">
+                <strong>Your Tasks:</strong>
+                <ul class="task-list" style="list-style:none;padding:0;margin-top:10px;">
+                    <li><span class="task-num">1</span><span>When <code>#reveal-btn</code> is clicked, show the element <code>#secret-panel</code></span></li>
+                    <li><span class="task-num">2</span><span>When <code>#hide-btn</code> is clicked, hide <code>#secret-panel</code> again</span></li>
+                </ul>
+            </div>
+
+            <div class="tip-box">
+                <strong>💡 Hints:</strong>
+                <ul style="margin-bottom:0;">
+                    <li>Attach a click handler: <code>$("#btn").click(function() { ... });</code></li>
+                    <li>Show an element: <code>$("#element").show();</code></li>
+                    <li>Hide an element: <code>$("#element").hide();</code></li>
+                    <li><strong>Remember:</strong> Run the code first, then click the buttons in the preview!</li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE (run first, then interact)</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab"><span>📄</span><span>practice.js</span></div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p5')">🔄 Reset</button>
+                        <button class="toolbar-btn" onclick="toggleSolution('sol-5')">👁️ Show Solution</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p5">// When #reveal-btn is clicked, show #secret-panel
+
+
+// When #hide-btn is clicked, hide #secret-panel
+
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p5">Ln 1, Col 1</span>
+                    <span class="language">JavaScript + jQuery</span>
+                </div>
+                <button class="run-button" onclick="runCode('p5','p5-out','p5-prev')">▶ Run Code</button>
+                <button class="clear-button" onclick="resetPreview('p5-prev','p5-prev-html')">Reset Preview</button>
+                <div id="sol-5" class="solution-box">
+                    <strong>✅ Solution:</strong>
+                    <pre><code>$("#reveal-btn").click(function() {
+    $("#secret-panel").show();
+});
+
+$("#hide-btn").click(function() {
+    $("#secret-panel").hide();
+});</code></pre>
+                </div>
+                <div class="output-console" id="p5-out"><span class="output-label">💻 Console Output:</span></div>
+                <div class="live-preview" id="p5-prev">
+                    <span class="live-preview-label">🎨 Live Preview (click buttons after running!):</span>
+                    <div id="p5-prev-html">
+                        <div style="display:flex;gap:10px;margin-bottom:16px;">
+                            <button id="reveal-btn" style="padding:10px 20px;background:#2563EB;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Reveal</button>
+                            <button id="hide-btn" style="padding:10px 20px;background:#475569;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Hide</button>
+                        </div>
+                        <div id="secret-panel" style="display:none;padding:20px;background:linear-gradient(135deg,#DBEAFE,#EDE9FE);border-radius:10px;border:2px solid #93C5FD;text-align:center;">
+                            <span style="font-size:2em;">🎉</span>
+                            <p style="font-weight:700;color:#1E40AF;margin-top:8px;">You revealed the secret panel!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── P6: Easy-Medium — .addClass() + .removeClass() ─── -->
+        <div class="slide" data-slide="7">
+            <div class="difficulty-badge badge-easy-medium">🔵 Easy-Medium — Problem 6 of 12</div>
+            <h2>Add, Remove & Toggle Classes</h2>
+            <p class="subtitle">Practice: <code>.addClass()</code> · <code>.removeClass()</code> · <code>.toggleClass()</code></p>
+
+            <div class="info-box">
+                <strong>Your Tasks:</strong>
+                <ul class="task-list" style="list-style:none;padding:0;margin-top:10px;">
+                    <li><span class="task-num">1</span><span>When <code>#add-btn</code> is clicked, add class <code>highlighted</code> to <code>#demo-box</code></span></li>
+                    <li><span class="task-num">2</span><span>When <code>#remove-btn</code> is clicked, remove class <code>highlighted</code> from <code>#demo-box</code></span></li>
+                    <li><span class="task-num">3</span><span>When <code>#toggle-btn</code> is clicked, toggle class <code>highlighted</code> on <code>#demo-box</code></span></li>
+                </ul>
+            </div>
+
+            <div class="tip-box">
+                <strong>💡 Hint:</strong> Use <code>.addClass("highlighted")</code>, <code>.removeClass("highlighted")</code>, and <code>.toggleClass("highlighted")</code>.
+                The <code>.highlighted</code> class is already defined in the preview — it turns the box gold.
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE (run first, then interact)</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab"><span>📄</span><span>practice.js</span></div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p6')">🔄 Reset</button>
+                        <button class="toolbar-btn" onclick="toggleSolution('sol-6')">👁️ Show Solution</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p6">// Task 1: Add "highlighted" class when #add-btn is clicked
+
+
+// Task 2: Remove "highlighted" class when #remove-btn is clicked
+
+
+// Task 3: Toggle "highlighted" class when #toggle-btn is clicked
+
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p6">Ln 1, Col 1</span>
+                    <span class="language">JavaScript + jQuery</span>
+                </div>
+                <button class="run-button" onclick="runCode('p6','p6-out','p6-prev')">▶ Run Code</button>
+                <button class="clear-button" onclick="resetPreview('p6-prev','p6-prev-html')">Reset Preview</button>
+                <div id="sol-6" class="solution-box">
+                    <strong>✅ Solution:</strong>
+                    <pre><code>$("#add-btn").click(function() {
+    $("#demo-box").addClass("highlighted");
+});
+
+$("#remove-btn").click(function() {
+    $("#demo-box").removeClass("highlighted");
+});
+
+$("#toggle-btn").click(function() {
+    $("#demo-box").toggleClass("highlighted");
+});</code></pre>
+                </div>
+                <div class="output-console" id="p6-out"><span class="output-label">💻 Console Output:</span></div>
+                <div class="live-preview" id="p6-prev">
+                    <span class="live-preview-label">🎨 Live Preview:</span>
+                    <style>
+                        .highlighted { background: #FEF3C7 !important; border-color: #F59E0B !important; color: #92400E !important; font-weight: 700 !important; }
+                    </style>
+                    <div id="p6-prev-html">
+                        <div id="demo-box" style="padding:20px;background:#F1F5F9;border:2px solid #CBD5E1;border-radius:10px;text-align:center;transition:all 0.3s;margin-bottom:16px;font-size:1.1em;">
+                            Watch me change!
+                        </div>
+                        <div style="display:flex;gap:10px;">
+                            <button id="add-btn" style="padding:9px 18px;background:#047857;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Add Class</button>
+                            <button id="remove-btn" style="padding:9px 18px;background:#DC2626;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Remove Class</button>
+                            <button id="toggle-btn" style="padding:9px 18px;background:#2563EB;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Toggle Class</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             MEDIUM  ×3
+        ═══════════════════════════════════════════════════════ -->
+
+        <!-- ─── P7: Medium — .hover() ─── -->
+        <div class="slide" data-slide="8">
+            <div class="difficulty-badge badge-medium">🟡 Medium — Problem 7 of 12</div>
+            <h2>Hover Effects</h2>
+            <p class="subtitle">Practice: <code>.hover()</code> + <code>$(this)</code></p>
+
+            <div class="info-box">
+                <strong>Your Tasks:</strong>
+                <ul class="task-list" style="list-style:none;padding:0;margin-top:10px;">
+                    <li><span class="task-num">1</span><span>When the mouse enters any <code>.menu-item</code>, change its background to <code>#2563EB</code> and text color to <code>white</code></span></li>
+                    <li><span class="task-num">2</span><span>When the mouse leaves, restore background to <code>#F1F5F9</code> and color to <code>#1E293B</code></span></li>
+                </ul>
+            </div>
+
+            <div class="tip-box">
+                <strong>💡 Hints:</strong>
+                <ul style="margin-bottom:0;">
+                    <li><code>.hover(fnEnter, fnLeave)</code> takes two functions — one for in, one for out</li>
+                    <li>Use <code>$(this)</code> inside the handler to reference the hovered element</li>
+                    <li>This needs to work for <em>all</em> <code>.menu-item</code> elements — jQuery handles this automatically</li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE (run first, then hover the items)</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab"><span>📄</span><span>practice.js</span></div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p7')">🔄 Reset</button>
+                        <button class="toolbar-btn" onclick="toggleSolution('sol-7')">👁️ Show Solution</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p7">$(".menu-item").hover(
+    function() {
+        // Mouse enters — change background and color
+
+    },
+    function() {
+        // Mouse leaves — restore original styles
+
+    }
+);
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p7">Ln 1, Col 1</span>
+                    <span class="language">JavaScript + jQuery</span>
+                </div>
+                <button class="run-button" onclick="runCode('p7','p7-out','p7-prev')">▶ Run Code</button>
+                <button class="clear-button" onclick="resetPreview('p7-prev','p7-prev-html')">Reset Preview</button>
+                <div id="sol-7" class="solution-box">
+                    <strong>✅ Solution:</strong>
+                    <pre><code>$(".menu-item").hover(
+    function() {
+        $(this).css({ "background": "#2563EB", "color": "white" });
+    },
+    function() {
+        $(this).css({ "background": "#F1F5F9", "color": "#1E293B" });
+    }
+);</code></pre>
+                </div>
+                <div class="output-console" id="p7-out"><span class="output-label">💻 Console Output:</span></div>
+                <div class="live-preview" id="p7-prev">
+                    <span class="live-preview-label">🎨 Live Preview (hover after running!):</span>
+                    <div id="p7-prev-html">
+                        <ul style="list-style:none;padding:0;width:260px;">
+                            <li class="menu-item" style="padding:14px 18px;background:#F1F5F9;color:#1E293B;border-radius:8px;margin-bottom:6px;cursor:pointer;font-weight:500;transition:all 0.2s;">🏠 Home</li>
+                            <li class="menu-item" style="padding:14px 18px;background:#F1F5F9;color:#1E293B;border-radius:8px;margin-bottom:6px;cursor:pointer;font-weight:500;transition:all 0.2s;">📄 About</li>
+                            <li class="menu-item" style="padding:14px 18px;background:#F1F5F9;color:#1E293B;border-radius:8px;margin-bottom:6px;cursor:pointer;font-weight:500;transition:all 0.2s;">💼 Portfolio</li>
+                            <li class="menu-item" style="padding:14px 18px;background:#F1F5F9;color:#1E293B;border-radius:8px;cursor:pointer;font-weight:500;transition:all 0.2s;">📬 Contact</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── P8: Medium — .append() + .val() + event ─── -->
+        <div class="slide" data-slide="9">
+            <div class="difficulty-badge badge-medium">🟡 Medium — Problem 8 of 12</div>
+            <h2>Build a Task List</h2>
+            <p class="subtitle">Practice: <code>.click()</code> + <code>.val()</code> + <code>.append()</code></p>
+
+            <div class="info-box">
+                <strong>Your Tasks:</strong>
+                <ul class="task-list" style="list-style:none;padding:0;margin-top:10px;">
+                    <li><span class="task-num">1</span><span>When <code>#add-task-btn</code> is clicked, read the value from <code>#task-input</code></span></li>
+                    <li><span class="task-num">2</span><span>If the value is not empty, append <code>&lt;li&gt;[task]&lt;/li&gt;</code> to <code>#task-list</code></span></li>
+                    <li><span class="task-num">3</span><span>After adding, clear the input field</span></li>
+                </ul>
+            </div>
+
+            <div class="tip-box">
+                <strong>💡 Hints:</strong>
+                <ul style="margin-bottom:0;">
+                    <li>Check if value is not empty: <code>if (value !== "") { ... }</code></li>
+                    <li>Build the list item: <code>"&lt;li&gt;" + value + "&lt;/li&gt;"</code></li>
+                    <li>Clear an input: <code>.val("")</code></li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE (run first, then try adding tasks)</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab"><span>📄</span><span>practice.js</span></div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p8')">🔄 Reset</button>
+                        <button class="toolbar-btn" onclick="toggleSolution('sol-8')">👁️ Show Solution</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p8">$("#add-task-btn").click(function() {
+    // Step 1: Get the value from #task-input
+    var task = 
+
+    // Step 2: If the task is not empty, add it to #task-list
+
+
+    // Step 3: Clear the input
+
+});
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p8">Ln 1, Col 1</span>
+                    <span class="language">JavaScript + jQuery</span>
+                </div>
+                <button class="run-button" onclick="runCode('p8','p8-out','p8-prev')">▶ Run Code</button>
+                <button class="clear-button" onclick="resetPreview('p8-prev','p8-prev-html')">Reset Preview</button>
+                <div id="sol-8" class="solution-box">
+                    <strong>✅ Solution:</strong>
+                    <pre><code>$("#add-task-btn").click(function() {
+    var task = $("#task-input").val();
+    if (task !== "") {
+        $("#task-list").append("&lt;li style='padding:8px;border-bottom:1px solid #E2E8F0'&gt;" + task + "&lt;/li&gt;");
+        $("#task-input").val("");
+    }
+});</code></pre>
+                </div>
+                <div class="output-console" id="p8-out"><span class="output-label">💻 Console Output:</span></div>
+                <div class="live-preview" id="p8-prev">
+                    <span class="live-preview-label">🎨 Live Preview:</span>
+                    <div id="p8-prev-html">
+                        <div style="background:#F8FAFC;padding:20px;border-radius:10px;border:2px solid #E2E8F0;max-width:380px;">
+                            <h4 style="margin:0 0 14px;color:#1E293B;">📝 My Task List</h4>
+                            <div style="display:flex;gap:8px;margin-bottom:14px;">
+                                <input id="task-input" type="text" placeholder="New task..." style="flex:1;padding:9px 12px;border:2px solid #CBD5E1;border-radius:6px;font-size:0.95em;">
+                                <button id="add-task-btn" style="padding:9px 16px;background:#2563EB;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:700;">+ Add</button>
+                            </div>
+                            <ul id="task-list" style="list-style:none;padding:0;margin:0;">
+                                <li style="padding:8px;border-bottom:1px solid #E2E8F0;">Buy groceries</li>
+                                <li style="padding:8px;border-bottom:1px solid #E2E8F0;">Read a book</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── P9: Medium — fadeIn/Out + .remove() ─── -->
+        <div class="slide" data-slide="10">
+            <div class="difficulty-badge badge-medium">🟡 Medium — Problem 9 of 12</div>
+            <h2>Fade & Remove</h2>
+            <p class="subtitle">Practice: <code>.fadeOut()</code> · <code>.fadeIn()</code> · <code>.remove()</code></p>
+
+            <div class="info-box">
+                <strong>Your Tasks:</strong>
+                <ul class="task-list" style="list-style:none;padding:0;margin-top:10px;">
+                    <li><span class="task-num">1</span><span>When <code>#fade-out-btn</code> is clicked, fade out <code>#fade-target</code></span></li>
+                    <li><span class="task-num">2</span><span>When <code>#fade-in-btn</code> is clicked, fade it back in</span></li>
+                    <li><span class="task-num">3</span><span>When any <code>.dismiss-btn</code> is clicked, completely remove its parent <code>.alert-card</code> from the DOM</span></li>
+                </ul>
+            </div>
+
+            <div class="tip-box">
+                <strong>💡 Hints:</strong>
+                <ul style="margin-bottom:0;">
+                    <li><code>.fadeOut()</code> and <code>.fadeIn()</code> animate opacity</li>
+                    <li>To get the parent of the clicked button: <code>$(this).parent()</code></li>
+                    <li><code>.remove()</code> deletes an element from the DOM entirely</li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE (run first, then interact)</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab"><span>📄</span><span>practice.js</span></div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p9')">🔄 Reset</button>
+                        <button class="toolbar-btn" onclick="toggleSolution('sol-9')">👁️ Show Solution</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p9">// Task 1: Fade out #fade-target
+
+
+// Task 2: Fade in #fade-target
+
+
+// Task 3: Remove the parent .alert-card when .dismiss-btn is clicked
+
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p9">Ln 1, Col 1</span>
+                    <span class="language">JavaScript + jQuery</span>
+                </div>
+                <button class="run-button" onclick="runCode('p9','p9-out','p9-prev')">▶ Run Code</button>
+                <button class="clear-button" onclick="resetPreview('p9-prev','p9-prev-html')">Reset Preview</button>
+                <div id="sol-9" class="solution-box">
+                    <strong>✅ Solution:</strong>
+                    <pre><code>$("#fade-out-btn").click(function() {
+    $("#fade-target").fadeOut();
+});
+
+$("#fade-in-btn").click(function() {
+    $("#fade-target").fadeIn();
+});
+
+$(".dismiss-btn").click(function() {
+    $(this).parent().remove();
+});</code></pre>
+                </div>
+                <div class="output-console" id="p9-out"><span class="output-label">💻 Console Output:</span></div>
+                <div class="live-preview" id="p9-prev">
+                    <span class="live-preview-label">🎨 Live Preview:</span>
+                    <div id="p9-prev-html">
+                        <div style="display:flex;gap:10px;margin-bottom:16px;">
+                            <button id="fade-out-btn" style="padding:9px 18px;background:#475569;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Fade Out</button>
+                            <button id="fade-in-btn" style="padding:9px 18px;background:#2563EB;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Fade In</button>
+                        </div>
+                        <div id="fade-target" style="padding:18px;background:#DBEAFE;border-radius:8px;color:#1E40AF;font-weight:600;margin-bottom:16px;border:2px solid #93C5FD;">
+                            I will fade in and out ✨
+                        </div>
+                        <p style="font-weight:600;margin-bottom:10px;color:#64748B;">Dismiss these alerts:</p>
+                        <div class="alert-card" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#FEF3C7;border-radius:8px;margin-bottom:8px;border:1px solid #FCD34D;">
+                            <span>⚠️ Update available</span>
+                            <button class="dismiss-btn" style="background:none;border:none;cursor:pointer;font-size:1.1em;color:#92400E;">✕</button>
+                        </div>
+                        <div class="alert-card" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#FEE2E2;border-radius:8px;border:1px solid #FCA5A5;">
+                            <span>🔴 Connection lost</span>
+                            <button class="dismiss-btn" style="background:none;border:none;cursor:pointer;font-size:1.1em;color:#991B1B;">✕</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             MEDIUM-HARD  ×3
+        ═══════════════════════════════════════════════════════ -->
+
+        <!-- ─── P10: Medium-Hard — $(this) + siblings + active selection ─── -->
+        <div class="slide" data-slide="11">
+            <div class="difficulty-badge badge-medium-hard">🔴 Medium-Hard — Problem 10 of 12</div>
+            <h2>Exclusive Selection</h2>
+            <p class="subtitle">Practice: <code>$(this)</code> · <code>.siblings()</code> · chaining</p>
+
+            <div class="info-box">
+                <strong>Your Tasks:</strong>
+                <ul class="task-list" style="list-style:none;padding:0;margin-top:10px;">
+                    <li><span class="task-num">1</span><span>When a <code>.option-card</code> is clicked, add class <code>selected</code> to it and remove <code>selected</code> from all its sibling <code>.option-card</code> elements</span></li>
+                    <li><span class="task-num">2</span><span>Update <code>#chosen-label</code>'s text to show which option was selected, using the clicked card's <code>.find(".option-name")</code> text</span></li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE (run first, then click an option)</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab"><span>📄</span><span>practice.js</span></div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p10')">🔄 Reset</button>
+                        <button class="toolbar-btn" onclick="toggleSolution('sol-10')">👁️ Show Solution</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p10">$(".option-card").click(function() {
+    // Your code here...
+
+
+});
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p10">Ln 1, Col 1</span>
+                    <span class="language">JavaScript + jQuery</span>
+                </div>
+                <button class="run-button" onclick="runCode('p10','p10-out','p10-prev')">▶ Run Code</button>
+                <button class="clear-button" onclick="resetPreview('p10-prev','p10-prev-html')">Reset Preview</button>
+                <div id="sol-10" class="solution-box">
+                    <strong>✅ Solution:</strong>
+                    <pre><code>$(".option-card").click(function() {
+    $(this).addClass("selected")
+           .siblings(".option-card").removeClass("selected");
+    
+    var name = $(this).find(".option-name").text();
+    $("#chosen-label").text("You chose: " + name);
+});</code></pre>
+                </div>
+                <div class="output-console" id="p10-out"><span class="output-label">💻 Console Output:</span></div>
+                <div class="live-preview" id="p10-prev">
+                    <span class="live-preview-label">🎨 Live Preview:</span>
+                    <style>
+                        .option-card.selected { background:#DBEAFE !important; border-color:#2563EB !important; }
+                        .option-card.selected .option-name { color:#1E40AF !important; }
+                    </style>
+                    <div id="p10-prev-html">
+                        <div id="chosen-label" style="margin-bottom:14px;padding:12px;background:#F1F5F9;border-radius:8px;color:#64748B;font-style:italic;">Nothing selected yet</div>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                            <div class="option-card" style="flex:1;min-width:100px;padding:16px;background:#F8FAFC;border:2px solid #E2E8F0;border-radius:10px;cursor:pointer;text-align:center;transition:all 0.2s;">
+                                <div style="font-size:1.8em;">🚀</div>
+                                <div class="option-name" style="font-weight:700;color:#1E293B;margin-top:6px;">Rocket</div>
+                            </div>
+                            <div class="option-card" style="flex:1;min-width:100px;padding:16px;background:#F8FAFC;border:2px solid #E2E8F0;border-radius:10px;cursor:pointer;text-align:center;transition:all 0.2s;">
+                                <div style="font-size:1.8em;">🌊</div>
+                                <div class="option-name" style="font-weight:700;color:#1E293B;margin-top:6px;">Wave</div>
+                            </div>
+                            <div class="option-card" style="flex:1;min-width:100px;padding:16px;background:#F8FAFC;border:2px solid #E2E8F0;border-radius:10px;cursor:pointer;text-align:center;transition:all 0.2s;">
+                                <div style="font-size:1.8em;">🌿</div>
+                                <div class="option-name" style="font-weight:700;color:#1E293B;margin-top:6px;">Leaf</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── P11: Medium-Hard — prepend + remove last + count ─── -->
+        <div class="slide" data-slide="12">
+            <div class="difficulty-badge badge-medium-hard">🔴 Medium-Hard — Problem 11 of 12</div>
+            <h2>Manage a Dynamic List</h2>
+            <p class="subtitle">Practice: <code>.prepend()</code> · <code>.last()</code> · <code>.remove()</code> · live counters</p>
+
+            <div class="info-box">
+                <strong>Your Tasks:</strong>
+                <ul class="task-list" style="list-style:none;padding:0;margin-top:10px;">
+                    <li><span class="task-num">1</span><span>When <code>#prepend-btn</code> is clicked, prepend a new item <code>&lt;li&gt;New item&lt;/li&gt;</code> to <code>#dyn-list</code></span></li>
+                    <li><span class="task-num">2</span><span>When <code>#remove-last-btn</code> is clicked, remove the last <code>&lt;li&gt;</code> in <code>#dyn-list</code></span></li>
+                    <li><span class="task-num">3</span><span>After every add or remove operation, update <code>#item-count</code>'s text to show the current number of <code>li</code> children</span></li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE (run first, then interact)</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab"><span>📄</span><span>practice.js</span></div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p11')">🔄 Reset</button>
+                        <button class="toolbar-btn" onclick="toggleSolution('sol-11')">👁️ Show Solution</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p11">$("#prepend-btn").click(function() {
+    // Prepend a new <li> and update count
+
+
+});
+
+$("#remove-last-btn").click(function() {
+    // Remove last <li> and update count
+
+
+});
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p11">Ln 1, Col 1</span>
+                    <span class="language">JavaScript + jQuery</span>
+                </div>
+                <button class="run-button" onclick="runCode('p11','p11-out','p11-prev')">▶ Run Code</button>
+                <button class="clear-button" onclick="resetPreview('p11-prev','p11-prev-html')">Reset Preview</button>
+                <div id="sol-11" class="solution-box">
+                    <strong>✅ Solution:</strong>
+                    <pre><code>$("#prepend-btn").click(function() {
+    $("#dyn-list").prepend("&lt;li style='padding:8px;border-bottom:1px solid #E2E8F0'&gt;New item&lt;/li&gt;");
+    $("#item-count").text($("#dyn-list li").length);
+});
+
+$("#remove-last-btn").click(function() {
+    if ($("#dyn-list li").length > 0) {
+        $("#dyn-list li").last().remove();
+        $("#item-count").text($("#dyn-list li").length);
+    }
+});</code></pre>
+                </div>
+                <div class="output-console" id="p11-out"><span class="output-label">💻 Console Output:</span></div>
+                <div class="live-preview" id="p11-prev">
+                    <span class="live-preview-label">🎨 Live Preview:</span>
+                    <div id="p11-prev-html">
+                        <div style="background:#F8FAFC;padding:20px;border-radius:10px;border:2px solid #E2E8F0;max-width:380px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                                <strong style="color:#1E293B;">List</strong>
+                                <span style="font-family:'Space Mono',monospace;background:#2563EB;color:white;padding:4px 12px;border-radius:20px;font-size:0.85em;">Count: <span id="item-count">3</span></span>
+                            </div>
+                            <div style="display:flex;gap:8px;margin-bottom:14px;">
+                                <button id="prepend-btn" style="flex:1;padding:9px;background:#047857;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">+ Prepend</button>
+                                <button id="remove-last-btn" style="flex:1;padding:9px;background:#DC2626;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Remove Last</button>
+                            </div>
+                            <ul id="dyn-list" style="list-style:none;padding:0;margin:0;">
+                                <li style="padding:8px;border-bottom:1px solid #E2E8F0;">Alpha</li>
+                                <li style="padding:8px;border-bottom:1px solid #E2E8F0;">Beta</li>
+                                <li style="padding:8px;">Gamma</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── P12: Medium-Hard — Full mini feature (no hints) ─── -->
+        <div class="slide" data-slide="13">
+            <div class="difficulty-badge badge-medium-hard">🔴 Medium-Hard — Problem 12 of 12</div>
+            <h2>Build a Like Button</h2>
+            <p class="subtitle">No hints — put it all together</p>
+
+            <div class="info-box">
+                <strong>Your Tasks — build the full feature from scratch:</strong>
+                <ul class="task-list" style="list-style:none;padding:0;margin-top:10px;">
+                    <li><span class="task-num">1</span><span>When a <code>.like-btn</code> is clicked, read its current <code>data-count</code> attribute, increment it by 1, and write it back</span></li>
+                    <li><span class="task-num">2</span><span>Update the button's own <code>.like-count</code> child span to display the new number</span></li>
+                    <li><span class="task-num">3</span><span>Toggle class <code>liked</code> on the button (the style is already defined — it turns the button blue)</span></li>
+                    <li><span class="task-num">4</span><span>Update <code>#total-likes</code> to always show the <em>sum</em> of all buttons' <code>data-count</code> values</span></li>
+                </ul>
+            </div>
+
+            <div class="code-playground">
+                <span class="playground-label">YOUR CODE (run first, then click ♥ on each post)</span>
+                <div class="ide-toolbar">
+                    <div class="file-tab"><span>📄</span><span>practice.js</span></div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="resetCode('p12')">🔄 Reset</button>
+                        <button class="toolbar-btn" onclick="toggleSolution('sol-12')">👁️ Show Solution</button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea class="code-editor" id="p12">$(".like-btn").click(function() {
+    // Your code here — no hints this time, you've got this!
+
+
+});
+</textarea>
+                </div>
+                <div class="status-bar">
+                    <span class="line-info" data-editor="p12">Ln 1, Col 1</span>
+                    <span class="language">JavaScript + jQuery</span>
+                </div>
+                <button class="run-button" onclick="runCode('p12','p12-out','p12-prev')">▶ Run Code</button>
+                <button class="clear-button" onclick="resetPreview('p12-prev','p12-prev-html')">Reset Preview</button>
+                <div id="sol-12" class="solution-box">
+                    <strong>✅ Solution:</strong>
+                    <pre><code>$(".like-btn").click(function() {
+    var count = parseInt($(this).attr("data-count")) + 1;
+    $(this).attr("data-count", count);
+    $(this).find(".like-count").text(count);
+    $(this).toggleClass("liked");
+
+    var total = 0;
+    $(".like-btn").each(function() {
+        total += parseInt($(this).attr("data-count"));
+    });
+    $("#total-likes").text(total);
+});</code></pre>
+                </div>
+                <div class="output-console" id="p12-out"><span class="output-label">💻 Console Output:</span></div>
+                <div class="live-preview" id="p12-prev">
+                    <span class="live-preview-label">🎨 Live Preview:</span>
+                    <style>
+                        .like-btn { display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#F1F5F9;border:2px solid #CBD5E1;border-radius:20px;cursor:pointer;font-weight:600;color:#475569;font-size:0.95em;transition:all 0.2s; }
+                        .like-btn.liked { background:#DBEAFE;border-color:#2563EB;color:#1E40AF; }
+                    </style>
+                    <div id="p12-prev-html">
+                        <div style="background:#F8FAFC;padding:20px;border-radius:10px;border:2px solid #E2E8F0;max-width:420px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                                <strong style="color:#1E293B;">Feed</strong>
+                                <span style="font-family:'Space Mono',monospace;font-size:0.9em;color:#64748B;">Total likes: <strong id="total-likes">0</strong></span>
+                            </div>
+                            <div style="padding:14px;background:white;border-radius:8px;border:1px solid #E2E8F0;margin-bottom:10px;">
+                                <p style="color:#1E293B;margin-bottom:10px;">Just deployed my first jQuery project! 🚀</p>
+                                <button class="like-btn" data-count="0">♥ <span class="like-count">0</span></button>
+                            </div>
+                            <div style="padding:14px;background:white;border-radius:8px;border:1px solid #E2E8F0;margin-bottom:10px;">
+                                <p style="color:#1E293B;margin-bottom:10px;">Finally understood what $(this) means 😅</p>
+                                <button class="like-btn" data-count="0">♥ <span class="like-count">0</span></button>
+                            </div>
+                            <div style="padding:14px;background:white;border-radius:8px;border:1px solid #E2E8F0;">
+                                <p style="color:#1E293B;margin-bottom:10px;">CSS animations + jQuery = 🔥</p>
+                                <button class="like-btn" data-count="0">♥ <span class="like-count">0</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end .presentation-container -->
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+    </div>
+
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+
+    <script>
+        let currentSlide = 1;
+        const editors = {};
+        const originalCode = {};
+        const originalPreviews = {};
+
+        // ── Build title-slide problem dots ──────────────────────
+        const dotConfig = [
+            { n:1,  cls:'easy-dot' }, { n:2,  cls:'easy-dot' }, { n:3,  cls:'easy-dot' },
+            { n:4,  cls:'easy-medium-dot' }, { n:5,  cls:'easy-medium-dot' }, { n:6,  cls:'easy-medium-dot' },
+            { n:7,  cls:'medium-dot' }, { n:8,  cls:'medium-dot' }, { n:9,  cls:'medium-dot' },
+            { n:10, cls:'hard-dot' }, { n:11, cls:'hard-dot' }, { n:12, cls:'hard-dot' },
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const strip = document.getElementById('title-strip');
+            dotConfig.forEach(d => {
+                const dot = document.createElement('div');
+                dot.className = 'problem-dot ' + d.cls;
+                dot.textContent = d.n;
+                dot.title = 'Problem ' + d.n;
+                dot.onclick = () => { currentSlide = d.n + 1; showSlide(currentSlide); };
+                strip.appendChild(dot);
+            });
+
+            const totalSlides = document.querySelectorAll('.slide').length;
+            document.getElementById('totalSlides').textContent = totalSlides;
+            storeOriginalPreviews();
+            initializeEditors();
+            showSlide(1);
+        });
+
+        // ── Store originals ──────────────────────────────────────
+        function storeOriginalPreviews() {
+            document.querySelectorAll('[id$="-prev-html"]').forEach(el => {
+                originalPreviews[el.id] = el.innerHTML;
+            });
+        }
+
+        // ── Init CodeMirror ──────────────────────────────────────
+        function initializeEditors() {
+            document.querySelectorAll('.code-editor').forEach(textarea => {
+                const id = textarea.id;
+                originalCode[id] = textarea.value;
+
+                const editor = CodeMirror.fromTextArea(textarea, {
+                    mode: 'javascript',
+                    theme: 'eclipse',
+                    lineNumbers: true,
+                    autoCloseBrackets: { pairs: '()[]{}\'\'""``', closeBefore: ')]}\'"`:;>', triples: '', explode: '[]{}' },
+                    indentUnit: 4,
+                    tabSize: 4,
+                    indentWithTabs: false,
+                    lineWrapping: true,
+                    styleActiveLine: true,
+                    extraKeys: {
+                        'Tab': cm => cm.somethingSelected() ? cm.indentSelection('add') : cm.replaceSelection('    ', 'end'),
+                        'Shift-Tab': cm => cm.indentSelection('subtract'),
+                        'Ctrl-Enter': cm => {
+                            const base = id;
+                            runCode(base, base + '-out', base + '-prev');
+                        },
+                        'Cmd-Enter': cm => {
+                            const base = id;
+                            runCode(base, base + '-out', base + '-prev');
+                        },
+                        'Ctrl-/': 'toggleComment',
+                        'Cmd-/': 'toggleComment'
+                    }
+                });
+
+                editors[id] = editor;
+                editor.on('cursorActivity', () => {
+                    const cursor = editor.getCursor();
+                    const info = document.querySelector(`.line-info[data-editor="${id}"]`);
+                    if (info) info.textContent = `Ln ${cursor.line + 1}, Col ${cursor.ch + 1}`;
+                });
+                editor.refresh();
+            });
+        }
+
+        // ── Slide navigation ─────────────────────────────────────
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            const total = slides.length;
+            if (n > total) currentSlide = total;
+            if (n < 1)     currentSlide = 1;
+
+            slides.forEach(s => s.classList.remove('active'));
+            slides[currentSlide - 1].classList.add('active');
+
+            document.getElementById('currentSlide').textContent = currentSlide;
+            document.getElementById('prevBtn').disabled = (currentSlide === 1);
+            document.getElementById('nextBtn').disabled = (currentSlide === total);
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            setTimeout(() => {
+                slides[currentSlide - 1].querySelectorAll('.CodeMirror').forEach(wrapper => {
+                    if (wrapper.CodeMirror) wrapper.CodeMirror.refresh();
+                });
+            }, 100);
+        }
+
+        function changeSlide(dir) {
+            currentSlide += dir;
+            showSlide(currentSlide);
+        }
+
+        document.addEventListener('keydown', e => {
+            if (document.activeElement.closest('.CodeMirror')) return;
+            if (e.key === 'ArrowLeft')  changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // ── Run code ─────────────────────────────────────────────
+        function runCode(editorId, outputId, previewId) {
+            const editor = editors[editorId];
+            const code = editor ? editor.getValue() : '';
+            const output = document.getElementById(outputId);
+
+            if (output) output.innerHTML = '<span class="output-label">💻 Console Output:</span><br>';
+
+            const logs = [];
+            const _log   = console.log;
+            const _warn  = console.warn;
+            const _error = console.error;
+
+            const capture = type => (...args) => {
+                logs.push({ type, content: args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' ') });
+                (type === 'log' ? _log : type === 'warn' ? _warn : _error).apply(console, args);
+            };
+
+            console.log = capture('log');
+            console.warn = capture('warn');
+            console.error = capture('error');
+
+            try {
+                eval(code);
+                if (output) {
+                    if (logs.length > 0) {
+                        output.innerHTML += logs.map(l => `<span class="${l.type === 'error' ? 'error' : l.type === 'warn' ? 'warn' : ''}">${escHtml(l.content)}</span>`).join('<br>');
+                    } else {
+                        output.innerHTML += '<span style="color:#FBBF24;">✓ Code executed (no console output)</span>';
+                    }
+                }
+            } catch (err) {
+                if (output) output.innerHTML += `<span class="error">❌ Error: ${escHtml(err.message)}</span>`;
+            } finally {
+                console.log = _log;
+                console.warn = _warn;
+                console.error = _error;
+            }
+        }
+
+        function escHtml(str) {
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        // ── Reset helpers ─────────────────────────────────────────
+        function resetCode(id) {
+            if (editors[id] && originalCode[id] !== undefined) {
+                editors[id].setValue(originalCode[id]);
+            }
+        }
+
+        function resetPreview(previewId, htmlId) {
+            const el = document.getElementById(htmlId);
+            if (el && originalPreviews[htmlId]) {
+                el.innerHTML = originalPreviews[htmlId];
+            }
+        }
+
+        // ── Solution toggle ───────────────────────────────────────
+        function toggleSolution(id) {
+            const box = document.getElementById(id);
+            if (!box) return;
+            box.style.display = box.style.display === 'none' || box.style.display === '' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

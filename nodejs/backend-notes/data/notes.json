@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "text": "first note",
+    "createdAt": 1773684359004,
+    "updatedAt": 1773684359004
+  },
+  {
+    "id": 2,
+    "text": "second note",
+    "createdAt": 1773684366581,
+    "updatedAt": 1773684366581
+  }
+]

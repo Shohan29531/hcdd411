@@ -1,0 +1,13 @@
+{
+  "name": "backend-notes",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/server.mjs",
+    "start": "node src/server.mjs"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}

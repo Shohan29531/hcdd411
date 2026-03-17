@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HCDD 411 — Practice Pack (JS + jQuery + API/AJAX)</title>
+  <title>HCDD 411 — Practice Problems (JS + jQuery + API/AJAX)</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
 
@@ -417,31 +417,9 @@
 
     <!-- Slide 1: Intro -->
     <div class="slide active" data-slide="1">
-      <h1>PRACTICE PACK</h1>
-      <h2>JS • jQuery • API/AJAX (Fetch + Axios)</h2>
-      <p class="subtitle">
-        8 quick, easy–medium practice problems.
-        Each slide has <strong>one</strong> problem, hints for both <strong>idea</strong> and <strong>syntax</strong>, and a runnable editor.
-      </p>
-
-      <div class="info-box">
-        <strong>How to use:</strong>
-        <ul style="margin-top: 10px;">
-          <li>Read the task → use the hints → complete the TODOs.</li>
-          <li>Press <code>▶ Run Code</code> to see output here.</li>
-          <li>Keyboard: <code>Ctrl/Cmd + Enter</code> runs the code.</li>
-          <li>For jQuery event problems: click the small buttons inside the sandbox after you run once.</li>
-        </ul>
-      </div>
-
-      <div class="tip-box">
-        <strong style="color: var(--success);">What you’ll practice:</strong>
-        <ul style="margin-top: 10px;">
-          <li><strong>JS (2):</strong> arrays, objects, filter/map</li>
-          <li><strong>jQuery (2):</strong> selectors + DOM updates + events</li>
-          <li><strong>API/AJAX (4):</strong> fetch with <code>.then()</code>, fetch with <code>async/await</code>, axios, and <code>$.ajax</code></li>
-        </ul>
-      </div>
+      <h1>PRACTICE Problems</h1>
+      <h2>(JS + jQuery + API/AJAX)</h2>
+      <h3>Md Touhidul Islam</h3>
     </div>
 
     <!-- Slide 2: JS #1 -->
@@ -457,7 +435,7 @@
         </ul>
       </div>
 
-      <div class="tip-box">
+      <!-- <div class="tip-box">
         <strong style="color: var(--success);">Hint (Idea):</strong>
         <ul style="margin-top: 10px;">
           <li>Loop through the array, add into <code>sum</code>, and update <code>max</code> when you see a bigger number.</li>
@@ -468,7 +446,7 @@
           <li><code>avg = sum / nums.length</code></li>
           <li><code>avg.toFixed(2)</code></li>
         </ul>
-      </div>
+      </div> -->
 
       <div class="code-playground">
         <span class="playground-label">PRACTICE 1: Complete TODOs</span>
@@ -479,7 +457,7 @@
           </div>
         </div>
         <div class="editor-wrapper">
-          <textarea class="code-editor" id="p1-js">const nums = [12, 7, 20, 5, 13];
+          <textarea class="code-editor" id="p1-js">const nums = [12, 7, 20, 5, 13, 80, 55, 14, 15];
 
 let sum = 0;        // TODO: compute sum
 let max = nums[0];  // TODO: compute max
@@ -516,10 +494,6 @@ console.log("Max:", max);
       </div>
 
       <div class="tip-box">
-        <strong style="color: var(--success);">Hint (Idea):</strong>
-        <ul style="margin-top: 10px;">
-          <li>Step 1: keep only active users. Step 2: transform to names.</li>
-        </ul>
         <strong style="color: var(--success);">Hint (Syntax):</strong>
         <ul style="margin-top: 10px;">
           <li><code>users.filter(u =&gt; u.active)</code></li>
@@ -543,7 +517,7 @@ console.log("Max:", max);
 ];
 
 // TODO: create activeNames using filter + map
-const activeNames = [];
+let activeNames = [];
 
 console.log(activeNames);
 </textarea>
@@ -565,16 +539,13 @@ console.log(activeNames);
       <div class="info-box">
         <strong>Task:</strong>
         <ul style="margin-top: 10px;">
-          <li>Set the status text to: <code>Status: Ready</code></li>
+          <li>Set the status text to: <code>Status: Ready</code>, consider the id = <code>jq1-status</code></li>
           <li>Add the class <code>highlight</code> to all elements with class <code>tag</code>.</li>
         </ul>
       </div>
 
       <div class="tip-box">
-        <strong style="color: var(--success);">Hint (Idea):</strong>
-        <ul style="margin-top: 10px;">
-          <li>Use one selector for the status line and one selector for the tagged boxes.</li>
-        </ul>
+
         <strong style="color: var(--success);">Hint (Syntax):</strong>
         <ul style="margin-top: 10px;">
           <li><code>$("#id").text("...")</code></li>
@@ -633,10 +604,6 @@ console.log(activeNames);
       </div>
 
       <div class="tip-box">
-        <strong style="color: var(--success);">Hint (Idea):</strong>
-        <ul style="margin-top: 10px;">
-          <li>Get value → validate → either show a message or append an <code>&lt;li&gt;</code>.</li>
-        </ul>
         <strong style="color: var(--success);">Hint (Syntax):</strong>
         <ul style="margin-top: 10px;">
           <li><code>$("#jq2-addBtn").on("click", function(){ ... })</code></li>
@@ -701,16 +668,7 @@ console.log(activeNames);
         </ul>
       </div>
 
-      <div class="tip-box">
-        <strong style="color: var(--success);">Hint (Idea):</strong>
-        <ul style="margin-top: 10px;">
-          <li>Fetch returns a Promise → first <code>.then</code> converts to JSON → second <code>.then</code> uses the data.</li>
-        </ul>
-        <strong style="color: var(--success);">Hint (Syntax):</strong>
-        <ul style="margin-top: 10px;">
-          <li><code>fetch(url).then(res =&gt; res.json()).then(data =&gt; ...).catch(err =&gt; ...)</code></li>
-        </ul>
-      </div>
+
 
       <div class="code-playground">
         <span class="playground-label">PRACTICE 5: Complete TODOs</span>
@@ -764,10 +722,6 @@ console.log(activeNames);
       </div>
 
       <div class="tip-box">
-        <strong style="color: var(--success);">Hint (Idea):</strong>
-        <ul style="margin-top: 10px;">
-          <li>In <code>async</code> functions, you can write async code like sync code (await Promise results).</li>
-        </ul>
         <strong style="color: var(--success);">Hint (Syntax):</strong>
         <ul style="margin-top: 10px;">
           <li><code>const res = await fetch(url)</code></li>
@@ -834,17 +788,6 @@ getPostsForUser2();
         </ul>
       </div>
 
-      <div class="tip-box">
-        <strong style="color: var(--success);">Hint (Idea):</strong>
-        <ul style="margin-top: 10px;">
-          <li>Axios automatically gives parsed JSON in <code>response.data</code>.</li>
-        </ul>
-        <strong style="color: var(--success);">Hint (Syntax):</strong>
-        <ul style="margin-top: 10px;">
-          <li><code>const res = await axios.post(url, payload)</code></li>
-          <li><code>console.log(res.data)</code></li>
-        </ul>
-      </div>
 
       <div class="code-playground">
         <span class="playground-label">PRACTICE 7: Complete TODOs</span>
@@ -868,8 +811,8 @@ getPostsForUser2();
       return;
     }
 
-    console.log("Created id:", response.data.id);
-    console.log("Title:", response.data.title);
+    // TODO: log the created post's id and title
+
   } catch (err) {
     console.error("Error:", err.message);
   }
@@ -901,17 +844,6 @@ createPost();
         </ul>
       </div>
 
-      <div class="tip-box">
-        <strong style="color: var(--success);">Hint (Idea):</strong>
-        <ul style="margin-top: 10px;">
-          <li>This is the "classic" callback style: success gets the data, error handles failure.</li>
-        </ul>
-        <strong style="color: var(--success);">Hint (Syntax):</strong>
-        <ul style="margin-top: 10px;">
-          <li><code>$.ajax({ url: "...", success: function(data){...}, error: function(xhr){...} })</code></li>
-        </ul>
-      </div>
-
       <div class="code-playground">
         <span class="playground-label">PRACTICE 8: Complete TODOs</span>
         <div class="ide-toolbar">
@@ -923,12 +855,12 @@ createPost();
         <div class="editor-wrapper">
           <textarea class="code-editor" id="p8-ajax">$.ajax({
   url: "https://jsonplaceholder.typicode.com/comments?postId=1",
-  method: "GET",
+  // TODO: use appropriate method
+
   success: function (comments) {
     // TODO: log total comments
     // TODO: log first comment email
-    // console.log("Total:", comments.length);
-    // console.log("First email:", comments[0].email);
+
   },
   error: function (xhr) {
     console.error("Request failed:", xhr.status);

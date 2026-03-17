@@ -1,0 +1,147 @@
+JQUERY PRACTICE PROBLEMS — SOLUTIONS
+HCDD 411
+=====================================
+
+
+── EASY ────────────────────────────────────────────────────────────────────────
+
+
+Problem 1 — Change the Heading Text
+-------------------------------------
+$("#headline").text("jQuery is awesome!");
+
+
+Problem 2 — Style All the Boxes
+---------------------------------
+$(".card").css({
+    "background": "#DBEAFE",
+    "color": "#1E40AF"
+});
+
+
+Problem 3 — Read an Input Value
+---------------------------------
+var name = $("#username").val();
+console.log("Hello, " + name);
+$("#greeting-output").text("Hello, " + name);
+
+
+── EASY-MEDIUM ─────────────────────────────────────────────────────────────────
+
+
+Problem 4 — Inject HTML Content
+---------------------------------
+$("#status-box").html("<strong>✅ Connected</strong> — server is online");
+$("#warning-box").html("<em style='color:#DC2626'>⚠️ Low battery</em>");
+
+
+Problem 5 — Show a Hidden Element
+-----------------------------------
+$("#reveal-btn").click(function() {
+    $("#secret-panel").show();
+});
+
+$("#hide-btn").click(function() {
+    $("#secret-panel").hide();
+});
+
+
+Problem 6 — Add, Remove & Toggle Classes
+------------------------------------------
+$("#add-btn").click(function() {
+    $("#demo-box").addClass("highlighted");
+});
+
+$("#remove-btn").click(function() {
+    $("#demo-box").removeClass("highlighted");
+});
+
+$("#toggle-btn").click(function() {
+    $("#demo-box").toggleClass("highlighted");
+});
+
+
+── MEDIUM ───────────────────────────────────────────────────────────────────────
+
+
+Problem 7 — Hover Effects
+---------------------------
+$(".menu-item").hover(
+    function() {
+        $(this).css({ "background": "#2563EB", "color": "white" });
+    },
+    function() {
+        $(this).css({ "background": "#F1F5F9", "color": "#1E293B" });
+    }
+);
+
+
+Problem 8 — Build a Task List
+-------------------------------
+$("#add-task-btn").click(function() {
+    var task = $("#task-input").val();
+    if (task !== "") {
+        $("#task-list").append("<li style='padding:8px;border-bottom:1px solid #E2E8F0'>" + task + "</li>");
+        $("#task-input").val("");
+    }
+});
+
+
+Problem 9 — Fade & Remove
+---------------------------
+$("#fade-out-btn").click(function() {
+    $("#fade-target").fadeOut();
+});
+
+$("#fade-in-btn").click(function() {
+    $("#fade-target").fadeIn();
+});
+
+$(".dismiss-btn").click(function() {
+    $(this).parent().remove();
+});
+
+
+── MEDIUM-HARD ──────────────────────────────────────────────────────────────────
+
+
+Problem 10 — Exclusive Selection
+----------------------------------
+$(".option-card").click(function() {
+    $(this).addClass("selected")
+           .siblings(".option-card").removeClass("selected");
+
+    var name = $(this).find(".option-name").text();
+    $("#chosen-label").text("You chose: " + name);
+});
+
+
+Problem 11 — Manage a Dynamic List
+------------------------------------
+$("#prepend-btn").click(function() {
+    $("#dyn-list").prepend("<li style='padding:8px;border-bottom:1px solid #E2E8F0'>New item</li>");
+    $("#item-count").text($("#dyn-list li").length);
+});
+
+$("#remove-last-btn").click(function() {
+    if ($("#dyn-list li").length > 0) {
+        $("#dyn-list li").last().remove();
+        $("#item-count").text($("#dyn-list li").length);
+    }
+});
+
+
+Problem 12 — Build a Like Button
+----------------------------------
+$(".like-btn").click(function() {
+    var count = parseInt($(this).attr("data-count")) + 1;
+    $(this).attr("data-count", count);
+    $(this).find(".like-count").text(count);
+    $(this).toggleClass("liked");
+
+    var total = 0;
+    $(".like-btn").each(function() {
+        total += parseInt($(this).attr("data-count"));
+    });
+    $("#total-likes").text(total);
+});

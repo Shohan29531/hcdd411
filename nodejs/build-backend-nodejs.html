@@ -360,21 +360,15 @@
 
     <!-- 1 -->
     <div class="slide active" data-slide="1">
-      <h1>Build a Backend</h1>
-      <h2>Node.js (No DB) → JSON File Storage</h2>
-      <p class="subtitle">
-        You already know Node fundamentals. Now we’ll build a real backend <b>incrementally</b>:
-        start a server → add routes → add CRUD → persist data in a JSON file → handle errors cleanly.
-      </p>
+      <h1>Let's Build a Backend</h1>
+      <h2>Md Touhidul Islam</h2>
       <div class="tip-box">
         <b>Goal by the end:</b>
         <ul style="margin-top:10px;">
           <li>A small REST API: <code>/notes</code></li>
           <li>Data stored in <code>data/notes.json</code> (no database)</li>
-          <li>Students can test after <b>every</b> slide</li>
         </ul>
       </div>
-      <div class="mini-note">Navigation: <span class="kbd">←</span> / <span class="kbd">→</span> or use the buttons.</div>
     </div>
 
     <!-- 2 -->
@@ -763,7 +757,7 @@
     </div>
 
 <!-- 13 -->
-    <div class="slide" data-slide="13">
+    <!-- <div class="slide" data-slide="13">
       <h2>Step 11: One “backend truth” — validate everything</h2>
       <div class="example-grid">
         <div class="example-card">
@@ -789,7 +783,7 @@
         The “API contract” is how frontend and backend stay aligned.
         If the backend returns inconsistent shapes, the frontend becomes fragile.
       </div>
-    </div>
+    </div> -->
 
     <!-- 14 -->
     <div class="slide" data-slide="14">
@@ -850,36 +844,6 @@
       </div>
     </div>
 
-    <!-- 16 -->
-    <div class="slide" data-slide="16">
-      <h2>Common student bugs (and how to debug fast)</h2>
-      <div class="example-grid">
-        <div class="example-card">
-          <h3>Port already in use</h3>
-          <ul>
-            <li>Another server is running on 3000</li>
-            <li>Fix: stop it, or change <code>PORT</code> env var</li>
-          </ul>
-        </div>
-        <div class="example-card">
-          <h3>Invalid JSON errors</h3>
-          <ul>
-            <li>Trailing commas in JSON</li>
-            <li>Missing quotes</li>
-            <li>Fix: check the <code>-d</code> payload in curl</li>
-          </ul>
-        </div>
-        <div class="example-card">
-          <h3>notes.json path issues</h3>
-          <ul>
-            <li>Running node from wrong directory</li>
-            <li>Fix: we use absolute path built from <code>import.meta.url</code></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="mini-note">Tip: When stuck, add temporary <code>console.log()</code> on the server, then re-run the request.</div>
-    </div>
 
     <!-- 17 -->
     <div class="slide" data-slide="17">
@@ -901,38 +865,6 @@
       </div>
     </div>
 
-    <!-- 18 -->
-    <div class="slide" data-slide="18">
-      <h2>What you built (backend checklist)</h2>
-      <div class="example-grid">
-        <div class="example-card">
-          <h3>Server fundamentals</h3>
-          <ul>
-            <li>HTTP server</li>
-            <li>Routes + params</li>
-            <li>Status codes</li>
-            <li>JSON responses</li>
-          </ul>
-        </div>
-        <div class="example-card">
-          <h3>Backend fundamentals</h3>
-          <ul>
-            <li>Validation</li>
-            <li>Persistence (file I/O)</li>
-            <li>CRUD</li>
-            <li>Error handling</li>
-          </ul>
-        </div>
-        <div class="example-card">
-          <h3>Next step (later)</h3>
-          <ul>
-            <li>Replace JSON file with a real DB</li>
-            <li>Express to simplify routing + middleware</li>
-            <li>Authentication + authorization</li>
-          </ul>
-        </div>
-      </div>
-    </div>
 
     <!-- 19 -->
     <div class="slide" data-slide="19">
@@ -963,28 +895,6 @@
         </div>
         <div class="editor-wrapper"><textarea id="code-notes-final"></textarea></div>
         <div class="status-bar"><span class="line-info" data-editor="code-notes-final">Ln 1, Col 1</span><span class="language">JSON</span></div>
-      </div>
-    </div>
-
-    <!-- 20 -->
-    <div class="slide" data-slide="20">
-      <h2>Done ✅</h2>
-      <div class="tip-box">
-        <b>In class flow suggestion:</b>
-        <ul style="margin-top:10px;">
-          <li>Slides 1–6: server basics (everyone runs)</li>
-          <li>Slides 7–12: CRUD + persistence (everyone runs)</li>
-          <li>Slide 15: paste test suite and verify</li>
-          <li>Slide 17: mini exercise</li>
-        </ul>
-      </div>
-
-      <div class="info-box">
-        If you want, I can also create:
-        <ul style="margin-top:10px;">
-          <li>A tiny <b>frontend</b> page that calls <code>/notes</code> with jQuery AJAX (same style as your API slides)</li>
-          <li>A “starter vs solution” version of the server for grading</li>
-        </ul>
       </div>
     </div>
 
