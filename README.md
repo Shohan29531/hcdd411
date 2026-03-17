@@ -7,7 +7,7 @@
 
 These aren't slides with code *screenshots*. Every lecture is a self-contained HTML file where **students write and run code directly inside the slide** — edit, hit Run, see output instantly. No separate IDE, no copy-pasting into a console.
 
-> 👉 **[Open the live demo](https://shohan29531.github.io/hcdd411)** — try a playground from the actual slides.
+> 👉 **[Open the live demo](https://shohan29531.github.io/hcdd411/index.html)** — try a playground from the actual slides.
 
 ---
 
