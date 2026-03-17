@@ -1,71 +1,49 @@
-# HCDD 411 — Interactive Web Technologies
-**Penn State University · Md Touhidul Islam**
+# HCDD 411: Distributed Object Computing
+**Penn State University · College of Information Sciences and Technology**
 
 ---
 
-## What's different here
+This course introduces the fundamental concepts of distributed-object computing — client/server architecture, networked application design, and the deployment of distributed systems. Students learn how modern web applications are built from the ground up: how a browser talks to a server, how data moves across the network, how APIs connect systems, and how to write the JavaScript, jQuery, and Node.js that make it all work.
 
-These aren't slides with code *screenshots*. Every lecture is a self-contained HTML file where **students write and run code directly inside the slide** — edit, hit Run, see output instantly. No separate IDE, no copy-pasting into a console.
-
-> 👉 **[Open the live demo](https://shohan29531.github.io/hcdd411)** — try a playground from the actual slides.
+It is an elective in the HCDD Bachelor's program, open to students in the Systems Development Option, and sits at the intersection of human-centered design and the engineering of real, working software.
 
 ---
 
-## The slides run your code
+## What makes these materials different
 
-Each concept slide has an embedded playground:
+Most course slides show code. These slides **run** it.
 
-```
-┌─────────────────────────────────────────────┐
-│  PLAYGROUND: Create Your Variables           │
-│ ┌─────────────────────────────────────────┐ │
-│ │ var numberOfStudents = 30;              │ │
-│ │ let studentName = "Sam";               │ │  ← editable textarea
-│ │ const COURSE_NAME = "IST 411";         │ │
-│ │                                         │ │
-│ │ console.log("Name:", studentName);      │ │
-│ └─────────────────────────────────────────┘ │
-│  [ Run Code ]                                │
-│                                             │
-│  Output:                                    │
-│  Name: Sam                                  │  ← captured console.log
-│  Students: 30                               │
-└─────────────────────────────────────────────┘
-```
+Every lecture in this repository is a single HTML file. Open it in a browser and you get the full presentation — but embedded in each concept slide is an editable code editor. Students change the code, hit Run, and see output right there on the slide. No switching to a separate IDE, no copying into a console, no waiting. The moment a concept is introduced, students can break it, fix it, and make it their own.
 
-The later modules (API, Node.js) upgrade to a full **CodeMirror IDE** — syntax highlighting, `Ctrl+Enter` to run, `Ctrl+/` to comment, auto-format, and a status bar.
+The later modules go further, with a full CodeMirror editor built into the slides — syntax highlighting, keyboard shortcuts, auto-format, and a status bar. The API module runs actual live network requests against real public endpoints. The Node.js module walks through building a complete REST API step by step, with each slide showing a working version of the server students can copy and run locally.
+
+The feedback loop that usually takes minutes — read, switch apps, type, run, come back — happens in seconds, inside the lecture itself.
 
 ---
 
-## Course modules
+## Modules
 
-| Module | File | Slides | Playgrounds |
-|--------|------|:------:|:-----------:|
-| Client-Server Architecture | `client-server/client-server.html` | 17 | — |
-| JavaScript Part 1 — syntax & functions | `javascript-syntax/js-syntax-1.html` | 15 | 12 |
-| JavaScript Part 2 — objects, arrays, ES6 | `javascript-syntax/js-syntax-2.html` | 16 | 13 |
-| jQuery — DOM, events, animations | `jquery/jquery.html` | 19 | 17 |
-| APIs & Async JS — AJAX, Fetch, Axios | `API/api.html` | 27 | 24 |
-| Node.js — build a REST API live | `nodejs/build-backend-nodejs.html` | 17 | 15 |
+| | Module | Slides | Live Playgrounds |
+|---|--------|:------:|:----------------:|
+| 🌐 | Client-Server Architecture | 17 | — |
+| ⚡ | JavaScript Part 1 — syntax, types, functions | 15 | 12 |
+| 🧩 | JavaScript Part 2 — objects, arrays, ES6 | 16 | 13 |
+| 💲 | jQuery — DOM, events, animations | 19 | 17 |
+| 🔌 | APIs & Async JS — AJAX, Fetch, Axios, async/await | 27 | 24 |
+| 🖥️ | Node.js — build a REST API live | 17 | 15 |
 
 ---
 
-## Run locally
+## Running locally
 
 ```bash
 git clone https://github.com/Shohan29531/hcdd411.git
 cd hcdd411
-
-# Any slide works — just open the HTML file directly in your browser
 open javascript-syntax/js-syntax-1.html
 ```
 
-No build step. No server. No install. Single `.html` file per module.
+Every slide deck is a standalone HTML file. No build step, no dependencies, no server required — just open and go.
 
 ---
 
-## Why this approach
-
-Most web courses separate slides from practice. Here the slide *is* the practice environment. Students can experiment with every concept the moment it's introduced — change a value, break something, fix it — without switching context. The feedback loop is immediate and contained within the lecture itself.
-
-This was built with AI assistance to achieve the level of interactive polish that would ordinarily take a full frontend team — as a solo instructor.
+*Md Touhidul Islam · Penn State University*
