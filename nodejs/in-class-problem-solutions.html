@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HCDD 411 - Practice Problem Solutions (Node.js)</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root{
+      --primary:#3B7DD6;
+      --secondary:#5A6C7D;
+      --accent:#D4940C;
+      --code-bg:#F8F9FA;
+      --success:#059669;
+      --error:#DC2626;
+      --bg-gradient-start:#F0F4F8;
+      --bg-gradient-end:#E1E8ED;
+      --slide-bg:rgba(255,255,255,0.95);
+      --border-color:rgba(59,125,214,0.30);
+      --text-primary:#1F2937;
+      --text-secondary:#6B7280;
+    }
+
+    body{
+      font-family:'Outfit', sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      min-height: 100vh;
+      color: var(--text-primary);
+      overflow: hidden;
+    }
+
+    .penn-state-badge{
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: var(--primary);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      box-shadow: 0 8px 24px rgba(59,125,214,0.25);
+      z-index: 100;
+    }
+
+    .slide-indicator{
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.96);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      z-index: 100;
+    }
+
+    .presentation-container{
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 72px 24px 92px;
+    }
+
+    .slide{
+      display: none;
+      width: min(1200px, 96vw);
+      height: min(760px, 82vh);
+      background: var(--slide-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 28px;
+      box-shadow: 0 20px 60px rgba(31,41,55,0.12);
+      padding: 42px 46px;
+      overflow: auto;
+      backdrop-filter: blur(8px);
+    }
+
+    .slide.active{ display: block; }
+
+    h1{
+      font-size: 3rem;
+      line-height: 1.05;
+      margin-bottom: 14px;
+      color: var(--primary);
+    }
+
+    h2{
+      font-size: 2rem;
+      line-height: 1.15;
+      margin-bottom: 18px;
+      color: var(--primary);
+    }
+
+    h3{
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      color: var(--text-primary);
+    }
+
+    p, li{
+      font-size: 1.03rem;
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+
+    ul{
+      margin-left: 24px;
+      margin-bottom: 16px;
+    }
+
+    code{
+      font-family:'Space Mono', monospace;
+      background: #EEF3F8;
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-size: 0.92em;
+    }
+
+    .info-box, .tip-box, .warning-box{
+      margin-top: 18px;
+      border-radius: 18px;
+      padding: 18px 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .info-box{ background: #F4F8FD; }
+    .tip-box{ background: #F9FAFB; }
+    .warning-box{ background: #FFF7E8; border-color: rgba(212,148,12,0.35); }
+
+    .mini-note{
+      margin-top: 10px;
+      color: var(--text-secondary);
+      font-size: 0.94rem;
+    }
+
+    .example-grid{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 10px;
+    }
+
+    .example-card{
+      background: #FBFDFF;
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 18px 20px;
+    }
+
+    .code-playground{
+      margin-top: 18px;
+      border: 1px solid var(--border-color);
+      border-radius: 22px;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 10px 30px rgba(31,41,55,0.08);
+    }
+
+    .playground-label{
+      display: inline-block;
+      margin: 12px 16px 0;
+      font-size: 0.83rem;
+      color: var(--text-secondary);
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .ide-toolbar{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #F5F7FA;
+      border-top: 1px solid rgba(0,0,0,0.04);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      padding: 10px 14px;
+      margin-top: 8px;
+    }
+
+    .file-tab{
+      font-family:'Space Mono', monospace;
+      font-size: 0.92rem;
+      color: var(--text-primary);
+    }
+
+    .toolbar-actions{ display: flex; gap: 10px; }
+
+    .toolbar-btn, .nav-button{
+      border: none;
+      background: var(--primary);
+      color: white;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .toolbar-btn:hover, .nav-button:hover{ transform: translateY(-1px); }
+    .toolbar-btn:disabled, .nav-button:disabled{ opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .editor-wrapper{
+      background: var(--code-bg);
+    }
+
+    .CodeMirror{
+      height: 370px;
+      font-family:'Space Mono', monospace;
+      font-size: 0.92rem;
+    }
+
+    .status-bar{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      color: var(--text-secondary);
+      font-size: 0.86rem;
+      background: #FCFCFD;
+    }
+
+    .navigation{
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      z-index: 100;
+    }
+
+    .cm-line-changed{
+      background: rgba(212,148,12,0.12);
+    }
+
+    @media (max-width: 960px){
+      .slide{
+        padding: 28px 24px;
+        height: 84vh;
+      }
+      .example-grid{ grid-template-columns: 1fr; }
+      h1{ font-size: 2.3rem; }
+      h2{ font-size: 1.6rem; }
+      .CodeMirror{ height: 300px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="penn-state-badge">HCDD 411</div>
+  <div class="slide-indicator"><span id="currentSlide">1</span> / <span id="totalSlides">3</span></div>
+
+  <div class="presentation-container">
+
+    <div class="slide active" data-slide="1">
+      <h2>Practice problem solutions: new route</h2>
+      <ul>
+        <li>This addition solves the <b>count</b> problem with a dedicated endpoint.</li>
+        <li>The route must appear <b>before</b> <code>GET /notes/:id</code> so <code>count</code> is not treated as an id.</li>
+      </ul>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: src/server.mjs (modification 1)</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 src/server.mjs</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="mod_count">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="mod_count">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-mod-count"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-mod-count">Ln 1, Col 1</span><span class="language">JavaScript (Node)</span></div>
+      </div>
+
+      <div class="info-box">
+        <b>Problems covered here:</b>
+        <ul style="margin-top:10px;">
+          <li><b>Count:</b> <code>GET /notes/count</code> returns <code>{"count": number}</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="slide" data-slide="2">
+      <h2>Practice problem solutions: query-aware GET /notes</h2>
+      <ul>
+        <li>This replacement handles search, timestamp filtering, sorting, limiting, and limit validation in one route.</li>
+        <li>The order of operations is: filter → filter again → sort → limit → return.</li>
+      </ul>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: src/server.mjs (modification 2)</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 src/server.mjs</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="mod_query">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="mod_query">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-mod-query"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-mod-query">Ln 1, Col 1</span><span class="language">JavaScript (Node)</span></div>
+      </div>
+
+      <div class="example-grid">
+        <div class="example-card">
+          <h3>Problems covered here</h3>
+          <ul>
+            <li><b>Search:</b> <code>?contains=word</code></li>
+            <li><b>Timestamp filter:</b> <code>?updatedAfter=TIMESTAMP</code></li>
+            <li><b>Sort:</b> <code>?order=desc</code> or <code>?order=asc</code></li>
+            <li><b>Limit:</b> <code>?limit=5</code></li>
+            <li><b>Validation:</b> bad <code>limit</code> or <code>updatedAfter</code> returns <code>400</code></li>
+          </ul>
+        </div>
+        <div class="example-card">
+          <h3>Behavior summary</h3>
+          <ul>
+            <li>Search is case-insensitive.</li>
+            <li>Sorting uses <code>updatedAt</code>.</li>
+            <li>Limiting happens after sorting/filtering.</li>
+            <li>The returned shape remains a normal notes array.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide" data-slide="3">
+      <h2>Test commands</h2>
+      <p>The following commands verify all six practice problems.</p>
+
+      <div class="code-playground">
+        <span class="playground-label">COPY-PASTE: terminal commands</span>
+        <div class="ide-toolbar">
+          <div class="file-tab">📄 terminal.txt</div>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn copy" data-copy="tests">📋 Copy</button>
+            <button class="toolbar-btn" data-reset="tests">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="editor-wrapper"><textarea id="code-tests"></textarea></div>
+        <div class="status-bar"><span class="line-info" data-editor="code-tests">Ln 1, Col 1</span><span class="language">Text</span></div>
+      </div>
+
+      <div class="tip-box">
+        <b>Expected checks:</b>
+        <ul style="margin-top:10px;">
+          <li><code>/notes/count</code> returns a JSON object with a <code>count</code> field</li>
+          <li><code>?limit=abc</code> returns <code>400 Bad Request</code></li>
+          <li>Combined queries such as <code>?contains=milk&amp;order=desc&amp;limit=1</code> still work correctly</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="navigation">
+    <button class="nav-button" id="prevBtn">← Previous</button>
+    <button class="nav-button" id="nextBtn">Next →</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const totalSlides = slides.length;
+    document.getElementById('totalSlides').textContent = totalSlides;
+
+    let current = 0;
+
+    function refreshEditorsInSlide(slideEl){
+      if (!slideEl) return;
+      slideEl.querySelectorAll('.CodeMirror').forEach(cmEl => {
+        if (cmEl.CodeMirror) cmEl.CodeMirror.refresh();
+      });
+    }
+
+    function showSlide(index){
+      current = Math.max(0, Math.min(index, totalSlides - 1));
+      slides.forEach((slide, i) => slide.classList.toggle('active', i === current));
+      document.getElementById('currentSlide').textContent = current + 1;
+      document.getElementById('prevBtn').disabled = current === 0;
+      document.getElementById('nextBtn').disabled = current === totalSlides - 1;
+      setTimeout(() => refreshEditorsInSlide(slides[current]), 0);
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', () => showSlide(current - 1));
+    document.getElementById('nextBtn').addEventListener('click', () => showSlide(current + 1));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') showSlide(current + 1);
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') showSlide(current - 1);
+    });
+
+    const snippets = {
+      mod_count: `if (req.method === 'GET' && url.pathname === '/notes/count') {
+  const notes = await loadNotes();
+  return json(res, 200, { count: notes.length });
+}`,
+
+      mod_query: `if (req.method === 'GET' && url.pathname === '/notes') {
+  let notes = await loadNotes();
+
+  // 1) Search: ?contains=word
+  const contains = url.searchParams.get('contains');
+  if (contains) {
+    const q = contains.toLowerCase();
+    notes = notes.filter((n) => n.text.toLowerCase().includes(q));
+  }
+
+  // 6) Timestamp filter: ?updatedAfter=TIMESTAMP
+  const updatedAfterParam = url.searchParams.get('updatedAfter');
+  if (updatedAfterParam !== null) {
+    const updatedAfter = Number(updatedAfterParam);
+    if (!Number.isFinite(updatedAfter)) {
+      return json(res, 400, { error: 'Invalid updatedAfter' });
+    }
+    notes = notes.filter((n) => n.updatedAt > updatedAfter);
+  }
+
+  // 3) Sort: ?order=desc
+  const order = url.searchParams.get('order');
+  if (order !== null) {
+    if (order !== 'desc' && order !== 'asc') {
+      return json(res, 400, { error: 'Invalid order' });
+    }
+
+    const copy = Array.from(notes);
+    notes = copy.sort((a, b) => {
+      return order === 'desc'
+        ? b.updatedAt - a.updatedAt
+        : a.updatedAt - b.updatedAt;
+    });
+  }
+
+  // 2) Limit: ?limit=5
+  // 5) Validation: invalid limit => 400
+  const limitParam = url.searchParams.get('limit');
+  if (limitParam !== null) {
+    const limit = Number(limitParam);
+
+    if (!Number.isInteger(limit) || limit < 0) {
+      return json(res, 400, { error: 'Invalid limit' });
+    }
+
+    const limited = Array.from(notes);
+    notes = limited.filter((_, index) => index < limit);
+  }
+
+  return json(res, 200, notes);
+}`,
+
+      tests: `# count route
+curl http://localhost:3000/notes/count
+
+# search
+curl "http://localhost:3000/notes?contains=milk"
+
+# limit
+curl "http://localhost:3000/notes?limit=2"
+
+# sort
+curl "http://localhost:3000/notes?order=desc"
+
+# invalid limit -> 400
+curl -i "http://localhost:3000/notes?limit=abc"
+
+# timestamp filter
+curl "http://localhost:3000/notes?updatedAfter=1710000000000"
+
+# combined query
+curl "http://localhost:3000/notes?contains=milk&order=desc&limit=1"`
+    };
+
+    function highlightTaggedLines(cm){
+      cm.eachLine((handle) => {
+        const n = cm.getLineNumber(handle);
+        const line = cm.getLine(n) || '';
+        if (line.includes('// NEW') || line.includes('// CHANGED')) {
+          cm.addLineClass(handle, 'background', 'cm-line-changed');
+        }
+      });
+    }
+
+    function makeEditor(textareaId, mode, initial) {
+      const ta = document.getElementById(textareaId);
+      if (!ta) return null;
+      ta.value = initial;
+
+      const cm = CodeMirror.fromTextArea(ta, {
+        mode,
+        theme: 'eclipse',
+        lineNumbers: true,
+        viewportMargin: Infinity,
+        indentUnit: 2,
+        tabSize: 2
+      });
+
+      cm.on('cursorActivity', () => {
+        const info = cm.getCursor();
+        const label = document.querySelector(`[data-editor="${textareaId}"]`);
+        if (label) label.textContent = `Ln ${info.line + 1}, Col ${info.ch + 1}`;
+      });
+
+      setTimeout(() => {
+        const label = document.querySelector(`[data-editor="${textareaId}"]`);
+        if (label) label.textContent = 'Ln 1, Col 1';
+        cm.refresh();
+      }, 0);
+
+      highlightTaggedLines(cm);
+      return cm;
+    }
+
+    makeEditor('code-mod-count', 'javascript', snippets.mod_count);
+    makeEditor('code-mod-query', 'javascript', snippets.mod_query);
+    makeEditor('code-tests', 'text/plain', snippets.tests);
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {});
+    }
+
+    document.querySelectorAll('[data-copy]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-copy');
+        copyToClipboard(snippets[key] ?? '');
+        btn.textContent = '✅ Copied';
+        setTimeout(() => btn.textContent = '📋 Copy', 900);
+      });
+    });
+
+    document.querySelectorAll('[data-reset]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-reset');
+        const playground = btn.closest('.code-playground');
+        if (!playground) return;
+        const ta = playground.querySelector('textarea');
+        if (!ta) return;
+        const cm = ta.nextSibling && ta.nextSibling.CodeMirror ? ta.nextSibling.CodeMirror : null;
+        if (!cm) return;
+        cm.setValue(snippets[key] ?? '');
+        highlightTaggedLines(cm);
+        cm.refresh();
+      });
+    });
+
+    showSlide(0);
+  </script>
+</body>
+</html>

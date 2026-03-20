@@ -847,20 +847,25 @@
 
     <!-- 17 -->
     <div class="slide" data-slide="17">
-      <h2>Mini exercise (10–15 minutes)</h2>
+      <h2>Practice problems</h2>
       <div class="info-box">
-        <b>Add two small features:</b>
+        <b>Possible backend extensions:</b>
         <ul style="margin-top:10px;">
-          <li><b>Search:</b> <code>GET /notes?contains=word</code> filters by substring (case-insensitive)</li>
-          <li><b>Limit:</b> <code>GET /notes?limit=5</code> returns only first N notes</li>
+          <li><b>Search:</b> <code>GET /notes?contains=word</code> filters notes by substring (case-insensitive)</li>
+          <li><b>Limit:</b> <code>GET /notes?limit=5</code> returns only the first N notes</li>
+          <li><b>Sort:</b> <code>GET /notes?order=desc</code> returns newest notes first</li>
+          <li><b>Count:</b> <code>GET /notes/count</code> returns <code>{"count": number}</code></li>
+          <li><b>Validation:</b> invalid <code>limit</code> values return <code>400 Bad Request</code></li>
+          <li><b>Timestamp filter:</b> <code>GET /notes?updatedAfter=TIMESTAMP</code> returns recently updated notes only</li>
         </ul>
       </div>
 
       <div class="tip-box">
-        Hint: parse query params using:
+        Useful query-parameter pattern:
         <ul style="margin-top:10px;">
           <li><code>const url = new URL(req.url, 'http://localhost');</code></li>
           <li><code>url.searchParams.get('contains')</code></li>
+          <li><code>url.searchParams.get('limit')</code></li>
         </ul>
       </div>
     </div>
@@ -869,7 +874,6 @@
     <!-- 19 -->
     <div class="slide" data-slide="19">
       <h2>Full final code (one last time)</h2>
-      <p>If you want students to “jump to the end”, use this final version.</p>
 
       <div class="code-playground">
         <span class="playground-label">FINAL: src/server.mjs</span>

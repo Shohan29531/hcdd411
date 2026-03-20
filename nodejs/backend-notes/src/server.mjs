@@ -1,4 +1,4 @@
-// src/server.mjs (v6)
+// src/server.mjs (v7)
 import { createServer } from 'node:http';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -36,8 +36,7 @@ function nextId(notes) {
   const max = notes.reduce((m, n) => Math.max(m, n.id || 0), 0);
   return max + 1;
 }
-
-function parseId(pathname) { // NEW: support /notes/:id
+function parseId(pathname) {
   const parts = pathname.split('/').filter(Boolean);
   if (parts.length !== 2) return null;
   const id = Number(parts[1]);
@@ -78,7 +77,6 @@ createServer(async (req, res) => {
     return json(res, 201, note);
   }
 
-  // NEW: GET /notes/:id
   if (req.method === 'GET' && url.pathname.startsWith('/notes/')) {
     const id = parseId(url.pathname);
     if (id === null) return json(res, 400, { error: 'Invalid id' });
@@ -88,6 +86,32 @@ createServer(async (req, res) => {
     if (!note) return json(res, 404, { error: 'Not found' });
 
     return json(res, 200, note);
+  }
+
+  // NEW: PUT /notes/:id
+  if (req.method === 'PUT' && url.pathname.startsWith('/notes/')) {
+    const id = parseId(url.pathname);
+    if (id === null) return json(res, 400, { error: 'Invalid id' });
+
+    let body;
+    try {
+      const raw = await readBody(req);
+      body = raw ? JSON.parse(raw) : {};
+    } catch {
+      return json(res, 400, { error: 'Invalid JSON' });
+    }
+
+    const text = String(body.text ?? '').trim();
+    if (!text) return json(res, 400, { error: 'text is required' });
+
+    const notes = await loadNotes();
+    const idx = notes.findIndex((n) => n.id === id);
+    if (idx === -1) return json(res, 404, { error: 'Not found' });
+
+    notes[idx] = { ...notes[idx], text, updatedAt: Date.now() };
+    await saveNotes(notes);
+
+    return json(res, 200, notes[idx]);
   }
 
   return notFound(res);
