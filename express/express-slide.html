@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HCDD 411 - Express Framework</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Outfit:wght@300;500;700;900&amp;display=swap" rel="stylesheet"/>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #3B7DD6;
+      --secondary: #5A6C7D;
+      --accent: #D4940C;
+      --code-bg: #F8F9FA;
+      --success: #059669;
+      --error: #DC2626;
+      --bg-gradient-start: #F0F4F8;
+      --bg-gradient-end: #E1E8ED;
+      --slide-bg: rgba(255, 255, 255, 0.95);
+      --border-color: rgba(59, 125, 214, 0.30);
+      --text-primary: #1F2937;
+      --text-secondary: #6B7280;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 140px 0 120px 0;
+    }
+
+    .presentation-container { width: 100%; min-height: 100vh; }
+
+    .slide {
+      width: 90%;
+      max-width: 1220px;
+      min-height: 520px;
+      background: var(--slide-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 30px;
+      padding: 56px 60px 52px 60px;
+      margin: 0 auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transform: translateX(100px);
+      transition: all 0.45s ease;
+      display: none;
+      border: 2px solid var(--border-color);
+    }
+
+    .slide.active { opacity: 1; transform: translateX(0); display: block; }
+
+    h1 {
+      font-weight: 900;
+      font-size: 4em;
+      color: var(--primary);
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: -2px;
+      line-height: 1.08;
+    }
+
+    h2 {
+      font-weight: 700;
+      font-size: 2.45em;
+      color: var(--accent);
+      margin-bottom: 24px;
+      letter-spacing: -1px;
+      line-height: 1.12;
+    }
+
+    h3 {
+      font-weight: 600;
+      font-size: 1.33em;
+      color: var(--primary);
+      margin: 0 0 12px 0;
+      line-height: 1.25;
+    }
+
+    p { font-size: 1.08em; line-height: 1.62; }
+    ul { margin: 16px 0 0 0; padding-left: 24px; }
+    li { margin: 9px 0; font-size: 1.06em; line-height: 1.55; }
+
+    .subtitle {
+      font-size: 1.28em;
+      color: var(--text-secondary);
+      margin-bottom: 34px;
+      font-weight: 300;
+    }
+
+    code {
+      font-family: 'Space Mono', monospace;
+      background: rgba(59, 125, 214, 0.12);
+      padding: 2px 7px;
+      border-radius: 5px;
+      color: var(--primary);
+      font-size: 0.95em;
+    }
+
+    .info-box, .tip-box, .warning-box {
+      padding: 18px 20px;
+      margin: 18px 0 0 0;
+      border-radius: 12px;
+    }
+    .info-box { background: rgba(212, 148, 12, 0.10); border-left: 4px solid var(--accent); }
+    .tip-box { background: rgba(5, 150, 105, 0.10); border-left: 4px solid var(--success); }
+    .warning-box { background: rgba(220, 38, 38, 0.10); border-left: 4px solid var(--error); }
+
+    .example-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+      align-items: start;
+    }
+
+    .comparison-grid.three-col { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .example-card {
+      background: rgba(255, 255, 255, 0.74);
+      border: 2px solid var(--border-color);
+      border-radius: 15px;
+      padding: 18px 18px 16px 18px;
+    }
+
+    .compact-card p, .compact-card li { font-size: 1em; }
+
+    .code-playground {
+      background: var(--code-bg);
+      border-radius: 15px;
+      padding: 22px;
+      margin: 22px 0 0 0;
+      border: 2px solid var(--border-color);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .code-playground::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 30px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 15px 15px 0 0;
+    }
+
+    .playground-label {
+      position: absolute;
+      top: 5px; left: 18px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.84em;
+      color: white;
+      font-weight: 700;
+      z-index: 1;
+      letter-spacing: 0.2px;
+    }
+
+    .ide-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 15px;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 10px 10px 0 0;
+      margin-top: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .file-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--primary);
+      color: white;
+      border-radius: 6px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8em;
+      font-weight: 600;
+    }
+
+    .toolbar-actions { margin-left: auto; display: flex; gap: 8px; }
+
+    .toolbar-btn {
+      background: rgba(0, 0, 0, 0.05);
+      border: none;
+      color: var(--text-secondary);
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.85em;
+      transition: all 0.2s ease;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+    }
+
+    .toolbar-btn:hover { background: rgba(0, 0, 0, 0.10); color: var(--text-primary); }
+
+    .static-code {
+      border: 2px solid var(--border-color);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      overflow: auto;
+      background: linear-gradient(90deg, rgba(59, 125, 214, 0.08) 0 58px, #ffffff 58px 100%);
+      max-height: 430px;
+    }
+
+    .static-code ol {
+      margin: 0;
+      padding: 16px 18px 16px 58px;
+      list-style: decimal;
+      list-style-position: outside;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.92em;
+      line-height: 1.65;
+      color: #111827;
+    }
+
+    .static-code li {
+      margin: 0;
+      padding: 0 12px 0 16px;
+      white-space: pre;
+      border-left: 1px solid rgba(59, 125, 214, 0.25);
+      font-size: 1em;
+    }
+
+    .static-code ol li::marker {
+      color: var(--text-secondary);
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .copy-source { display: none; }
+
+    .flow-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .wide-flow .flow-box { min-width: 150px; }
+
+    .flow-box {
+      background: rgba(59, 125, 214, 0.12);
+      border: 2px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .flow-arrow { font-size: 1.6em; color: var(--primary); font-weight: 900; }
+
+    .content-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 18px;
+      overflow: hidden;
+      border: 2px solid var(--border-color);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.82);
+    }
+
+    .content-table th, .content-table td {
+      padding: 14px 16px;
+      text-align: left;
+      vertical-align: middle;
+      border-bottom: 1px solid rgba(59, 125, 214, 0.18);
+      font-size: 1em;
+      line-height: 1.45;
+    }
+
+    .content-table th {
+      background: rgba(59, 125, 214, 0.12);
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    .content-table tr:last-child td { border-bottom: none; }
+
+    .method-badge {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.82em;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 6px;
+      min-width: 58px;
+      text-align: center;
+    }
+
+    .method-get    { background: rgba(5, 150, 105, 0.15); color: #065F46; }
+    .method-post   { background: rgba(59, 125, 214, 0.15); color: #1E3A5F; }
+    .method-put    { background: rgba(212, 148, 12, 0.18); color: #7C4A00; }
+    .method-patch  { background: rgba(147, 51, 234, 0.15); color: #4C1D95; }
+    .method-delete { background: rgba(220, 38, 38, 0.15); color: #7F1D1D; }
+
+    .navigation {
+      position: fixed;
+      bottom: 36px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 18px;
+      z-index: 1000;
+    }
+
+    .nav-button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px 34px;
+      border-radius: 50px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .nav-button:hover { background: var(--secondary); transform: translateY(-2px); }
+    .nav-button:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+    .slide-indicator {
+      position: fixed;
+      top: 40px;
+      right: 40px;
+      background: var(--primary);
+      padding: 15px 24px;
+      border-radius: 50px;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 1em;
+      z-index: 1000;
+      color: white;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .penn-state-badge {
+      position: fixed;
+      top: 40px;
+      left: 40px;
+      font-weight: 900;
+      font-size: 1.2em;
+      color: var(--primary);
+      z-index: 1000;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .toast {
+      position: fixed;
+      top: 92px;
+      right: 40px;
+      background: rgba(5, 150, 105, 0.94);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+      z-index: 1100;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 980px) {
+      body { padding-top: 120px; }
+      .slide { width: 94%; padding: 48px 28px 42px 28px; }
+      h1 { font-size: 3em; }
+      h2 { font-size: 2.1em; }
+      .comparison-grid, .comparison-grid.three-col { grid-template-columns: 1fr; }
+      .penn-state-badge { left: 20px; top: 20px; }
+      .slide-indicator { right: 20px; top: 20px; }
+      .navigation { bottom: 20px; }
+    }
+
+    /* ─── Run & Test boxes ──────────────────────────────────────────────────── */
+    .run-box {
+      background: #0d1117;
+      border-radius: 12px;
+      margin: 16px 0 0 0;
+      border: 2px solid rgba(59, 125, 214, 0.22);
+      overflow: hidden;
+    }
+    .run-box-header {
+      background: linear-gradient(90deg, #161b22, #0d1117);
+      padding: 7px 16px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.79em;
+      color: #4b6a9b;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      border-bottom: 1px solid rgba(59, 125, 214, 0.12);
+    }
+    .run-box-body { padding: 12px 18px 14px 18px; }
+    .run-line {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85em;
+      color: #c9d1d9;
+      line-height: 1.62;
+      white-space: pre;
+      margin: 0;
+    }
+    .run-comment { color: #484f58; }
+    .run-prompt  { color: #3fb950; font-weight: 700; }
+    .run-note    { color: #d29922; }
+
+  </style>
+</head>
+<body>
+<div class="penn-state-badge">HCDD 411</div>
+<div class="slide-indicator"><span id="currentSlide">1</span> / <span id="totalSlides">23</span></div>
+<div class="toast" id="toast">Code copied</div>
+<div class="presentation-container">
+<!-- ═══════════════════════════════════ SLIDE 1 ═══════════════════════════════════ -->
+<div class="slide active" data-slide="1">
+<h1>EXPRESS FRAMEWORK</h1>
+<h2>Md Touhidul Islam</h2>
+<div class="info-box">
+<strong>Roadmap:</strong>
+<ul>
+<li>Motivation and setup</li>
+<li>Routes</li>
+<li>Middleware</li>
+<li>Request data, responses, and CORS</li>
+<li>Building a full CRUD API</li>
+<li>Practice</li>
+</ul>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 2 ═══════════════════════════════════ -->
+<div class="slide" data-slide="2">
+<h2>Why Express is Needed</h2>
+<p>Node's built-in <code>http</code> module works, but even a small app fills up with repeated plumbing — matching methods, matching URLs, setting headers, structuring responses. Express removes all of that ceremony.</p>
+<div class="example-card" style="margin-top: 18px;">
+<h3>Raw Node <code>http</code></h3>
+<div class="code-playground">
+<span class="playground-label">Raw Node server</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-raw-http">Copy</button></div>
+</div>
+<div class="static-code" id="raw-http"><ol>
+<li>const http = require("http");</li>
+<li> </li>
+<li>const server = http.createServer((req, res) =&gt; {</li>
+<li>  if (req.method === "GET" &amp;&amp; req.url === "/") {</li>
+<li>    res.writeHead(200, { "Content-Type": "text/plain" });</li>
+<li>    res.end("Home page");</li>
+<li>  } else if (req.method === "GET" &amp;&amp; req.url === "/about") {</li>
+<li>    res.writeHead(200, { "Content-Type": "text/plain" });</li>
+<li>    res.end("About page");</li>
+<li>  } else {</li>
+<li>    res.writeHead(404, { "Content-Type": "text/plain" });</li>
+<li>    res.end("Not found");</li>
+<li>  }</li>
+<li>});</li>
+<li> </li>
+<li>server.listen(3000);</li>
+</ol></div>
+<textarea class="copy-source" id="copy-raw-http">const http = require("http");
+
+const server = http.createServer((req, res) =&gt; {
+  if (req.method === "GET" &amp;&amp; req.url === "/") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("Home page");
+  } else if (req.method === "GET" &amp;&amp; req.url === "/about") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("About page");
+  } else {
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("Not found");
+  }
+});
+
+server.listen(3000);</textarea>
+</div>
+</div>
+<div class="example-card" style="margin-top: 18px;">
+<h3>Express</h3>
+<div class="code-playground">
+<span class="playground-label">Same job, clearer structure</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-why-express">Copy</button></div>
+</div>
+<div class="static-code" id="why-express"><ol>
+<li>const express = require("express");</li>
+<li>const app = express();</li>
+<li> </li>
+<li>app.get("/", (req, res) =&gt; {</li>
+<li>  res.send("Home page");</li>
+<li>});</li>
+<li> </li>
+<li>app.get("/about", (req, res) =&gt; {</li>
+<li>  res.send("About page");</li>
+<li>});</li>
+<li> </li>
+<li>app.listen(3000);</li>
+</ol></div>
+<textarea class="copy-source" id="copy-why-express">const express = require("express");
+const app = express();
+
+app.get("/", (req, res) =&gt; {
+  res.send("Home page");
+});
+
+app.get("/about", (req, res) =&gt; {
+  res.send("About page");
+});
+
+app.listen(3000);</textarea>
+</div>
+</div>
+<div class="tip-box">
+<strong>Mental model:</strong>
+<p style="margin-top: 10px;">Express sits on top of Node and removes repeated ceremony — method matching, URL parsing, header boilerplate — so the route logic is the main thing you read.</p>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 3 ═══════════════════════════════════ -->
+<div class="slide" data-slide="3">
+<h2>Project Setup</h2>
+<div class="example-grid">
+<div class="example-card">
+<h3>Start the project</h3>
+<div class="code-playground">
+<span class="playground-label">Terminal</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 terminal</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-setup-commands">Copy</button></div>
+</div>
+<div class="static-code" id="setup-commands"><ol>
+<li>mkdir express-demo</li>
+<li>cd express-demo</li>
+<li>npm init -y</li>
+<li>npm install express</li>
+</ol></div>
+<textarea class="copy-source" id="copy-setup-commands">mkdir express-demo
+cd express-demo
+npm init -y
+npm install express</textarea>
+</div>
+</div>
+<div class="example-card">
+<h3>What these files mean</h3>
+<ul>
+<li><code>package.json</code> stores project metadata and dependencies</li>
+<li><code>node_modules</code> contains installed packages</li>
+<li><code>package-lock.json</code> records the exact installed versions</li>
+</ul>
+</div>
+</div>
+<div class="info-box">
+<strong>Sequence to remember:</strong>
+<p style="margin-top: 10px;">Create a folder → initialize npm → install Express → write the server → start it with <code>node server.js</code>.</p>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 4 ═══════════════════════════════════ -->
+<div class="slide" data-slide="4">
+<h2>A Basic Express App</h2>
+<div class="code-playground">
+<span class="playground-label">Minimal Express server</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-basic-app">Copy</button></div>
+</div>
+<div class="static-code" id="basic-app"><ol>
+<li>const express = require("express");</li>
+<li>const app = express();</li>
+<li>const PORT = 3000;</li>
+<li> </li>
+<li>app.get("/", (req, res) =&gt; {</li>
+<li>  res.send("Server is running");</li>
+<li>});</li>
+<li> </li>
+<li>app.listen(PORT, () =&gt; {</li>
+<li>  console.log(`Listening on http://localhost:${PORT}`);</li>
+<li>});</li>
+</ol></div>
+<textarea class="copy-source" id="copy-basic-app">const express = require("express");
+const app = express();
+const PORT = 3000;
+
+app.get("/", (req, res) =&gt; {
+  res.send("Server is running");
+});
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="tip-box">
+<strong>Read it in three layers:</strong>
+<ul>
+<li><code>express()</code> creates the app object — every method hangs off this</li>
+<li><code>app.get()</code> registers a handler for one matching request</li>
+<li><code>app.listen()</code> starts the server and waits for traffic</li>
+</ul>
+</div>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/</div>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 5 ═══════════════════════════════════ -->
+<div class="slide" data-slide="5">
+<h2>Routes: Method + Path + Callback</h2>
+<div class="code-playground">
+<span class="playground-label">All common HTTP methods</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-route-shape">Copy</button></div>
+</div>
+<div class="static-code" id="route-shape"><ol><li>const express = require("express");</li><li>const app = express();</li><li>app.use(express.json());</li><li>const PORT = 3000;</li><li> </li><li>// GET -- read a resource</li><li>app.get("/products", (req, res) =&gt; {</li><li>  res.json([{ id: 1, name: "Widget" }]);</li><li>});</li><li> </li><li>// POST -- create a new resource</li><li>app.post("/products", (req, res) =&gt; {</li><li>  res.status(201).json({ created: true, body: req.body });</li><li>});</li><li> </li><li>// PUT -- full replace of a resource</li><li>app.put("/products/:id", (req, res) =&gt; {</li><li>  res.json({ replaced: req.params.id, body: req.body });</li><li>});</li><li> </li><li>// PATCH -- partial update</li><li>app.patch("/products/:id", (req, res) =&gt; {</li><li>  res.json({ updated: req.params.id, body: req.body });</li><li>});</li><li> </li><li>// DELETE -- remove a resource</li><li>app.delete("/products/:id", (req, res) =&gt; {</li><li>  res.json({ deleted: req.params.id });</li><li>});</li><li> </li><li>app.listen(PORT, () =&gt; {</li><li>  console.log(`Listening on http://localhost:${PORT}`);</li><li>});</li></ol></div>
+<textarea class="copy-source" id="copy-route-shape">const express = require("express");
+const app = express();
+app.use(express.json());
+const PORT = 3000;
+
+// GET -- read a resource
+app.get("/products", (req, res) =&gt; {
+  res.json([{ id: 1, name: "Widget" }]);
+});
+
+// POST -- create a new resource
+app.post("/products", (req, res) =&gt; {
+  res.status(201).json({ created: true, body: req.body });
+});
+
+// PUT -- full replace of a resource
+app.put("/products/:id", (req, res) =&gt; {
+  res.json({ replaced: req.params.id, body: req.body });
+});
+
+// PATCH -- partial update
+app.patch("/products/:id", (req, res) =&gt; {
+  res.json({ updated: req.params.id, body: req.body });
+});
+
+// DELETE -- remove a resource
+app.delete("/products/:id", (req, res) =&gt; {
+  res.json({ deleted: req.params.id });
+});
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="info-box">
+<strong>PUT vs PATCH:</strong>
+<p style="margin-top: 10px;"><code>PUT</code> replaces the entire resource — any fields you omit are gone. <code>PATCH</code> merges only the fields you send, leaving the rest unchanged.</p>
+</div>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-prompt">$</span> npm install express</div>
+<div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-comment"># GET</span></div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/products</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-comment"># POST</span></div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X POST http://localhost:3000/products \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -H "Content-Type: application/json" \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -d '{"name":"Book"}'</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-comment"># PUT / PATCH / DELETE</span></div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X PUT http://localhost:3000/products/7 -H "Content-Type: application/json" -d '{"name":"Replaced"}'</div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X PATCH http://localhost:3000/products/7 -H "Content-Type: application/json" -d '{"price":10}'</div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X DELETE http://localhost:3000/products/7</div>
+</div>
+</div></div>
+<!-- ═══════════════════════════════════ SLIDE 6 ═══════════════════════════════════ -->
+<div class="slide" data-slide="6">
+<h2>Route Order Matters</h2>
+<div class="code-playground">
+<span class="playground-label">Specific routes before general routes</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-route-order">Copy</button></div>
+</div>
+<div class="static-code" id="route-order"><ol><li>const express = require("express");</li><li>const app = express();</li><li>const PORT = 3000;</li><li> </li><li>/*</li><li>// ⚠ BUGGY ORDER -- do not run this version</li><li>app.get("/users/:id", (req, res) =&gt; {</li><li>  res.send(`User id: ${req.params.id}`);</li><li>});</li><li> </li><li>app.get("/users/new", (req, res) =&gt; {</li><li>  res.send("New user form");</li><li>});</li><li>*/</li><li> </li><li>// ✓ FIX: put specific routes first</li><li>app.get("/users/new", (req, res) =&gt; {</li><li>  res.send("New user form");</li><li>});</li><li> </li><li>app.get("/users/:id", (req, res) =&gt; {</li><li>  res.send(`User id: ${req.params.id}`);</li><li>});</li><li> </li><li>// Catch-all 404 -- always goes last</li><li>app.use((req, res) =&gt; {</li><li>  res.status(404).send("Not found");</li><li>});</li><li> </li><li>app.listen(PORT, () =&gt; {</li><li>  console.log(`Listening on http://localhost:${PORT}`);</li><li>});</li></ol></div>
+<textarea class="copy-source" id="copy-route-order">const express = require("express");
+const app = express();
+const PORT = 3000;
+
+/*
+// ⚠ BUGGY ORDER -- do not run this version
+app.get("/users/:id", (req, res) =&gt; {
+  res.send(`User id: ${req.params.id}`);
+});
+
+app.get("/users/new", (req, res) =&gt; {
+  res.send("New user form");
+});
+*/
+
+// ✓ FIX: put specific routes first
+app.get("/users/new", (req, res) =&gt; {
+  res.send("New user form");
+});
+
+app.get("/users/:id", (req, res) =&gt; {
+  res.send(`User id: ${req.params.id}`);
+});
+
+// Catch-all 404 -- always goes last
+app.use((req, res) =&gt; {
+  res.status(404).send("Not found");
+});
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="tip-box">
+<strong>Rule:</strong>
+<p style="margin-top: 10px;">More specific routes first. Broad or catch-all logic last. The 404 handler only works if it is the final thing registered.</p>
+</div>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-prompt">$</span> npm install express</div>
+<div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/users/new</div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/users/42</div>
+<div class="run-line"><span class="run-prompt">$</span> curl -i http://localhost:3000/does-not-exist</div>
+</div>
+</div></div>
+<!-- ═══════════════════════════════════ SLIDE 7 ═══════════════════════════════════ -->
+<div class="slide" data-slide="7">
+<h2>Request Data: Params, Query, Body</h2>
+<div class="code-playground">
+<span class="playground-label">req.params — named URL segments</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-req-params">Copy</button></div>
+</div>
+<div class="static-code" id="req-params"><ol><li>const express = require("express");</li><li>const app = express();</li><li>const PORT = 3000;</li><li> </li><li>// Single param: GET /users/42</li><li>app.get("/users/:id", (req, res) =&gt; {</li><li>  res.json(req.params); // { id: "42" }</li><li>});</li><li> </li><li>// Multiple params: GET /users/5/posts/12</li><li>app.get("/users/:userId/posts/:postId", (req, res) =&gt; {</li><li>  res.json(req.params); // { userId: "5", postId: "12" }</li><li>});</li><li> </li><li>app.listen(PORT, () =&gt; {</li><li>  console.log(`Listening on http://localhost:${PORT}`);</li><li>});</li></ol></div>
+<textarea class="copy-source" id="copy-req-params">const express = require("express");
+const app = express();
+const PORT = 3000;
+
+// Single param: GET /users/42
+app.get("/users/:id", (req, res) =&gt; {
+  res.json(req.params); // { id: "42" }
+});
+
+// Multiple params: GET /users/5/posts/12
+app.get("/users/:userId/posts/:postId", (req, res) =&gt; {
+  res.json(req.params); // { userId: "5", postId: "12" }
+});
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="tip-box" style="margin-bottom:14px;">
+<p>All param values arrive as <strong>strings</strong> — use <code>Number()</code> if you need a number.</p>
+</div>
+<div class="code-playground">
+<span class="playground-label">req.query — query string</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-req-query">Copy</button></div>
+</div>
+<div class="static-code" id="req-query"><ol><li>const express = require("express");</li><li>const app = express();</li><li>const PORT = 3000;</li><li> </li><li>app.get("/products", (req, res) =&gt; {</li><li>  // GET /products              → req.query: {}</li><li>  // GET /products?category=books  → req.query: { category: "books" }</li><li>  // GET /products?category=books&amp;sort=price&amp;order=asc</li><li>  //                            → req.query: { category: "books", sort: "price", order: "asc" }</li><li>  res.json(req.query);</li><li>});</li><li> </li><li>app.listen(PORT, () =&gt; {</li><li>  console.log(`Listening on http://localhost:${PORT}`);</li><li>});</li></ol></div>
+<textarea class="copy-source" id="copy-req-query">const express = require("express");
+const app = express();
+const PORT = 3000;
+
+app.get("/products", (req, res) =&gt; {
+  // GET /products              → req.query: {}
+  // GET /products?category=books  → req.query: { category: "books" }
+  // GET /products?category=books&amp;sort=price&amp;order=asc
+  //                            → req.query: { category: "books", sort: "price", order: "asc" }
+  res.json(req.query);
+});
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="tip-box" style="margin-bottom:14px;">
+<p>Query keys are optional — always provide a fallback: <code>req.query.sort || "name"</code></p>
+</div>
+<div class="code-playground">
+<span class="playground-label">req.body — JSON payload</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-req-body">Copy</button></div>
+</div>
+<div class="static-code" id="req-body"><ol><li>const express = require("express");</li><li>const app = express();</li><li>const PORT = 3000;</li><li> </li><li>app.use(express.json()); // must come before any route that reads req.body</li><li> </li><li>app.post("/orders", (req, res) =&gt; {</li><li>  // body: { item: "Pen", qty: 3, urgent: true }</li><li>  // req.body → { item: "Pen", qty: 3, urgent: true }</li><li>  res.json(req.body);</li><li>});</li><li> </li><li>app.listen(PORT, () =&gt; {</li><li>  console.log(`Listening on http://localhost:${PORT}`);</li><li>});</li></ol></div>
+<textarea class="copy-source" id="copy-req-body">const express = require("express");
+const app = express();
+const PORT = 3000;
+
+app.use(express.json()); // must come before any route that reads req.body
+
+app.post("/orders", (req, res) =&gt; {
+  // body: { item: "Pen", qty: 3, urgent: true }
+  // req.body → { item: "Pen", qty: 3, urgent: true }
+  res.json(req.body);
+});
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="warning-box">
+<p>Forget <code>express.json()</code> and <code>req.body</code> is <code>undefined</code> — every field read from it will silently be <code>undefined</code> too.</p>
+</div>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-note">Use one code block at a time as server.js</span></div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-comment"># req.params example</span></div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/users/42</div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/users/5/posts/12</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-comment"># req.query example</span></div>
+<div class="run-line"><span class="run-prompt">$</span> curl "http://localhost:3000/products?category=books&amp;sort=price&amp;order=asc"</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-comment"># req.body example</span></div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X POST http://localhost:3000/orders \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -H "Content-Type: application/json" \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -d '{"item":"Pen","qty":3,"urgent":true}'</div>
+</div>
+</div></div>
+<!-- ═══════════════════════════════════ SLIDE 8 ═══════════════════════════════════ -->
+<div class="slide" data-slide="8">
+<h2>Response Helpers</h2>
+<div class="code-playground">
+<span class="playground-label">Sending different kinds of responses</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-response-helpers">Copy</button></div>
+</div>
+<div class="static-code" id="response-helpers"><ol><li>const express = require("express");</li><li>const app = express();</li><li>const PORT = 3000;</li><li> </li><li>// Plain text</li><li>app.get("/text", (req, res) =&gt; {</li><li>  res.send("Plain text response");</li><li>});</li><li> </li><li>// JSON -- best default for APIs</li><li>app.get("/json", (req, res) =&gt; {</li><li>  res.json({ ok: true, message: "JSON response" });</li><li>});</li><li> </li><li>// Status code + JSON</li><li>app.post("/items", express.json(), (req, res) =&gt; {</li><li>  res.status(201).json({ created: true, body: req.body });</li><li>});</li><li> </li><li>// Send a file that definitely exists: this server file itself</li><li>app.get("/download", (req, res) =&gt; {</li><li>  res.sendFile(__filename);</li><li>});</li><li> </li><li>// Redirect</li><li>app.get("/go-home", (req, res) =&gt; {</li><li>  res.redirect("/text");</li><li>});</li><li> </li><li>app.listen(PORT, () =&gt; {</li><li>  console.log(`Listening on http://localhost:${PORT}`);</li><li>});</li></ol></div>
+<textarea class="copy-source" id="copy-response-helpers">const express = require("express");
+const app = express();
+const PORT = 3000;
+
+// Plain text
+app.get("/text", (req, res) =&gt; {
+  res.send("Plain text response");
+});
+
+// JSON -- best default for APIs
+app.get("/json", (req, res) =&gt; {
+  res.json({ ok: true, message: "JSON response" });
+});
+
+// Status code + JSON
+app.post("/items", express.json(), (req, res) =&gt; {
+  res.status(201).json({ created: true, body: req.body });
+});
+
+// Send a file that definitely exists: this server file itself
+app.get("/download", (req, res) =&gt; {
+  res.sendFile(__filename);
+});
+
+// Redirect
+app.get("/go-home", (req, res) =&gt; {
+  res.redirect("/text");
+});
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="comparison-grid" style="margin-top:18px;">
+<div class="example-card compact-card"><h3><code>res.send()</code></h3><p>General-purpose — sets content-type automatically</p></div>
+<div class="example-card compact-card"><h3><code>res.json()</code></h3><p>Serializes to JSON and sets the header correctly</p></div>
+<div class="example-card compact-card"><h3><code>res.status(n)</code></h3><p>Chainable — sets the HTTP status code</p></div>
+<div class="example-card compact-card"><h3><code>res.redirect()</code></h3><p>Sends the client to another URL</p></div>
+</div>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-prompt">$</span> npm install express</div>
+<div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/text</div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/json</div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X POST http://localhost:3000/items -H "Content-Type: application/json" -d '{"name":"Pen"}'</div>
+<div class="run-line"><span class="run-prompt">$</span> curl -L http://localhost:3000/go-home</div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/download</div>
+</div>
+</div></div>
+<!-- ═══════════════════════════════════ SLIDE 9 ═══════════════════════════════════ -->
+<div class="slide" data-slide="9">
+<h2>Modular Routes</h2>
+<div class="code-playground">
+<span class="playground-label">routes/users.js</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 routes/users.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-users-router">Copy</button></div>
+</div>
+<div class="static-code" id="users-router"><ol><li>const express = require("express");</li><li>const router = express.Router();</li><li> </li><li>router.get("/", (req, res) =&gt; {</li><li>  res.send("All users");</li><li>});</li><li> </li><li>router.get("/:id", (req, res) =&gt; {</li><li>  res.send(`One user: ${req.params.id}`);</li><li>});</li><li> </li><li>module.exports = router;</li></ol></div>
+<textarea class="copy-source" id="copy-users-router">const express = require("express");
+const router = express.Router();
+
+router.get("/", (req, res) =&gt; {
+  res.send("All users");
+});
+
+router.get("/:id", (req, res) =&gt; {
+  res.send(`One user: ${req.params.id}`);
+});
+
+module.exports = router;</textarea>
+</div>
+<div class="code-playground">
+<span class="playground-label">server.js</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-mount-router">Copy</button></div>
+</div>
+<div class="static-code" id="mount-router"><ol><li>const express = require("express");</li><li>const app = express();</li><li>const usersRouter = require("./routes/users");</li><li>const PORT = 3000;</li><li> </li><li>app.use("/users", usersRouter);</li><li> </li><li>app.listen(PORT, () =&gt; {</li><li>  console.log(`Listening on http://localhost:${PORT}`);</li><li>});</li></ol></div>
+<textarea class="copy-source" id="copy-mount-router">const express = require("express");
+const app = express();
+const usersRouter = require("./routes/users");
+const PORT = 3000;
+
+app.use("/users", usersRouter);
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="tip-box">
+<strong>Mounting rule:</strong>
+<p style="margin-top: 10px;">Mounted at <code>/users</code>, so <code>router.get("/")</code> becomes <code>/users</code> and <code>router.get("/:id")</code> becomes <code>/users/:id</code>. The prefix is prepended automatically.</p>
+</div>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-note">Save the first snippet as routes/users.js and the second as server.js</span></div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> npm install express</div>
+<div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/users</div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/users/42</div>
+</div>
+</div></div>
+<!-- ═══════════════════════════════════ SLIDE 10 ═══════════════════════════════════ -->
+<div class="slide" data-slide="10">
+<h2>Middleware: the Big Picture</h2>
+<p>Middleware sits between the incoming request and the final route handler. Each function can read, modify, or terminate the request — then pass control forward with <code>next()</code>.</p>
+<div class="flow-row wide-flow">
+<div class="flow-box">Request arrives</div>
+<div class="flow-arrow">→</div>
+<div class="flow-box">Middleware 1</div>
+<div class="flow-arrow">→</div>
+<div class="flow-box">Middleware 2</div>
+<div class="flow-arrow">→</div>
+<div class="flow-box">Route handler</div>
+<div class="flow-arrow">→</div>
+<div class="flow-box">Response</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 11 ═══════════════════════════════════ -->
+<div class="slide" data-slide="11">
+<h2>Middleware Anatomy and Order</h2>
+<div class="code-playground">
+<span class="playground-label">A custom middleware function</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-middleware-anatomy">Copy</button></div>
+</div>
+<div class="static-code" id="middleware-anatomy"><ol><li>const express = require("express");</li><li>const app = express();</li><li>const PORT = 3000;</li><li> </li><li>function logger(req, res, next) {</li><li>  console.log(`${req.method} ${req.url}`);</li><li>  next(); // hand off to the next step</li><li>}</li><li> </li><li>app.use(logger); // runs for every request</li><li> </li><li>app.get("/demo", (req, res) =&gt; {</li><li>  res.send("Done");</li><li>});</li><li> </li><li>app.listen(PORT, () =&gt; {</li><li>  console.log(`Listening on http://localhost:${PORT}`);</li><li>});</li></ol></div>
+<textarea class="copy-source" id="copy-middleware-anatomy">const express = require("express");
+const app = express();
+const PORT = 3000;
+
+function logger(req, res, next) {
+  console.log(`${req.method} ${req.url}`);
+  next(); // hand off to the next step
+}
+
+app.use(logger); // runs for every request
+
+app.get("/demo", (req, res) =&gt; {
+  res.send("Done");
+});
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="info-box">
+<strong>Three parameters every middleware receives:</strong>
+<ul>
+<li><code>req</code> — the incoming request object</li>
+<li><code>res</code> — the outgoing response object</li>
+<li><code>next</code> — a function that passes control to the next step</li>
+</ul>
+</div>
+<div class="warning-box">
+<strong>Important:</strong>
+<p style="margin-top: 10px;">If middleware does not call <code>next()</code> and does not send a response, the request hangs forever. Every middleware must do one or the other.</p>
+</div>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-prompt">$</span> npm install express</div>
+<div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/demo</div>
+</div>
+</div></div>
+<!-- ═══════════════════════════════════ SLIDE 12 ═══════════════════════════════════ -->
+<div class="slide" data-slide="12">
+<h2>1. Application-Level Middleware</h2>
+<div class="code-playground">
+<span class="playground-label">Runs for every request</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-app-level">Copy</button></div>
+</div>
+<div class="static-code" id="app-level"><ol><li>const express = require("express");</li><li>const app = express();</li><li>const PORT = 3000;</li><li> </li><li>app.use((req, res, next) =&gt; {</li><li>  req.requestTime = new Date().toISOString();</li><li>  console.log(`Time: ${req.requestTime}`);</li><li>  next();</li><li>});</li><li> </li><li>app.get("/status", (req, res) =&gt; {</li><li>  res.json({ ok: true, at: req.requestTime });</li><li>});</li><li> </li><li>app.listen(PORT, () =&gt; {</li><li>  console.log(`Listening on http://localhost:${PORT}`);</li><li>});</li></ol></div>
+<textarea class="copy-source" id="copy-app-level">const express = require("express");
+const app = express();
+const PORT = 3000;
+
+app.use((req, res, next) =&gt; {
+  req.requestTime = new Date().toISOString();
+  console.log(`Time: ${req.requestTime}`);
+  next();
+});
+
+app.get("/status", (req, res) =&gt; {
+  res.json({ ok: true, at: req.requestTime });
+});
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="info-box">
+<strong>Good uses:</strong>
+<ul>
+<li>logging every request</li>
+<li>attaching shared metadata to <code>req</code> so all routes can read it</li>
+<li>parsing JSON bodies with <code>express.json()</code> before any route needs it</li>
+</ul>
+</div>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-prompt">$</span> npm install express</div>
+<div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/status</div>
+</div>
+</div></div>
+<!-- ═══════════════════════════════════ SLIDE 13 ═══════════════════════════════════ -->
+<div class="slide" data-slide="13">
+<h2>2. Route-Specific Middleware</h2>
+<div class="code-playground">
+<span class="playground-label">Attach middleware to selected routes only</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-route-specific">Copy</button></div>
+</div>
+<div class="static-code" id="route-specific"><ol><li>const express = require("express");</li><li>const app = express();</li><li>const PORT = 3000;</li><li> </li><li>function requireAdmin(req, res, next) {</li><li>  if (req.query.role !== "admin") {</li><li>    return res.status(403).json({ error: "Admin only" });</li><li>  }</li><li>  next();</li><li>}</li><li> </li><li>// requireAdmin runs only for this route</li><li>app.get("/reports", requireAdmin, (req, res) =&gt; {</li><li>  res.send("Sensitive report data");</li><li>});</li><li> </li><li>// This route is unaffected</li><li>app.get("/public", (req, res) =&gt; {</li><li>  res.send("Anyone can see this");</li><li>});</li><li> </li><li>app.listen(PORT, () =&gt; {</li><li>  console.log(`Listening on http://localhost:${PORT}`);</li><li>});</li></ol></div>
+<textarea class="copy-source" id="copy-route-specific">const express = require("express");
+const app = express();
+const PORT = 3000;
+
+function requireAdmin(req, res, next) {
+  if (req.query.role !== "admin") {
+    return res.status(403).json({ error: "Admin only" });
+  }
+  next();
+}
+
+// requireAdmin runs only for this route
+app.get("/reports", requireAdmin, (req, res) =&gt; {
+  res.send("Sensitive report data");
+});
+
+// This route is unaffected
+app.get("/public", (req, res) =&gt; {
+  res.send("Anyone can see this");
+});
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="tip-box">
+<strong>Why this is useful:</strong>
+<p style="margin-top: 10px;">Not every route needs the same gatekeeping. Passing middleware as a second argument keeps the restriction close to the route that needs it instead of running it globally.</p>
+</div>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-prompt">$</span> npm install express</div>
+<div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl -i http://localhost:3000/reports</div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/reports?role=admin</div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/public</div>
+</div>
+</div></div>
+<!-- ═══════════════════════════════════ SLIDE 14 ═══════════════════════════════════ -->
+<div class="slide" data-slide="14">
+<h2>3. Built-in Middleware</h2>
+<div class="code-playground">
+<span class="playground-label">Included with Express — no npm install needed</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-built-in">Copy</button></div>
+</div>
+<div class="static-code" id="built-in"><ol><li>const express = require("express");</li><li>const app = express();</li><li>const PORT = 3000;</li><li> </li><li>// Parse JSON request bodies (enables req.body for JSON)</li><li>app.use(express.json());</li><li> </li><li>// Parse HTML form submissions</li><li>app.use(express.urlencoded({ extended: true }));</li><li> </li><li>// Serve static files (HTML, CSS, images, JS) from /public</li><li>app.use(express.static("public"));</li><li> </li><li>app.post("/contact", (req, res) =&gt; {</li><li>  console.log(req.body);</li><li>  res.json({ received: true, body: req.body });</li><li>});</li><li> </li><li>app.listen(PORT, () =&gt; {</li><li>  console.log(`Listening on http://localhost:${PORT}`);</li><li>});</li></ol></div>
+<textarea class="copy-source" id="copy-built-in">const express = require("express");
+const app = express();
+const PORT = 3000;
+
+// Parse JSON request bodies (enables req.body for JSON)
+app.use(express.json());
+
+// Parse HTML form submissions
+app.use(express.urlencoded({ extended: true }));
+
+// Serve static files (HTML, CSS, images, JS) from /public
+app.use(express.static("public"));
+
+app.post("/contact", (req, res) =&gt; {
+  console.log(req.body);
+  res.json({ received: true, body: req.body });
+});
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="comparison-grid">
+<div class="example-card compact-card"><h3><code>express.json()</code></h3><p>Parses JSON request bodies — required before any route reads <code>req.body</code></p></div>
+<div class="example-card compact-card"><h3><code>express.urlencoded()</code></h3><p>Parses HTML form data sent as URL-encoded strings</p></div>
+<div class="example-card compact-card"><h3><code>express.static()</code></h3><p>Serves an entire folder of files directly to the browser</p></div>
+</div>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-prompt">$</span> npm install express</div>
+<div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X POST http://localhost:3000/contact \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -H "Content-Type: application/json" \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -d '{"name":"Ava","message":"Hello"}'</div>
+</div>
+</div></div>
+<!-- ═══════════════════════════════════ SLIDE 15 ═══════════════════════════════════ -->
+<div class="slide" data-slide="15">
+<h2>4. Error-Handling Middleware</h2>
+<div class="code-playground">
+<span class="playground-label">Must be placed after all routes</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-error-handler">Copy</button></div>
+</div>
+<div class="static-code" id="error-handler"><ol><li>const express = require("express");</li><li>const app = express();</li><li>const PORT = 3000;</li><li> </li><li>app.get("/boom", (req, res, next) =&gt; {</li><li>  try {</li><li>    throw new Error("Something went wrong");</li><li>  } catch (err) {</li><li>    next(err); // forward error to error handler</li><li>  }</li><li>});</li><li> </li><li>// Four parameters: Express knows this is an error handler</li><li>app.use((err, req, res, next) =&gt; {</li><li>  console.error(err.message);</li><li>  res.status(500).json({ error: "Internal server error" });</li><li>});</li><li> </li><li>app.listen(PORT, () =&gt; {</li><li>  console.log(`Listening on http://localhost:${PORT}`);</li><li>});</li></ol></div>
+<textarea class="copy-source" id="copy-error-handler">const express = require("express");
+const app = express();
+const PORT = 3000;
+
+app.get("/boom", (req, res, next) =&gt; {
+  try {
+    throw new Error("Something went wrong");
+  } catch (err) {
+    next(err); // forward error to error handler
+  }
+});
+
+// Four parameters: Express knows this is an error handler
+app.use((err, req, res, next) =&gt; {
+  console.error(err.message);
+  res.status(500).json({ error: "Internal server error" });
+});
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="warning-box">
+<strong>Two details that matter:</strong>
+<ul>
+<li>The signature must have exactly four parameters: <code>(err, req, res, next)</code> — Express identifies error handlers by this</li>
+<li>This handler belongs <em>after</em> all normal routes so errors bubble up to it</li>
+</ul>
+</div>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-prompt">$</span> npm install express</div>
+<div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl -i http://localhost:3000/boom</div>
+</div>
+</div></div>
+<!-- ═══════════════════════════════════ SLIDE 16 ═══════════════════════════════════ -->
+<div class="slide" data-slide="16">
+<h2>5. Third-Party Middleware</h2>
+<div class="code-playground">
+<span class="playground-label">Install from npm, then plug in</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-third-party">Copy</button></div>
+</div>
+<div class="static-code" id="third-party"><ol><li>const express = require("express");</li><li>const cors = require("cors");     // npm install cors</li><li>const morgan = require("morgan"); // npm install morgan</li><li> </li><li>const app = express();</li><li>const PORT = 3000;</li><li> </li><li>app.use(morgan("dev")); // log: GET /items 200 3ms</li><li>app.use(cors());         // allow cross-origin requests</li><li> </li><li>app.get("/items", (req, res) =&gt; {</li><li>  res.json([{ id: 1, name: "Mouse" }]);</li><li>});</li><li> </li><li>app.listen(PORT, () =&gt; {</li><li>  console.log(`Listening on http://localhost:${PORT}`);</li><li>});</li></ol></div>
+<textarea class="copy-source" id="copy-third-party">const express = require("express");
+const cors = require("cors");     // npm install cors
+const morgan = require("morgan"); // npm install morgan
+
+const app = express();
+const PORT = 3000;
+
+app.use(morgan("dev")); // log: GET /items 200 3ms
+app.use(cors());         // allow cross-origin requests
+
+app.get("/items", (req, res) =&gt; {
+  res.json([{ id: 1, name: "Mouse" }]);
+});
+
+app.listen(PORT, () =&gt; {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+</div>
+<div class="comparison-grid">
+<div class="example-card compact-card"><h3><code>morgan</code></h3><p>Logs HTTP requests with method, path, status, and response time</p></div>
+<div class="example-card compact-card"><h3><code>cors</code></h3><p>Adds headers that allow browser cross-origin requests</p></div>
+<div class="example-card compact-card"><h3><code>compression</code></h3><p>Compresses responses to reduce payload size</p></div>
+<div class="example-card compact-card"><h3><code>passport</code></h3><p>Authentication strategies — JWT, OAuth, local</p></div>
+</div>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-prompt">$</span> npm install express cors morgan</div>
+<div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/items</div>
+</div>
+</div></div>
+
+
+<div class="slide" data-slide="17">
+  <h2>CORS: Why It Exists</h2>
+
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>The setup</h3>
+      <p>
+        A user is logged into <code>bank.com</code> in the browser.
+      </p>
+    </div>
+
+    <div class="example-card">
+      <h3>The attack</h3>
+      <p>
+        A page on <code>evil.com</code> tries to read
+        <code>https://bank.com/api/balance</code>.
+      </p>
+    </div>
+
+    <div class="example-card">
+      <h3>Why this matters</h3>
+      <p>
+        The browser may send the user’s bank cookies, so without protection,
+        <code>evil.com</code> could read private data.
+      </p>
+    </div>
+  </div>
+
+  <div class="code-playground">
+    <span class="playground-label">What the malicious page tries to do</span>
+    <div class="ide-toolbar">
+      <div class="file-tab">📄 evil-site.js</div>
+      <div class="toolbar-actions">
+        <button class="toolbar-btn" data-copy-source="copy-evil-fetch">Copy</button>
+      </div>
+    </div>
+
+    <div class="static-code" id="evil-fetch">
+      <ol>
+        <li>fetch("https://bank.com/api/balance", {</li>
+        <li>  credentials: "include"</li>
+        <li>})</li>
+        <li>  .then(res =&gt; res.json())</li>
+        <li>  .then(data =&gt; console.log(data));</li>
+      </ol>
+    </div>
+
+    <textarea class="copy-source" id="copy-evil-fetch">fetch("https://bank.com/api/balance", {
+  credentials: "include"
+})
+  .then(res => res.json())
+  .then(data => console.log(data));</textarea>
+  </div>
+
+  <div class="warning-box">
+    <strong>What CORS does:</strong>
+    <p style="margin-top: 10px;">
+      It lets <code>bank.com</code> tell the browser:
+      only pages from <code>bank.com</code> may read this response.
+    </p>
+  </div>
+
+  <div class="code-playground" style="margin-top: 18px;">
+    <span class="playground-label">Express example — allow only one browser origin</span>
+    <div class="ide-toolbar">
+      <div class="file-tab">📄 server.js</div>
+      <div class="toolbar-actions">
+        <button class="toolbar-btn" data-copy-source="copy-cors-slide">Copy</button>
+      </div>
+    </div>
+
+    <div class="static-code" id="cors-slide">
+      <ol>
+        <li>const express = require("express");</li>
+        <li>const cors = require("cors");</li>
+        <li> </li>
+        <li>const app = express();</li>
+        <li>const PORT = 3000;</li>
+        <li> </li>
+        <li>app.use(cors({ origin: "http://localhost:5173" }));</li>
+        <li> </li>
+        <li>app.get("/api/items", (req, res) =&gt; {</li>
+        <li>  res.json([{ id: 1, name: "Mouse" }]);</li>
+        <li>});</li>
+        <li> </li>
+        <li>app.listen(PORT, () =&gt; {</li>
+        <li>  console.log(`Listening on http://localhost:${PORT}`);</li>
+        <li>});</li>
+      </ol>
+    </div>
+
+    <textarea class="copy-source" id="copy-cors-slide">const express = require("express");
+const cors = require("cors");
+
+const app = express();
+const PORT = 3000;
+
+app.use(cors({ origin: "http://localhost:5173" }));
+
+app.get("/api/items", (req, res) => {
+  res.json([{ id: 1, name: "Mouse" }]);
+});
+
+app.listen(PORT, () => {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</textarea>
+  </div>
+
+  <div class="comparison-grid" style="margin-top: 18px;">
+    <div class="example-card">
+      <h3>If request comes from 5173</h3>
+      <p>
+        The browser sees the allowed origin matches, so the page can read the response.
+      </p>
+    </div>
+
+    <div class="example-card">
+      <h3>If request comes from 5174</h3>
+      <p>
+        The server may still respond, but the browser blocks that page’s JavaScript
+        from reading the response.
+      </p>
+    </div>
+
+    <div class="example-card">
+      <h3>Core idea</h3>
+      <p>
+        CORS does not stop the request from reaching the server. It controls which
+        browser pages may read the response.
+      </p>
+    </div>
+  </div>
+
+  <div class="run-box">
+    <div class="run-box-header">▶ RUN &amp; TEST</div>
+    <div class="run-box-body">
+      <div class="run-line"><span class="run-prompt">$</span> npm install express cors</div>
+      <div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+      <div class="run-line"> </div>
+      <div class="run-line"><span class="run-prompt">$</span> curl -i -H "Origin: http://localhost:5173" http://localhost:3000/api/items</div>
+      <div class="run-line"><span class="run-prompt">$</span> curl -i -H "Origin: http://localhost:5174" http://localhost:3000/api/items</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════ SLIDE 18 ═══════════════════════════════════ -->
+<div class="slide" data-slide="18">
+<h2>Putting It Together: Full CRUD API</h2>
+<div class="code-playground">
+<span class="playground-label">server.js — inventory API with all HTTP methods</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-full-crud">Copy</button></div>
+</div>
+<div class="static-code" id="full-crud" style="max-height: 1500px"><ol>
+<li>const express = require("express");</li>
+<li>const cors = require("cors");</li>
+<li> </li>
+<li>const app = express();</li>
+<li>app.use(cors());</li>
+<li>app.use(express.json());</li>
+<li> </li>
+<li>let items = [</li>
+<li>  { id: 1, name: "Notebook", quantity: 4 },</li>
+<li>  { id: 2, name: "Keyboard", quantity: 2 },</li>
+<li>];</li>
+<li> </li>
+<li>// GET all items</li>
+<li>app.get("/items", (req, res) =&gt; {</li>
+<li>  res.json(items);</li>
+<li>});</li>
+<li> </li>
+<li>// GET one item by id</li>
+<li>app.get("/items/:id", (req, res) =&gt; {</li>
+<li>  const item = items.find(i =&gt; i.id === Number(req.params.id));</li>
+<li>  if (!item) return res.status(404).json({ error: "Not found" });</li>
+<li>  res.json(item);</li>
+<li>});</li>
+<li> </li>
+<li>// POST -- create a new item</li>
+<li>app.post("/items", (req, res) =&gt; {</li>
+<li>  const newItem = { id: Date.now(), ...req.body };</li>
+<li>  items.push(newItem);</li>
+<li>  res.status(201).json(newItem);</li>
+<li>});</li>
+<li> </li>
+<li>// PUT -- full replace</li>
+<li>app.put("/items/:id", (req, res) =&gt; {</li>
+<li>  const idx = items.findIndex(i =&gt; i.id === Number(req.params.id));</li>
+<li>  if (idx === -1) return res.status(404).json({ error: "Not found" });</li>
+<li>  items[idx] = { id: Number(req.params.id), ...req.body };</li>
+<li>  res.json(items[idx]);</li>
+<li>});</li>
+<li> </li>
+<li>// PATCH -- partial update</li>
+<li>app.patch("/items/:id", (req, res) =&gt; {</li>
+<li>  const item = items.find(i =&gt; i.id === Number(req.params.id));</li>
+<li>  if (!item) return res.status(404).json({ error: "Not found" });</li>
+<li>  Object.assign(item, req.body);</li>
+<li>  res.json(item);</li>
+<li>});</li>
+<li> </li>
+<li>// DELETE -- remove an item</li>
+<li>app.delete("/items/:id", (req, res) =&gt; {</li>
+<li>  const idx = items.findIndex(i =&gt; i.id === Number(req.params.id));</li>
+<li>  if (idx === -1) return res.status(404).json({ error: "Not found" });</li>
+<li>  const removed = items.splice(idx, 1)[0];</li>
+<li>  res.json(removed);</li>
+<li>});</li>
+<li> </li>
+<li>// Error handler -- must be last</li>
+<li>app.use((err, req, res, next) =&gt; {</li>
+<li>  console.error(err.message);</li>
+<li>  res.status(500).json({ error: "Internal server error" });</li>
+<li>});</li>
+<li> </li>
+<li>app.listen(3000, () =&gt; console.log("Running on port 3000"));</li>
+</ol></div>
+<textarea class="copy-source" id="copy-full-crud">const express = require("express");
+const cors = require("cors");
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+let items = [
+  { id: 1, name: "Notebook", quantity: 4 },
+  { id: 2, name: "Keyboard", quantity: 2 },
+];
+
+// GET all items
+app.get("/items", (req, res) =&gt; {
+  res.json(items);
+});
+
+// GET one item by id
+app.get("/items/:id", (req, res) =&gt; {
+  const item = items.find(i =&gt; i.id === Number(req.params.id));
+  if (!item) return res.status(404).json({ error: "Not found" });
+  res.json(item);
+});
+
+// POST -- create a new item
+app.post("/items", (req, res) =&gt; {
+  const newItem = { id: Date.now(), ...req.body };
+  items.push(newItem);
+  res.status(201).json(newItem);
+});
+
+// PUT -- full replace
+app.put("/items/:id", (req, res) =&gt; {
+  const idx = items.findIndex(i =&gt; i.id === Number(req.params.id));
+  if (idx === -1) return res.status(404).json({ error: "Not found" });
+  items[idx] = { id: Number(req.params.id), ...req.body };
+  res.json(items[idx]);
+});
+
+// PATCH -- partial update
+app.patch("/items/:id", (req, res) =&gt; {
+  const item = items.find(i =&gt; i.id === Number(req.params.id));
+  if (!item) return res.status(404).json({ error: "Not found" });
+  Object.assign(item, req.body);
+  res.json(item);
+});
+
+// DELETE -- remove an item
+app.delete("/items/:id", (req, res) =&gt; {
+  const idx = items.findIndex(i =&gt; i.id === Number(req.params.id));
+  if (idx === -1) return res.status(404).json({ error: "Not found" });
+  const removed = items.splice(idx, 1)[0];
+  res.json(removed);
+});
+
+// Error handler -- must be last
+app.use((err, req, res, next) =&gt; {
+  console.error(err.message);
+  res.status(500).json({ error: "Internal server error" });
+});
+
+app.listen(3000, () =&gt; console.log("Running on port 3000"));</textarea>
+</div>
+<table class="content-table">
+<thead><tr><th>Method</th><th>Path</th><th>What it does</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><span class="method-badge method-get">GET</span></td><td><code>/items</code></td><td>Return all items</td><td>200</td></tr>
+<tr><td><span class="method-badge method-get">GET</span></td><td><code>/items/:id</code></td><td>Return one item or 404</td><td>200 / 404</td></tr>
+<tr><td><span class="method-badge method-post">POST</span></td><td><code>/items</code></td><td>Create a new item</td><td>201</td></tr>
+<tr><td><span class="method-badge method-put">PUT</span></td><td><code>/items/:id</code></td><td>Full replace</td><td>200 / 404</td></tr>
+<tr><td><span class="method-badge method-patch">PATCH</span></td><td><code>/items/:id</code></td><td>Partial update</td><td>200 / 404</td></tr>
+<tr><td><span class="method-badge method-delete">DELETE</span></td><td><code>/items/:id</code></td><td>Remove and return item</td><td>200 / 404</td></tr>
+</tbody>
+</table>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-prompt">$</span> npm install express cors</div>
+<div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-comment"># GET all / GET one</span></div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/items</div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/items/1</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-comment"># POST — create</span></div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X POST http://localhost:3000/items \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -H "Content-Type: application/json" \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -d '{"name": "Pen", "quantity": 10}'</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-comment"># PUT — full replace</span></div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X PUT http://localhost:3000/items/1 \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -H "Content-Type: application/json" \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -d '{"name": "Notebook Pro", "quantity": 5}'</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-comment"># PATCH — partial update</span></div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X PATCH http://localhost:3000/items/1 \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -H "Content-Type: application/json" \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -d '{"quantity": 99}'</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-comment"># DELETE</span></div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X DELETE http://localhost:3000/items/1</div>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 19 ═══════════════════════════════════ -->
+<div class="slide" data-slide="19">
+<h2>Practice: Build a Task Manager API</h2>
+<p>Using the inventory API as a reference, implement all six CRUD routes for a task list.</p>
+<div class="code-playground">
+<span class="playground-label">starter — fill in the TODOs</span>
+<div class="ide-toolbar">
+<div class="file-tab">📄 server.js</div>
+<div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="copy-practice-crud">Copy</button></div>
+</div>
+<div class="static-code" id="practice-crud" style="max-height: 1290px"><ol>
+<li>const express = require("express");</li>
+<li>const app = express();</li>
+<li>app.use(express.json());</li>
+<li> </li>
+<li>let tasks = [</li>
+<li>  { id: 1, title: "Read the docs", done: false },</li>
+<li>  { id: 2, title: "Write tests",   done: true  },</li>
+<li>];</li>
+<li> </li>
+<li>// TODO: GET /tasks -- return all tasks</li>
+<li> </li>
+<li>// TODO: GET /tasks/:id -- one task or 404</li>
+<li> </li>
+<li>// TODO: POST /tasks -- body: { title }; set done: false, id: Date.now()</li>
+<li> </li>
+<li>// TODO: PUT /tasks/:id -- fully replace the task body</li>
+<li> </li>
+<li>// TODO: PATCH /tasks/:id -- update only the fields provided</li>
+<li> </li>
+<li>// TODO: DELETE /tasks/:id -- remove and return the task</li>
+<li> </li>
+<li>app.listen(3000);</li>
+</ol></div>
+<textarea class="copy-source" id="copy-practice-crud">const express = require("express");
+const app = express();
+app.use(express.json());
+
+let tasks = [
+  { id: 1, title: "Read the docs", done: false },
+  { id: 2, title: "Write tests",   done: true  },
+];
+
+// TODO: GET /tasks -- return all tasks
+
+// TODO: GET /tasks/:id -- one task or 404
+
+// TODO: POST /tasks -- body: { title }; set done: false, id: Date.now()
+
+// TODO: PUT /tasks/:id -- fully replace the task body
+
+// TODO: PATCH /tasks/:id -- update only the fields provided
+
+// TODO: DELETE /tasks/:id -- remove and return the task
+
+app.listen(3000);</textarea>
+</div>
+<div class="comparison-grid">
+<div class="example-card">
+<h3>Status codes to use</h3>
+<ul>
+<li><code>200</code> — success (GET, PUT, PATCH, DELETE)</li>
+<li><code>201</code> — resource created (POST only)</li>
+<li><code>404</code> — task not found by id</li>
+</ul>
+</div>
+<div class="example-card">
+<h3>Things to think through</h3>
+<ul>
+<li>Which routes need <code>req.params.id</code>?</li>
+<li>How does PATCH differ from PUT in your implementation?</li>
+<li>What happens to <code>req.body</code> if you forget <code>express.json()</code>?</li>
+</ul>
+</div>
+</div>
+<div class="run-box">
+<div class="run-box-header">▶  RUN &amp; TEST</div>
+<div class="run-box-body">
+<div class="run-line"><span class="run-prompt">$</span> npm install express</div>
+<div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-comment"># once you fill in the TODOs:</span></div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/tasks</div>
+<div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/tasks/1</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X POST http://localhost:3000/tasks \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -H "Content-Type: application/json" \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -d '{"title": "Buy groceries"}'</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X PUT http://localhost:3000/tasks/1 \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -H "Content-Type: application/json" \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -d '{"title": "Read docs", "done": true}'</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X PATCH http://localhost:3000/tasks/1 \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -H "Content-Type: application/json" \</div>
+<div class="run-line"><span class="run-prompt">$</span>   -d '{"done": true}'</div>
+<div class="run-line"> </div>
+<div class="run-line"><span class="run-prompt">$</span> curl -X DELETE http://localhost:3000/tasks/1</div>
+</div>
+</div>
+</div>
+</div><!-- /presentation-container -->
+<div class="navigation">
+<button class="nav-button" id="prevBtn">Previous</button>
+<button class="nav-button" id="nextBtn">Next</button>
+</div>
+<script>
+    // ─── Syntax Highlighter ───────────────────────────────────────────────────
+    (function () {
+      const KEYWORDS = new Set([
+        'const','let','var','function','return','if','else','try','catch',
+        'throw','new','require','module','exports','true','false','null',
+        'undefined','async','await','class','extends','import','from',
+        'of','in','for','while','do','switch','case','break','default',
+        'typeof','instanceof'
+      ]);
+
+      const BUILTINS = new Set([
+        'req','res','app','router','err','express','console','Date','JSON',
+        'Math','Object','Array','Error','Number','String','Boolean',
+        'Promise','process'
+      ]);
+
+      function tokenize(text) {
+        const tokens = [];
+        let i = 0;
+        while (i < text.length) {
+          // Line comment
+          if (text[i] === '/' && text[i + 1] === '/') {
+            tokens.push({ type: 'comment', val: text.slice(i) });
+            break;
+          }
+          // Backtick string
+          if (text[i] === '`') {
+            let j = i + 1;
+            while (j < text.length && text[j] !== '`') {
+              if (text[j] === '\\') j++;
+              j++;
+            }
+            tokens.push({ type: 'string', val: text.slice(i, j + 1) });
+            i = j + 1;
+            continue;
+          }
+          // Single / double quoted string
+          if (text[i] === '"' || text[i] === "'") {
+            const q = text[i];
+            let j = i + 1;
+            while (j < text.length && text[j] !== q) {
+              if (text[j] === '\\') j++;
+              j++;
+            }
+            tokens.push({ type: 'string', val: text.slice(i, j + 1) });
+            i = j + 1;
+            continue;
+          }
+          // Identifier, keyword, or builtin
+          if (/[a-zA-Z_$]/.test(text[i])) {
+            let j = i;
+            while (j < text.length && /[a-zA-Z0-9_$]/.test(text[j])) j++;
+            const word = text.slice(i, j);
+            // peek past whitespace to see if followed by (
+            let k = j;
+            while (k < text.length && text[k] === ' ') k++;
+            const isCall = text[k] === '(';
+            if (KEYWORDS.has(word))       tokens.push({ type: 'keyword', val: word });
+            else if (BUILTINS.has(word))  tokens.push({ type: 'builtin', val: word });
+            else if (isCall)              tokens.push({ type: 'fn', val: word });
+            else                          tokens.push({ type: 'ident', val: word });
+            i = j;
+            continue;
+          }
+          // Number
+          if (/[0-9]/.test(text[i])) {
+            let j = i;
+            while (j < text.length && /[0-9.]/.test(text[j])) j++;
+            tokens.push({ type: 'num', val: text.slice(i, j) });
+            i = j;
+            continue;
+          }
+          tokens.push({ type: 'other', val: text[i] });
+          i++;
+        }
+        return tokens;
+      }
+
+      const COLORS = {
+        keyword : '#8B5CF6',  // violet
+        string  : '#B45309',  // amber
+        comment : '#9CA3AF',  // gray
+        num     : '#059669',  // emerald
+        fn      : '#2563EB',  // blue
+        builtin : '#0891B2',  // cyan
+      };
+
+      function esc(s) {
+        return s
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function renderTokens(tokens) {
+        return tokens.map(t => {
+          const color = COLORS[t.type];
+          const e = esc(t.val);
+          return color ? `<span style="color:${color}">${e}</span>` : e;
+        }).join('');
+      }
+
+      function highlight() {
+        document.querySelectorAll('.static-code li').forEach(li => {
+          const text = li.textContent;
+          if (text.trim() === '') return;
+          li.innerHTML = renderTokens(tokenize(text));
+        });
+      }
+
+      // Run after DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', highlight);
+      } else {
+        highlight();
+      }
+    })();
+
+    // ─── Slide Navigation ─────────────────────────────────────────────────────
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    let currentIndex = 0;
+
+    document.getElementById('totalSlides').textContent = slides.length;
+
+    function updateSlides() {
+      slides.forEach((slide, index) => slide.classList.toggle('active', index === currentIndex));
+      document.getElementById('currentSlide').textContent = currentIndex + 1;
+      document.getElementById('prevBtn').disabled = currentIndex === 0;
+      document.getElementById('nextBtn').disabled = currentIndex === slides.length - 1;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      if (currentIndex > 0) { currentIndex--; updateSlides(); }
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      if (currentIndex < slides.length - 1) { currentIndex++; updateSlides(); }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        if (currentIndex < slides.length - 1) { currentIndex++; updateSlides(); }
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        if (currentIndex > 0) { currentIndex--; updateSlides(); }
+      }
+    });
+
+    // ─── Copy buttons ─────────────────────────────────────────────────────────
+    const toast = document.getElementById('toast');
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1400);
+    }
+
+    document.querySelectorAll('[data-copy-source]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const text = document.getElementById(btn.getAttribute('data-copy-source')).value;
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast('Code copied');
+        } catch {
+          showToast('Copy failed');
+        }
+      });
+    });
+
+    updateSlides();
+  </script>
+</body>
+</html>
