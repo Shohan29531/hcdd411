@@ -414,12 +414,12 @@
         }
     </style>
 </head>
-<body>
+<body data-theme = "light">
 
     <div class="penn-state-badge">HCDD 411 <span class="interactive-label">Interactive</span></div>
     <button class="theme-toggle" onclick="toggleTheme()">
-        <span class="theme-icon">🌙</span>
-        <span class="theme-text">Light Mode</span>
+        <span class="theme-icon">☀️</span>
+        <span class="theme-text">Dark Mode</span>
     </button>
     <div class="slide-indicator">
         <span id="currentSlide">1</span> / <span id="totalSlides">3</span>
@@ -429,12 +429,12 @@
 
         <!-- Slide 1: Landing -->
         <div class="slide active" data-slide="1">
-            <h1>Interactive<br>Web Technologies</h1>
+            <h2>Distributed Object Computing</h2>
             <p class="subtitle">HCDD 411 · Penn State University · Md Touhidul Islam</p>
 
             <div class="tip-box">
-                <strong style="color: var(--success);">💡 These slides run code.</strong><br>
-                Every lecture is a self-contained HTML file. Students write and execute JavaScript, jQuery, and API calls directly inside the slides — no IDE, no switching tabs, no copy-paste. Hit the arrow to see a live example.
+                <strong style="color: var(--success);">💡 These slides can run code.</strong><br>
+                Every lecture is a self-contained HTML file. Students can write and execute JavaScript, jQuery, and API calls directly inside the slides — no IDE, no switching tabs, no copy-paste. Hit the arrow to see a live example.
             </div>
 
             <h3>Course Modules</h3>
@@ -454,15 +454,27 @@
                     <div class="module-link-desc">Objects, arrays, ES6 — map, filter, classes, arrow functions.</div>
                     <span class="module-badge">16 slides · 13 playgrounds</span>
                 </a>
+                <a class="module-link" href="javascript-syntax/js-practice.html">
+                    <div class="module-link-title">🧩 JavaScript Practice Problems</div>
+                    <span class="module-badge">20 Problems</span>
+                </a>
                 <a class="module-link" href="jquery/jquery.html">
                     <div class="module-link-title">💲 jQuery</div>
                     <div class="module-link-desc">Selectors, DOM manipulation, events, animations.</div>
                     <span class="module-badge">19 slides · 17 playgrounds</span>
                 </a>
+                <a class="module-link" href="jquery/jquery-practice.html">
+                    <div class="module-link-title">🧩 JQuery Practice Problems</div>
+                    <span class="module-badge">12 Problems</span>
+                </a>
                 <a class="module-link" href="API/api.html">
                     <div class="module-link-title">🔌 APIs & Async JS</div>
                     <div class="module-link-desc">AJAX, jQuery $.ajax, Fetch, Axios, async/await.</div>
                     <span class="module-badge">27 slides · 24 playgrounds</span>
+                </a>
+                <a class="module-link" href="API/api-practice.html">
+                    <div class="module-link-title">🧩 API Practice Problems</div>
+                    <span class="module-badge">20 Problems</span>
                 </a>
                 <a class="module-link" href="nodejs/build-backend-nodejs.html">
                     <div class="module-link-title">🖥️ Node.js Backend</div>
