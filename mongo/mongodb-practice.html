@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HCDD 411 - MongoDB Practice Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Outfit:wght@300;500;700;900&amp;display=swap" rel="stylesheet"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #3B7DD6;
+    --secondary: #5A6C7D;
+    --accent: #D4940C;
+    --code-bg: #F8F9FA;
+    --success: #059669;
+    --error: #DC2626;
+    --bg-gradient-start: #F0F4F8;
+    --bg-gradient-end: #E1E8ED;
+    --slide-bg: rgba(255, 255, 255, 0.95);
+    --border-color: rgba(59, 125, 214, 0.30);
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+  }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 140px 0 120px 0;
+  }
+
+  .presentation-container { width: 100%; min-height: 100vh; }
+
+  .slide {
+    width: 90%;
+    max-width: 1220px;
+    min-height: 520px;
+    background: var(--slide-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 48px 60px 56px 60px;
+    margin: 0 auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateX(100px);
+    transition: all 0.45s ease;
+    display: none;
+    border: 2px solid var(--border-color);
+  }
+
+  .slide.active { opacity: 1; transform: translateX(0); display: block; }
+
+  h1 {
+    font-weight: 900;
+    font-size: 4em;
+    color: var(--primary);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    line-height: 1.08;
+  }
+
+  h2 {
+    font-weight: 700;
+    font-size: 2.45em;
+    color: var(--accent);
+    margin-bottom: 24px;
+    letter-spacing: -1px;
+    line-height: 1.12;
+  }
+
+  h3 {
+    font-weight: 600;
+    font-size: 1.33em;
+    color: var(--primary);
+    margin: 0 0 12px 0;
+    line-height: 1.25;
+  }
+
+  p { font-size: 1.08em; line-height: 1.72; }
+  ul { margin: 18px 0 0 0; padding-left: 24px; }
+  li { margin: 12px 0; font-size: 1.06em; line-height: 1.62; }
+
+  code {
+    font-family: 'Space Mono', monospace;
+    background: rgba(59, 125, 214, 0.12);
+    padding: 2px 7px;
+    border-radius: 5px;
+    color: var(--primary);
+    font-size: 0.95em;
+  }
+
+  .info-box, .tip-box, .warning-box {
+    padding: 18px 20px;
+    margin: 18px 0 0 0;
+    border-radius: 12px;
+  }
+  .info-box    { background: rgba(212, 148, 12, 0.10);  border-left: 4px solid var(--accent); }
+  .tip-box     { background: rgba(5, 150, 105, 0.10);   border-left: 4px solid var(--success); }
+  .warning-box { background: rgba(220, 38, 38, 0.10);   border-left: 4px solid var(--error); }
+
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+    align-items: start;
+  }
+
+  .example-card {
+    background: rgba(255, 255, 255, 0.74);
+    border: 2px solid var(--border-color);
+    border-radius: 15px;
+    padding: 24px 24px 22px 24px;
+  }
+
+  .content-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 10px;
+    overflow: hidden;
+    border: 2px solid var(--border-color);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.82);
+  }
+
+  .content-table th, .content-table td {
+    padding: 11px 14px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(59, 125, 214, 0.18);
+    font-size: 0.97em;
+    line-height: 1.45;
+  }
+
+  .content-table th {
+    background: rgba(59, 125, 214, 0.12);
+    color: var(--primary);
+    font-weight: 800;
+  }
+
+  .content-table tr:last-child td { border-bottom: none; }
+
+  .navigation {
+    position: fixed;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 18px;
+    z-index: 1000;
+  }
+
+  .nav-button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px 34px;
+    border-radius: 50px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  .nav-button:hover { background: var(--secondary); transform: translateY(-2px); }
+  .nav-button:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  .slide-indicator {
+    position: fixed;
+    top: 40px;
+    right: 40px;
+    background: var(--primary);
+    padding: 15px 24px;
+    border-radius: 50px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 1em;
+    z-index: 1000;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  .penn-state-badge {
+    position: fixed;
+    top: 40px;
+    left: 40px;
+    font-weight: 900;
+    font-size: 1.2em;
+    color: var(--primary);
+    z-index: 1000;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .toast {
+    position: fixed;
+    top: 92px;
+    right: 40px;
+    background: rgba(5, 150, 105, 0.94);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: all 0.2s ease;
+    pointer-events: none;
+    z-index: 1100;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  .shell-box {
+    background: #0d1117;
+    border-radius: 12px;
+    margin: 12px 0 0 0;
+    border: 2px solid rgba(59, 125, 214, 0.22);
+    overflow: hidden;
+  }
+  .shell-box-header {
+    background: linear-gradient(90deg, #161b22, #0d1117);
+    padding: 7px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.79em;
+    color: #4b6a9b;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid rgba(59, 125, 214, 0.12);
+  }
+  .shell-box-body {
+    padding: 14px 18px 16px 18px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .shell-line {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85em;
+    color: #c9d1d9;
+    line-height: 1.72;
+    white-space: pre;
+    width: max-content;
+    min-width: 100%;
+    margin: 0;
+  }
+  .shell-prompt { color: #3fb950; font-weight: 700; }
+  .shell-out    { color: #79c0ff; }
+  .shell-comment { color: #484f58; }
+
+  .where-badge {
+    display: inline-block;
+    margin: 0 0 14px 0;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    background: rgba(59, 125, 214, 0.12);
+    color: var(--primary);
+    border: 1px solid rgba(59, 125, 214, 0.28);
+  }
+
+  .where-badge.answer-key {
+    background: rgba(5, 150, 105, 0.12);
+    color: #065F46;
+    border-color: rgba(5, 150, 105, 0.30);
+    font-size: 0.88em;
+    padding: 7px 16px;
+    margin-bottom: 18px;
+  }
+
+  .step-list {
+    margin-top: 14px;
+    padding-left: 22px;
+  }
+
+  .step-list li {
+    margin: 11px 0;
+    line-height: 1.55;
+    font-size: 1.06em;
+  }
+
+  .tight li { margin: 6px 0; }
+  .big-list li { font-size: 1.08em; }
+
+  .caption {
+    margin-top: 9px;
+    font-size: 0.91em;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* Timer badge shown at top of each problem slide */
+  .timer-badge {
+    display: inline-block;
+    background: rgba(212, 148, 12, 0.13);
+    color: #7C4A00;
+    border: 1px solid rgba(212, 148, 12, 0.30);
+    border-radius: 999px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82em;
+    font-weight: 700;
+    padding: 6px 16px;
+    margin-bottom: 18px;
+    letter-spacing: 0.2px;
+  }
+
+  /* Small label above h3 inside a card */
+  .problem-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.76em;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    margin-bottom: 8px;
+  }
+
+  /* Inline query label like Q1, Q2 */
+  .q-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82em;
+    font-weight: 700;
+    color: var(--primary);
+    background: rgba(59, 125, 214, 0.10);
+    border-radius: 6px;
+    padding: 2px 9px;
+    margin-right: 6px;
+  }
+
+  /* Small green box showing expected output */
+  .expected-box {
+    background: rgba(5, 150, 105, 0.07);
+    border: 1px solid rgba(5, 150, 105, 0.24);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    font-size: 0.93em;
+    line-height: 1.58;
+  }
+  .expected-box strong { color: var(--success); }
+
+  /* Answer-key slides get a green border tint */
+  .answer-slide { border-color: rgba(5, 150, 105, 0.38) !important; }
+
+  .answer-slide .comparison-grid {
+    grid-template-columns: 1fr;
+    gap: 26px;
+    margin-top: 20px;
+  }
+
+  .answer-slide .example-card + .example-card {
+    margin-top: 0;
+  }
+
+  .answer-slide .shell-box {
+    margin-top: 16px;
+  }
+
+  /* Discussion divider */
+  .divider-slide {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-color: rgba(5, 150, 105, 0.38) !important;
+    background: linear-gradient(140deg, rgba(5,150,105,0.05) 0%, rgba(255,255,255,0.97) 100%) !important;
+  }
+  .divider-slide h1 { color: var(--success); }
+
+  @media (max-width: 980px) {
+    body { padding-top: 120px; }
+    .slide { width: 94%; padding: 42px 28px 46px 28px; }
+    h1 { font-size: 3em; }
+    h2 { font-size: 2.1em; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .penn-state-badge { left: 20px; top: 20px; }
+    .slide-indicator { right: 20px; top: 20px; }
+    .navigation { bottom: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="penn-state-badge">HCDD 411</div>
+<div class="slide-indicator"><span id="currentSlide">1</span> / <span id="totalSlides">?</span></div>
+<div class="toast" id="toast">Copied</div>
+<div class="presentation-container">
+
+<!-- ═══════════════════════ SLIDE 1 — TITLE ═══════════════════════ -->
+<div class="slide active" data-slide="1">
+<h1>MONGODB PRACTICE</h1>
+<h2>Sunrise Café — Build It From Scratch</h2>
+</div>
+
+<!-- ═══════════════════════ SLIDE 2 — OVERVIEW ═══════════════════════ -->
+<div class="slide" data-slide="2">
+<h2>Four Problems — 30 Minutes</h2>
+<div class="comparison-grid">
+<div class="example-card">
+<div class="problem-number">Problem 1 — 5 min</div>
+<h3>Design</h3>
+<p>Read the scenario. Decide the database name, the collection names, and all field names and types. Write your answers in your notes first. Do not open mongosh yet.</p>
+</div>
+<div class="example-card">
+<div class="problem-number">Problem 2 — 7 min</div>
+<h3>Insert</h3>
+<p>Switch to your database in mongosh and insert all provided records exactly as given into the correct collections. Verify with <code>find()</code>.</p>
+</div>
+<div class="example-card">
+<div class="problem-number">Problem 3 — 10 min</div>
+<h3>Queries</h3>
+<p>Write five <code>find()</code> commands. The expected output is described for each one — your result must match it.</p>
+</div>
+<div class="example-card">
+<div class="problem-number">Problem 4 — 8 min</div>
+<h3>Update + Delete</h3>
+<p>Apply three updates and two deletes in order. A final document count is given after each step so you can verify.</p>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════════ SLIDE 3 — PROBLEM 1: DESIGN ═══════════════════════ -->
+<div class="slide" data-slide="3">
+<div class="timer-badge">⏱ Problem 1 — ~5 minutes</div>
+<h2>Problem 1 — Design Your Database</h2>
+
+<div class="example-card">
+<h3>The Scenario</h3>
+<p>
+<strong>Sunrise Café</strong> is a small campus coffee shop. They want to move their record-keeping into MongoDB. Here is exactly what they need to store.
+</p>
+<ul style="margin-top:14px;">
+<li><strong>Every item on the menu</strong> has a name, a category (either <code>"drink"</code> or <code>"food"</code>), a price in dollars, and a flag that says whether the item is currently available for ordering.</li>
+<li><strong>Every order placed by a customer</strong> records the customer's name, the name of the item they ordered, how many of that item they took, the total dollar amount charged for the order, and whether the customer has already paid.</li>
+</ul>
+</div>
+
+<div class="example-card" style="margin-top:18px;">
+<h3>Answer these three questions in your notes</h3>
+<ol class="step-list">
+<li>What will you name the database?</li>
+<li>How many collections do you need, and what will you name each one?</li>
+<li>For each collection, list every field name and its type — <code>String</code>, <code>Number</code>, or <code>Boolean</code>.</li>
+</ol>
+</div>
+
+<div class="info-box" style="margin-top:18px;">
+<strong>Hint:</strong> there should be exactly two collections. Ask yourself: should the menu know anything about orders, or should they be stored separately? Keep the two concerns apart.
+</div>
+</div>
+
+<!-- ═══════════════════════ SLIDE 4 — PROBLEM 2: INSERT ═══════════════════════ -->
+<div class="slide" data-slide="4">
+<div class="timer-badge">⏱ Problem 2 — ~7 minutes</div>
+<h2>Problem 2 — Insert the Data</h2>
+<div class="where-badge">Run in: mongosh</div>
+
+<p style="margin-bottom:16px;">Switch to your database, then use <code>insertMany()</code> to insert all records below. Menu items go into your menu collection. Orders go into your orders collection. Field order inside each document does not matter — the field names and values do.</p>
+
+<div class="comparison-grid">
+<div class="example-card">
+<h3>Menu items — insert all 6</h3>
+<table class="content-table">
+<thead>
+<tr><th>name</th><th>category</th><th>price</th><th>available</th></tr>
+</thead>
+<tbody>
+<tr><td>Espresso</td><td>drink</td><td>2.50</td><td>true</td></tr>
+<tr><td>Latte</td><td>drink</td><td>4.00</td><td>true</td></tr>
+<tr><td>Green Tea</td><td>drink</td><td>3.00</td><td>false</td></tr>
+<tr><td>Muffin</td><td>food</td><td>2.75</td><td>true</td></tr>
+<tr><td>Bagel</td><td>food</td><td>3.50</td><td>true</td></tr>
+<tr><td>Croissant</td><td>food</td><td>3.25</td><td>false</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="example-card">
+<h3>Orders — insert all 5</h3>
+<table class="content-table">
+<thead>
+<tr><th>customer</th><th>item</th><th>quantity</th><th>total</th><th>paid</th></tr>
+</thead>
+<tbody>
+<tr><td>Alice</td><td>Latte</td><td>2</td><td>8.00</td><td>true</td></tr>
+<tr><td>Bob</td><td>Espresso</td><td>1</td><td>2.50</td><td>false</td></tr>
+<tr><td>Carol</td><td>Muffin</td><td>3</td><td>8.25</td><td>true</td></tr>
+<tr><td>David</td><td>Bagel</td><td>2</td><td>7.00</td><td>false</td></tr>
+<tr><td>Eve</td><td>Latte</td><td>1</td><td>4.00</td><td>true</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="tip-box" style="margin-top:16px;">
+After each <code>insertMany()</code>, run <code>find()</code> on that collection to confirm the count. You should see 6 menu items and 5 orders.
+</div>
+</div>
+
+<!-- ═══════════════════════ SLIDE 5 — PROBLEM 3: QUERIES ═══════════════════════ -->
+<div class="slide" data-slide="5">
+<div class="timer-badge">⏱ Problem 3 — ~10 minutes</div>
+<h2>Problem 3 — Write Five Queries</h2>
+<div class="where-badge">Run in: mongosh</div>
+
+<p style="margin-bottom:16px;">Write one <code>find()</code> command for each task below. The expected result is described under each one — your output must match it exactly.</p>
+
+<div class="comparison-grid">
+<div class="example-card">
+
+<h3><span class="q-label">Q1</span> Find all menu items in the "drink" category.</h3>
+<div class="expected-box"><strong>Expected:</strong> 3 documents — Espresso, Latte, Green Tea.</div>
+
+<h3 style="margin-top:20px;"><span class="q-label">Q2</span> Find menu items where the price is strictly greater than $3.00.</h3>
+<div class="expected-box"><strong>Expected:</strong> 3 documents — Latte ($4.00), Bagel ($3.50), Croissant ($3.25). Green Tea ($3.00) should not appear.</div>
+
+<h3 style="margin-top:20px;"><span class="q-label">Q3</span> Find menu items that are <em>food</em> and are <em>currently available</em>.</h3>
+<div class="expected-box"><strong>Expected:</strong> 2 documents — Muffin, Bagel. Croissant is food but unavailable, so it must not appear.</div>
+
+</div>
+<div class="example-card">
+
+<h3><span class="q-label">Q4</span> Find orders where the total is $7.00 or more. Show only <code>customer</code> and <code>total</code> — hide <code>_id</code>. Sort by total from highest to lowest.</h3>
+<div class="expected-box">
+<strong>Expected — in this exact order:</strong><br>
+{ customer: "Carol", total: 8.25 }<br>
+{ customer: "Alice", total: 8.00 }<br>
+{ customer: "David", total: 7.00 }
+</div>
+
+<h3 style="margin-top:20px;"><span class="q-label">Q5</span> Find orders placed by Alice or Eve.</h3>
+<div class="expected-box"><strong>Expected:</strong> 2 documents — Alice's order and Eve's order. No other customers should appear.</div>
+
+</div>
+</div>
+
+<div class="info-box" style="margin-top:16px;">
+<strong>Operators needed across these five queries:</strong> a comparison operator for Q2 &nbsp;·&nbsp; two conditions matched at once for Q3 &nbsp;·&nbsp; projection and sort chained together for Q4 &nbsp;·&nbsp; match against a list of values for Q5.
+</div>
+</div>
+
+<!-- ═══════════════════════ SLIDE 6 — PROBLEM 4: UPDATE + DELETE ═══════════════════════ -->
+<div class="slide" data-slide="6">
+<div class="timer-badge">⏱ Problem 4 — ~8 minutes</div>
+<h2>Problem 4 — Update and Delete</h2>
+<div class="where-badge">Run in: mongosh</div>
+
+<div class="comparison-grid">
+<div class="example-card">
+<h3>Updates — run U1, U2, U3 in order</h3>
+<ul>
+<li style="margin-bottom:14px;"><strong>U1.</strong> The café raised the price of Espresso to $3.00. Write a command that updates only that one menu document.
+<br><span class="caption">Verify: <code>db.menu.findOne({ name: "Espresso" })</code> should show <code>price: 3</code>.</span></li>
+
+<li style="margin-bottom:14px;"><strong>U2.</strong> Two items that were unavailable are back in stock. Write a single command that marks <em>all</em> currently unavailable menu items as available.
+<br><span class="caption">Verify: <code>db.menu.find()</code> should show <code>available: true</code> on all 6 documents.</span></li>
+
+<li><strong>U3.</strong> Bob just paid his bill. Update only his order to mark it as paid.
+<br><span class="caption">Verify: Bob's document should have <code>paid: true</code>.</span></li>
+</ul>
+</div>
+
+<div class="example-card">
+<h3>Deletes — run D1 first, then D2</h3>
+<ul>
+<li style="margin-bottom:14px;"><strong>D1.</strong> Carol's order was cancelled. Remove only her order from the orders collection.
+<br><span class="caption">Verify: <code>db.orders.find()</code> should return <strong>4 documents</strong>.</span></li>
+
+<li><strong>D2.</strong> Remove all orders that are still unpaid.
+<br><span class="caption">Verify: <code>db.orders.find()</code> should return <strong>3 documents</strong>.</span></li>
+</ul>
+
+<div class="info-box" style="margin-top:18px; font-size:0.94em;">
+<strong>Think before writing D2:</strong> which customers are still unpaid at this point? Remember — U3 and D1 have already run. Work through the state of the collection before you type.
+</div>
+</div>
+</div>
+
+<div class="tip-box" style="margin-top:16px;">
+After each command, run <code>find()</code> on the relevant collection to confirm the result before moving to the next step.
+</div>
+</div>
+
+<!-- ═══════════════════════ SLIDE 7 — DISCUSSION DIVIDER ═══════════════════════ -->
+<div class="slide divider-slide" data-slide="7">
+<h1 style="font-size:3em; color:var(--success);">— DISCUSSION —</h1>
+<h2 style="margin-top:16px; color:var(--success);">Answer Key</h2>
+</div>
+
+<!-- ═══════════════════════ SLIDE 8 — ANSWER 1: DESIGN ═══════════════════════ -->
+<div class="slide answer-slide" data-slide="8">
+<div class="where-badge answer-key">✓ ANSWER KEY — Problem 1: Design</div>
+<h2>Answer 1 — Database Design</h2>
+
+<div class="comparison-grid">
+<div class="example-card">
+<h3>Database name + switch</h3>
+<div class="shell-box">
+<div class="shell-box-header">▷ SWITCH TO YOUR DATABASE</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> use cafe</div>
+<div class="shell-line"><span class="shell-out">switched to db cafe</span></div>
+</div>
+</div>
+<p style="margin-top:14px;">Any sensible name works — <code>cafe</code>, <code>sunrise</code>, <code>coffeeshop</code>. What matters is that you use it consistently for the rest of the problems.</p>
+
+<div class="warning-box" style="margin-top:16px; font-size:0.93em;">
+<strong>Common mistake:</strong> using a different database name in Problems 2, 3, and 4 than the one chosen here means your collections are empty. Always run <code>db</code> to confirm which database you are in.
+</div>
+</div>
+
+<div class="example-card">
+<h3>Two collections — field names and types</h3>
+<table class="content-table">
+<thead><tr><th>Collection</th><th>Field</th><th>Type</th></tr></thead>
+<tbody>
+<tr><td rowspan="4"><code>menu</code></td><td>name</td><td>String</td></tr>
+<tr><td>category</td><td>String</td></tr>
+<tr><td>price</td><td>Number</td></tr>
+<tr><td>available</td><td>Boolean</td></tr>
+<tr><td rowspan="5"><code>orders</code></td><td>customer</td><td>String</td></tr>
+<tr><td>item</td><td>String</td></tr>
+<tr><td>quantity</td><td>Number</td></tr>
+<tr><td>total</td><td>Number</td></tr>
+<tr><td>paid</td><td>Boolean</td></tr>
+</tbody>
+</table>
+
+<div class="tip-box" style="margin-top:16px; font-size:0.93em;">
+<strong>Discussion point:</strong> embedding orders inside menu documents would mean rewriting a menu item every time a customer places an order. Separate collections keep each concern independent and make queries on either side much simpler.
+</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════════ SLIDE 9 — ANSWER 2: INSERT ═══════════════════════ -->
+<div class="slide answer-slide" data-slide="9">
+<div class="where-badge answer-key">✓ ANSWER KEY — Problem 2: Insert</div>
+<h2>Answer 2 — Insert Commands</h2>
+<div class="where-badge">Run in: mongosh</div>
+
+<div class="comparison-grid">
+<div class="example-card">
+<h3>Insert all 6 menu items</h3>
+<div class="shell-box">
+<div class="shell-box-header">▷ db.menu.insertMany( [ ... ] )</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.menu.insertMany([</div>
+<div class="shell-line">  { name: "Espresso",   category: "drink", price: 2.50, available: true  },</div>
+<div class="shell-line">  { name: "Latte",      category: "drink", price: 4.00, available: true  },</div>
+<div class="shell-line">  { name: "Green Tea",  category: "drink", price: 3.00, available: false },</div>
+<div class="shell-line">  { name: "Muffin",    category: "food",  price: 2.75, available: true  },</div>
+<div class="shell-line">  { name: "Bagel",     category: "food",  price: 3.50, available: true  },</div>
+<div class="shell-line">  { name: "Croissant", category: "food",  price: 3.25, available: false }</div>
+<div class="shell-line">])</div>
+</div>
+</div>
+<div class="expected-box" style="margin-top:10px;"><strong>Verify:</strong> <code>db.menu.find()</code> returns 6 documents.</div>
+</div>
+
+<div class="example-card">
+<h3>Insert all 5 orders</h3>
+<div class="shell-box">
+<div class="shell-box-header">▷ db.orders.insertMany( [ ... ] )</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.orders.insertMany([</div>
+<div class="shell-line">  { customer: "Alice", item: "Latte",    quantity: 2, total: 8.00, paid: true  },</div>
+<div class="shell-line">  { customer: "Bob",   item: "Espresso", quantity: 1, total: 2.50, paid: false },</div>
+<div class="shell-line">  { customer: "Carol", item: "Muffin",   quantity: 3, total: 8.25, paid: true  },</div>
+<div class="shell-line">  { customer: "David", item: "Bagel",    quantity: 2, total: 7.00, paid: false },</div>
+<div class="shell-line">  { customer: "Eve",   item: "Latte",    quantity: 1, total: 4.00, paid: true  }</div>
+<div class="shell-line">])</div>
+</div>
+</div>
+<div class="expected-box" style="margin-top:10px;"><strong>Verify:</strong> <code>db.orders.find()</code> returns 5 documents.</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════════ SLIDE 10 — ANSWER 3A: Q1–Q3 ═══════════════════════ -->
+<div class="slide answer-slide" data-slide="10">
+<div class="where-badge answer-key">✓ ANSWER KEY — Problem 3: Queries Q1–Q3</div>
+<h2>Answer 3A — Queries</h2>
+<div class="where-badge">Run in: mongosh</div>
+
+<div class="comparison-grid">
+<div class="example-card">
+
+<h3><span class="q-label">Q1</span> All drinks</h3>
+<div class="shell-box">
+<div class="shell-box-header">▷ COMMAND</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.menu.find({ category: "drink" })</div>
+</div>
+</div>
+<div class="expected-box" style="margin-top:8px;"><strong>Returns:</strong> Espresso, Latte, Green Tea</div>
+<p class="caption">A plain field-value match — no operator needed.</p>
+
+<h3 style="margin-top:20px;"><span class="q-label">Q2</span> Price strictly greater than $3</h3>
+<div class="shell-box">
+<div class="shell-box-header">▷ COMMAND</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.menu.find({ price: { $gt: 3 } })</div>
+</div>
+</div>
+<div class="expected-box" style="margin-top:8px;"><strong>Returns:</strong> Latte (4.00), Bagel (3.50), Croissant (3.25). Green Tea (3.00) is excluded — <code>$gt</code> means strictly greater, not equal.</div>
+
+</div>
+<div class="example-card">
+
+<h3><span class="q-label">Q3</span> Food items that are currently available</h3>
+<div class="shell-box">
+<div class="shell-box-header">▷ COMMAND</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.menu.find({ category: "food", available: true })</div>
+</div>
+</div>
+<div class="expected-box" style="margin-top:8px;"><strong>Returns:</strong> Muffin, Bagel. Croissant is food but has <code>available: false</code>, so it is excluded.</div>
+<p class="caption">Two fields in one filter object is an implicit AND. You do not need <code>$and</code> here — it is the shorter idiomatic form.</p>
+
+<div class="info-box" style="margin-top:16px; font-size:0.93em;">
+<strong>If you used $and for Q3, it also works:</strong><br>
+<code>db.menu.find({ $and: [{ category: "food" }, { available: true }] })</code><br>
+Both forms produce identical results. Prefer the shorter form when matching plain values on the same document.
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════════ SLIDE 11 — ANSWER 3B: Q4–Q5 ═══════════════════════ -->
+<div class="slide answer-slide" data-slide="11">
+<div class="where-badge answer-key">✓ ANSWER KEY — Problem 3: Queries Q4–Q5</div>
+<h2>Answer 3B — Queries</h2>
+<div class="where-badge">Run in: mongosh</div>
+
+<div class="comparison-grid">
+<div class="example-card">
+
+<h3><span class="q-label">Q4</span> Orders ≥ $7 · projection · sort descending</h3>
+<div class="shell-box">
+<div class="shell-box-header">▷ COMMAND</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.orders.find(</div>
+<div class="shell-line">  { total: { $gte: 7 } },</div>
+<div class="shell-line">  { customer: 1, total: 1, _id: 0 }</div>
+<div class="shell-line">).sort({ total: -1 })</div>
+</div>
+</div>
+<div class="expected-box" style="margin-top:8px;">
+<strong>Returns in this order:</strong><br>
+{ customer: "Carol", total: 8.25 }<br>
+{ customer: "Alice", total: 8.00 }<br>
+{ customer: "David", total: 7.00 }
+</div>
+<p class="caption"><code>$gte: 7</code> includes 7.00. The second argument to <code>find()</code> is the projection — <code>_id: 0</code> explicitly hides the id field. <code>sort({ total: -1 })</code> means highest first.</p>
+
+</div>
+<div class="example-card">
+
+<h3><span class="q-label">Q5</span> Orders placed by Alice or Eve</h3>
+<div class="shell-box">
+<div class="shell-box-header">▷ COMMAND</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.orders.find({ customer: { $in: ["Alice", "Eve"] } })</div>
+</div>
+</div>
+<div class="expected-box" style="margin-top:8px;"><strong>Returns:</strong> Alice's order and Eve's order — 2 documents.</div>
+<p class="caption"><code>$in</code> matches any document where the field value appears anywhere in the given array.</p>
+
+<div class="info-box" style="margin-top:16px; font-size:0.93em;">
+<strong>Alternative that also works:</strong><br>
+<code>db.orders.find({ $or: [{ customer: "Alice" }, { customer: "Eve" }] })</code><br>
+Both are correct. Use <code>$in</code> when you are checking the same field against multiple values — it is shorter and easier to read.
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════════ SLIDE 12 — ANSWER 4: UPDATE + DELETE ═══════════════════════ -->
+<div class="slide answer-slide" data-slide="12">
+<div class="where-badge answer-key">✓ ANSWER KEY — Problem 4: Update + Delete</div>
+<h2>Answer 4 — Update and Delete</h2>
+<div class="where-badge">Run in: mongosh</div>
+
+<div class="comparison-grid">
+<div class="example-card">
+<h3>Updates</h3>
+<div class="shell-box">
+<div class="shell-box-header">▷ U1 — RAISE ESPRESSO PRICE</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.menu.updateOne(</div>
+<div class="shell-line">  { name: "Espresso" },</div>
+<div class="shell-line">  { $set: { price: 3.00 } }</div>
+<div class="shell-line">)</div>
+</div>
+</div>
+<div class="shell-box">
+<div class="shell-box-header">▷ U2 — RESTOCK ALL UNAVAILABLE ITEMS</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.menu.updateMany(</div>
+<div class="shell-line">  { available: false },</div>
+<div class="shell-line">  { $set: { available: true } }</div>
+<div class="shell-line">)</div>
+<div class="shell-line"><span class="shell-comment"># Matches Green Tea and Croissant — both become available: true</span></div>
+</div>
+</div>
+<div class="shell-box">
+<div class="shell-box-header">▷ U3 — MARK BOB AS PAID</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.orders.updateOne(</div>
+<div class="shell-line">  { customer: "Bob" },</div>
+<div class="shell-line">  { $set: { paid: true } }</div>
+<div class="shell-line">)</div>
+</div>
+</div>
+</div>
+
+<div class="example-card">
+<h3>Deletes</h3>
+<div class="shell-box">
+<div class="shell-box-header">▷ D1 — REMOVE CAROL'S ORDER</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.orders.deleteOne({ customer: "Carol" })</div>
+<div class="shell-line"><span class="shell-comment"># 4 orders remain: Alice, Bob, David, Eve</span></div>
+</div>
+</div>
+<div class="shell-box" style="margin-top:12px;">
+<div class="shell-box-header">▷ D2 — REMOVE ALL UNPAID ORDERS</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.orders.deleteMany({ paid: false })</div>
+<div class="shell-line"><span class="shell-comment"># At this point: Bob is paid (U3), Carol is gone (D1)</span></div>
+<div class="shell-line"><span class="shell-comment"># Only David is still unpaid — he is removed</span></div>
+<div class="shell-line"><span class="shell-comment"># 3 orders remain: Alice, Bob, Eve</span></div>
+</div>
+</div>
+
+<div class="info-box" style="margin-top:16px; font-size:0.93em;">
+<strong>Key insight for D2:</strong> running commands in sequence changes the state of the collection. U3 made Bob paid before D2 ran, so Bob survives the delete. Students who said only 2 documents remain likely forgot U3.
+</div>
+</div>
+</div>
+</div>
+
+</div><!-- end presentation-container -->
+
+<div class="navigation">
+<button class="nav-button" id="prevBtn">Previous</button>
+<button class="nav-button" id="nextBtn">Next</button>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let currentIndex = 0;
+
+  document.getElementById('totalSlides').textContent = slides.length;
+
+  function updateSlides() {
+    slides.forEach((slide, index) => slide.classList.toggle('active', index === currentIndex));
+    document.getElementById('currentSlide').textContent = currentIndex + 1;
+    document.getElementById('prevBtn').disabled = currentIndex === 0;
+    document.getElementById('nextBtn').disabled = currentIndex === slides.length - 1;
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    if (currentIndex > 0) { currentIndex--; updateSlides(); }
+  });
+
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if (currentIndex < slides.length - 1) { currentIndex++; updateSlides(); }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+      e.preventDefault();
+      if (currentIndex < slides.length - 1) { currentIndex++; updateSlides(); }
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      if (currentIndex > 0) { currentIndex--; updateSlides(); }
+    }
+  });
+</script>
+</body>
+</html>

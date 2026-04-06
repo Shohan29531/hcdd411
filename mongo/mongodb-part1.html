@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HCDD 411 - MongoDB Part 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Outfit:wght@300;500;700;900&amp;display=swap" rel="stylesheet"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #3B7DD6;
+    --secondary: #5A6C7D;
+    --accent: #D4940C;
+    --code-bg: #F8F9FA;
+    --success: #059669;
+    --error: #DC2626;
+    --bg-gradient-start: #F0F4F8;
+    --bg-gradient-end: #E1E8ED;
+    --slide-bg: rgba(255, 255, 255, 0.95);
+    --border-color: rgba(59, 125, 214, 0.30);
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+  }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 140px 0 120px 0;
+  }
+
+  .presentation-container { width: 100%; min-height: 100vh; }
+
+  .slide {
+    width: 90%;
+    max-width: 1220px;
+    min-height: 520px;
+    background: var(--slide-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 56px 60px 52px 60px;
+    margin: 0 auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateX(100px);
+    transition: all 0.45s ease;
+    display: none;
+    border: 2px solid var(--border-color);
+  }
+
+  .slide.active { opacity: 1; transform: translateX(0); display: block; }
+
+  h1 {
+    font-weight: 900;
+    font-size: 4em;
+    color: var(--primary);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    line-height: 1.08;
+  }
+
+  h2 {
+    font-weight: 700;
+    font-size: 2.45em;
+    color: var(--accent);
+    margin-bottom: 24px;
+    letter-spacing: -1px;
+    line-height: 1.12;
+  }
+
+  h3 {
+    font-weight: 600;
+    font-size: 1.33em;
+    color: var(--primary);
+    margin: 0 0 12px 0;
+    line-height: 1.25;
+  }
+
+  p { font-size: 1.08em; line-height: 1.62; }
+  ul { margin: 16px 0 0 0; padding-left: 24px; }
+  li { margin: 9px 0; font-size: 1.06em; line-height: 1.55; }
+
+  .subtitle {
+    font-size: 1.28em;
+    color: var(--text-secondary);
+    margin-bottom: 34px;
+    font-weight: 300;
+  }
+
+  code {
+    font-family: 'Space Mono', monospace;
+    background: rgba(59, 125, 214, 0.12);
+    padding: 2px 7px;
+    border-radius: 5px;
+    color: var(--primary);
+    font-size: 0.95em;
+  }
+
+  .info-box, .tip-box, .warning-box {
+    padding: 18px 20px;
+    margin: 18px 0 0 0;
+    border-radius: 12px;
+  }
+  .info-box  { background: rgba(212, 148, 12, 0.10);  border-left: 4px solid var(--accent); }
+  .tip-box   { background: rgba(5, 150, 105, 0.10);   border-left: 4px solid var(--success); }
+  .warning-box { background: rgba(220, 38, 38, 0.10); border-left: 4px solid var(--error); }
+
+  .example-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 18px;
+    margin-top: 18px;
+  }
+
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 18px;
+    align-items: start;
+  }
+
+  .comparison-grid.three-col { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  .example-card {
+    background: rgba(255, 255, 255, 0.74);
+    border: 2px solid var(--border-color);
+    border-radius: 15px;
+    padding: 18px 18px 16px 18px;
+  }
+
+  .compact-card p, .compact-card li { font-size: 1em; }
+
+  .code-playground {
+    background: var(--code-bg);
+    border-radius: 15px;
+    padding: 22px;
+    margin: 22px 0 0 0;
+    border: 2px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .code-playground::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 30px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 15px 15px 0 0;
+  }
+
+  .playground-label {
+    position: absolute;
+    top: 5px; left: 18px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.84em;
+    color: white;
+    font-weight: 700;
+    z-index: 1;
+    letter-spacing: 0.2px;
+  }
+
+  .ide-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px 10px 0 0;
+    margin-top: 15px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .file-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--primary);
+    color: white;
+    border-radius: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8em;
+    font-weight: 600;
+  }
+
+  .toolbar-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  .toolbar-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    color: var(--text-secondary);
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: all 0.2s ease;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+  }
+
+  .toolbar-btn:hover { background: rgba(0, 0, 0, 0.10); color: var(--text-primary); }
+
+  .static-code {
+    border: 2px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    overflow: auto;
+    background: linear-gradient(90deg, rgba(59, 125, 214, 0.08) 0 58px, #ffffff 58px 100%);
+    max-height: 430px;
+  }
+
+  .static-code ol {
+    margin: 0;
+    padding: 16px 18px 16px 58px;
+    list-style: decimal;
+    list-style-position: outside;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.92em;
+    line-height: 1.65;
+    color: #111827;
+  }
+
+  .static-code li {
+    margin: 0;
+    padding: 0 12px 0 16px;
+    white-space: pre;
+    border-left: 1px solid rgba(59, 125, 214, 0.25);
+    font-size: 1em;
+  }
+
+  .static-code ol li::marker {
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .copy-source { display: none; }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  .wide-flow .flow-box { min-width: 150px; }
+
+  .flow-box {
+    background: rgba(59, 125, 214, 0.12);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .flow-arrow { font-size: 1.6em; color: var(--primary); font-weight: 900; }
+
+  .content-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 18px;
+    overflow: hidden;
+    border: 2px solid var(--border-color);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.82);
+  }
+
+  .content-table th, .content-table td {
+    padding: 14px 16px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(59, 125, 214, 0.18);
+    font-size: 1em;
+    line-height: 1.45;
+  }
+
+  .content-table th {
+    background: rgba(59, 125, 214, 0.12);
+    color: var(--primary);
+    font-weight: 800;
+  }
+
+  .content-table tr:last-child td { border-bottom: none; }
+
+  .navigation {
+    position: fixed;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 18px;
+    z-index: 1000;
+  }
+
+  .nav-button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px 34px;
+    border-radius: 50px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  .nav-button:hover { background: var(--secondary); transform: translateY(-2px); }
+  .nav-button:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  .slide-indicator {
+    position: fixed;
+    top: 40px;
+    right: 40px;
+    background: var(--primary);
+    padding: 15px 24px;
+    border-radius: 50px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 1em;
+    z-index: 1000;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  .penn-state-badge {
+    position: fixed;
+    top: 40px;
+    left: 40px;
+    font-weight: 900;
+    font-size: 1.2em;
+    color: var(--primary);
+    z-index: 1000;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .toast {
+    position: fixed;
+    top: 92px;
+    right: 40px;
+    background: rgba(5, 150, 105, 0.94);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: all 0.2s ease;
+    pointer-events: none;
+    z-index: 1100;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* Run & Test boxes */
+  .run-box {
+    background: #0d1117;
+    border-radius: 12px;
+    margin: 16px 0 0 0;
+    border: 2px solid rgba(59, 125, 214, 0.22);
+    overflow: hidden;
+  }
+  .run-box-header {
+    background: linear-gradient(90deg, #161b22, #0d1117);
+    padding: 7px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.79em;
+    color: #4b6a9b;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid rgba(59, 125, 214, 0.12);
+  }
+  .run-box-body { padding: 12px 18px 14px 18px; }
+  .run-line {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85em;
+    color: #c9d1d9;
+    line-height: 1.62;
+    white-space: pre;
+    margin: 0;
+  }
+  .run-comment { color: #484f58; }
+  .run-prompt  { color: #3fb950; font-weight: 700; }
+  .run-output  { color: #79c0ff; }
+  .run-note    { color: #d29922; }
+
+  /* Mongo shell prompt style */
+  .shell-box {
+    background: #0d1117;
+    border-radius: 12px;
+    margin: 16px 0 0 0;
+    border: 2px solid rgba(59, 125, 214, 0.22);
+    overflow: hidden;
+  }
+  .shell-box-header {
+    background: linear-gradient(90deg, #161b22, #0d1117);
+    padding: 7px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.79em;
+    color: #4b6a9b;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid rgba(59, 125, 214, 0.12);
+  }
+  .shell-box-body { padding: 12px 18px 14px 18px; }
+  .shell-line {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85em;
+    color: #c9d1d9;
+    line-height: 1.7;
+    white-space: pre;
+    margin: 0;
+  }
+  .shell-prompt { color: #3fb950; font-weight: 700; }
+  .shell-out    { color: #79c0ff; }
+  .shell-key    { color: #ff7b72; }
+  .shell-val    { color: #a5d6ff; }
+  .shell-comment { color: #484f58; }
+
+  /* Badge for SQL/NoSQL labels */
+  .db-badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78em;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-sql   { background: rgba(5, 150, 105, 0.15); color: #065F46; }
+  .badge-nosql { background: rgba(59, 125, 214, 0.15); color: #1E3A5F; }
+  .badge-mongo { background: rgba(212, 148, 12, 0.18); color: #7C4A00; }
+
+  @media (max-width: 980px) {
+    body { padding-top: 120px; }
+    .slide { width: 94%; padding: 48px 28px 42px 28px; }
+    h1 { font-size: 3em; }
+    h2 { font-size: 2.1em; }
+    .comparison-grid, .comparison-grid.three-col { grid-template-columns: 1fr; }
+    .penn-state-badge { left: 20px; top: 20px; }
+    .slide-indicator { right: 20px; top: 20px; }
+    .navigation { bottom: 20px; }
+  }
+
+  .where-badge {
+    display: inline-block;
+    margin: 0 0 12px 0;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    background: rgba(59, 125, 214, 0.12);
+    color: var(--primary);
+    border: 1px solid rgba(59, 125, 214, 0.28);
+  }
+
+  .where-badge.gui {
+    background: rgba(212, 148, 12, 0.12);
+    color: #7C4A00;
+    border-color: rgba(212, 148, 12, 0.28);
+  }
+
+  .where-badge.warn {
+    background: rgba(220, 38, 38, 0.10);
+    color: #991B1B;
+    border-color: rgba(220, 38, 38, 0.22);
+  }
+
+  .step-list {
+    margin-top: 14px;
+    padding-left: 20px;
+  }
+
+  .step-list li {
+    margin: 10px 0;
+    line-height: 1.55;
+  }
+
+  .check-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 18px;
+  }
+
+  .micro {
+    font-size: 0.92em !important;
+  }
+
+  .big-list li { font-size: 1.08em; }
+
+  .tight li { margin: 6px 0; }
+
+  .caption {
+    margin-top: 10px;
+    font-size: 0.92em;
+    color: var(--text-secondary);
+  }
+
+  .number-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: var(--primary);
+    color: white;
+    font-weight: 800;
+    margin-right: 8px;
+    font-size: 0.9em;
+  }
+
+  .mini-table td, .mini-table th {
+    padding: 10px 12px;
+    font-size: 0.96em;
+  }
+
+  @media (max-width: 980px) {
+    .check-grid { grid-template-columns: 1fr; }
+  }
+
+</style>
+</head>
+<body>
+<div class="penn-state-badge">HCDD 411</div>
+<div class="slide-indicator"><span id="currentSlide">1</span> / <span id="totalSlides">?</span></div>
+<div class="toast" id="toast">Code copied</div>
+<div class="presentation-container">
+<!-- ═══════════════════════════════════ SLIDE 1 ═══════════════════════════════════ -->
+<div class="slide active" data-slide="1">
+<h1>MONGODB PART 1</h1>
+<h2>Md Touhidul Islam</h2>
+<div class="info-box"><strong>Today:</strong><ul class="big-list"><li>Why we need databases in web apps</li><li>SQL vs NoSQL</li><li>When to choose SQL and when to choose NoSQL</li><li>Why MongoDB fits the Node.js + Express course stack</li><li>MongoDB core terms, documents, embedding, and referencing</li><li>Downloading, installing, and setting up MongoDB on macOS and Windows</li></ul></div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 2 ═══════════════════════════════════ -->
+<div class="slide" data-slide="2">
+<h2>Roadmap for This Lecture</h2>
+<div class="comparison-grid three-col">
+<div class="example-card">
+<h3>Part 1 — Big picture</h3>
+<ul class="tight">
+<li>What a database is</li>
+<li>Why arrays are not enough</li>
+<li>SQL vs NoSQL</li>
+</ul>
+</div>
+<div class="example-card">
+<h3>Part 2 — Setup</h3>
+<ul class="tight">
+<li>What to download</li>
+<li>macOS walkthrough</li>
+<li>Windows walkthrough</li>
+</ul>
+</div>
+<div class="example-card">
+<h3>Part 3 — Use it</h3>
+<ul class="tight">
+<li><code>mongosh</code> basics</li>
+<li>Collections and documents</li>
+<li>CRUD + operators</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 3 ═══════════════════════════════════ -->
+<!-- ═══════════════════════════════════ SLIDE 4 ═══════════════════════════════════ -->
+<div class="slide" data-slide="3">
+<h2>What Is a Database?</h2>
+<div class="example-card">
+<ul class="big-list">
+<li>A database is a system that stores data <strong>outside</strong> your application code.</li>
+<li>It lets your app <strong>save</strong> data, <strong>find</strong> data later, and <strong>update</strong> it safely.</li>
+<li>It keeps data available even after the server restarts.</li>
+<li>It gives you tools for search, filter, sort, and aggregation.</li>
+</ul>
+</div>
+<div class="info-box">
+<strong>Simple idea:</strong> your Express app handles requests; the database handles long-term storage.
+  </div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 5 ═══════════════════════════════════ -->
+<div class="slide" data-slide="4">
+<h2>If We Do Not Use a Database</h2>
+<div class="comparison-grid">
+<div class="example-card">
+<h3>Typical classroom demo</h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ JavaScript memory only</div>
+<div class="shell-box-body">
+<div class="shell-line">let tasks = [</div>
+<div class="shell-line">  { id: 1, title: "Buy milk" },</div>
+<div class="shell-line">  { id: 2, title: "Finish assignment" }</div>
+<div class="shell-line">];</div>
+</div>
+</div>
+</div>
+<div class="example-card">
+<h3>Problems</h3>
+<ul>
+<li>Server restarts → array disappears</li>
+<li>Crash → data disappears</li>
+<li>Multiple servers cannot reliably share the same array</li>
+<li>No built-in persistence or indexing</li>
+</ul>
+</div>
+</div>
+<div class="warning-box">
+<strong>Bottom line:</strong> in-memory data is fine for a tiny demo, not for a real application.
+  </div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 6 ═══════════════════════════════════ -->
+<div class="slide" data-slide="5">
+<h2>If We Use a Database</h2>
+<div class="comparison-grid">
+<div class="example-card">
+<h3>What improves</h3>
+<ul>
+<li>Data survives restarts</li>
+<li>Many requests can read/write safely</li>
+<li>Queries become fast and expressive</li>
+<li>Different app servers can use the same data store</li>
+</ul>
+</div>
+<div class="example-card">
+<h3>How the app looks</h3>
+<div class="flow-row wide-flow">
+<div class="flow-box">Browser</div>
+<div class="flow-arrow">→</div>
+<div class="flow-box">Express Route</div>
+<div class="flow-arrow">→</div>
+<div class="flow-box">MongoDB Driver</div>
+<div class="flow-arrow">→</div>
+<div class="flow-box">Database</div>
+</div>
+</div>
+</div>
+<div class="tip-box">
+<strong>Design idea:</strong> the app becomes more stateless; the database becomes the source of truth.
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════ SLIDE 7 ═══════════════════════════════════ -->
+<div class="slide" data-slide="6">
+  <h2>Two Big Database Families</h2>
+  <p class="intro-text">
+    Think of databases like different ways of organizing information.
+    One is like neat spreadsheets. The other is like storing complete info cards.
+  </p>
+
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3><span class="db-badge badge-sql">SQL</span> Like a spreadsheet with strict columns</h3>
+      <ul>
+        <li>Data is stored in <strong>tables</strong>, like Excel sheets</li>
+        <li>Each row is one item, like one student</li>
+        <li>Each column has a fixed meaning, like <code>name</code>, <code>major</code>, <code>age</code></li>
+        <li>Every row should follow the same structure</li>
+        <li>Different tables can connect to each other, like using student IDs</li>
+      </ul>
+
+      <div class="code-window">
+        <div class="code-header">Example table: students</div>
+        <pre><code>
+| id | name  | major | age |
+|----|-------|-------|-----|
+| 1  | Ava   | HCDD  | 20  |
+| 2  | Omar  | IST   | 21  |</code></pre>
+      </div>
+
+      <div class="caption">
+        Good when data is very organized and predictable.
+        Examples: PostgreSQL, MySQL, SQLite
+      </div>
+    </div>
+
+    <div class="example-card">
+      <h3><span class="db-badge badge-nosql">NoSQL</span> Like storing full profile cards</h3>
+      <ul>
+        <li>Data is often stored as <strong>documents</strong></li>
+        <li>Each document can hold all details for one item in one place</li>
+        <li>Not every document must look exactly the same</li>
+        <li>This is helpful when data has nested details or changes often</li>
+        <li>MongoDB stores data this way</li>
+      </ul>
+
+      <div class="code-window">
+        <div class="code-header">Example document: one student</div>
+        <pre><code>{
+  "name": "Ava",
+  "major": "HCDD",
+  "age": 20,
+  "courses": ["HCDD 340", "IST 256"],
+  "address": {
+    "city": "State College",
+    "state": "PA"
+  }
+}</code></pre>
+      </div>
+
+      <div class="caption">
+        Good when data is more flexible or has nested information.
+        Examples: MongoDB, Redis, Cassandra
+      </div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>Simple way to remember:</strong><br>
+    SQL = “Put everything into neat tables.”<br>
+    NoSQL = “Store each item as a complete flexible record.”
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════ SLIDE 8 ═══════════════════════════════════ -->
+<div class="slide" data-slide="7">
+<h2>SQL Example: Student Data in Tables</h2>
+<div class="comparison-grid">
+<div class="example-card">
+<h3>Tables</h3>
+<table class="content-table mini-table">
+<thead>
+<tr><th colspan="3">students</th></tr>
+<tr><th>id</th><th>name</th><th>major</th></tr>
+</thead>
+<tbody>
+<tr><td>101</td><td>Alice</td><td>HCDD</td></tr>
+<tr><td>102</td><td>Bob</td><td>IST</td></tr>
+<tr><td>103</td><td>Rina</td><td>CS</td></tr>
+</tbody>
+</table>
+<table class="content-table mini-table" style="margin-top:14px;">
+<thead>
+<tr><th colspan="2">enrollments</th></tr>
+<tr><th>student_id</th><th>course</th></tr>
+</thead>
+<tbody>
+<tr><td>101</td><td>HCDD 411</td></tr>
+<tr><td>101</td><td>IST 220</td></tr>
+<tr><td>102</td><td>IST 210</td></tr>
+<tr><td>103</td><td>CMPSC 132</td></tr>
+</tbody>
+</table>
+<div class="info-box micro" style="margin-top:12px;">
+        Notice the layout: <strong>columns</strong> are field names, and <strong>rows</strong> are records. That is the normal relational-table shape.
+      </div>
+</div>
+<div class="example-card">
+<h3><span class="where-badge">Run in: SQL database client</span></h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ Example 1: Find Alice's courses</div>
+<div class="shell-box-body">
+<div class="shell-line">SELECT s.name, e.course</div>
+<div class="shell-line">FROM students s</div>
+<div class="shell-line">JOIN enrollments e ON s.id = e.student_id</div>
+<div class="shell-line">WHERE s.id = 101;</div>
+</div>
+</div>
+<div class="shell-box" style="margin-top:12px;">
+<div class="shell-box-header">▷ Example 2: Find all HCDD students</div>
+<div class="shell-box-body">
+<div class="shell-line">SELECT id, name, major</div>
+<div class="shell-line">FROM students</div>
+<div class="shell-line">WHERE major = 'HCDD';</div>
+</div>
+</div>
+<div class="tip-box micro">
+        SQL is excellent when data has stable structure and you need joins, filters, and shared tables often.
+      </div>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 9 ═══════════════════════════════════ -->
+<div class="slide" data-slide="8">
+<h2>NoSQL Example: Same Student Data in MongoDB</h2>
+<div class="example-card" style="width:100%;">
+<h3>students collection</h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ Same data as slide 7, modeled as documents</div>
+<div class="shell-box-body">
+<div class="shell-line">{ "studentId": 101, "name": "Alice", "major": "HCDD", "courses": ["HCDD 411", "IST 220"] }</div>
+<div class="shell-line">{ "studentId": 102, "name": "Bob",   "major": "IST",  "courses": ["IST 210"] }</div>
+<div class="shell-line">{ "studentId": 103, "name": "Rina",  "major": "CS",   "courses": ["CMPSC 132"] }</div>
+</div>
+</div>
+<div class="info-box micro" style="margin-top:12px;">
+        This is the <strong>same underlying student data</strong> from slide 7. The difference is only the data model: MongoDB keeps each student's related course data together inside one document.
+      </div>
+</div>
+<div class="example-card" style="width:100%; margin-top:20px;">
+<h3><span class="where-badge">Run in: mongosh</span></h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ Example 1: Find Alice's courses</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.findOne(</div>
+<div class="shell-line">...   { studentId: 101 },</div>
+<div class="shell-line">...   { _id: 0, name: 1, courses: 1 }</div>
+<div class="shell-line">... )</div>
+</div>
+</div>
+<div class="shell-box" style="margin-top:12px;">
+<div class="shell-box-header">▷ Example 2: Find all HCDD students</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find(</div>
+<div class="shell-line">...   { major: "HCDD" },</div>
+<div class="shell-line">...   { _id: 0, studentId: 1, name: 1, major: 1 }</div>
+<div class="shell-line">... )</div>
+</div>
+</div>
+<div class="tip-box micro">
+        MongoDB is convenient when the data is naturally JSON-like and you often want related values, like a student's courses, in the same record.
+      </div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 10 ═══════════════════════════════════ -->
+<div class="slide" data-slide="9">
+<h2>When to Choose SQL</h2>
+<div class="example-card">
+<ul class="big-list">
+<li>Banking, payments, accounting, ledgers</li>
+<li>Inventory systems with strict constraints</li>
+<li>Applications with many joins across related tables</li>
+<li>When the schema is known and changes slowly</li>
+<li>When strong transactional guarantees are central to the system</li>
+</ul>
+</div>
+<div class="info-box">
+<strong>Typical classroom shortcut:</strong> “structured tables + stable relationships + lots of joins” usually points toward SQL.
+  </div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 11 ═══════════════════════════════════ -->
+<div class="slide" data-slide="10">
+<h2>When to Choose NoSQL</h2>
+<div class="example-card">
+<ul class="big-list">
+<li>User profiles with optional fields</li>
+<li>Product catalogs where products differ from one another</li>
+<li>CMS content, blog posts, comments, metadata</li>
+<li>Rapid prototyping where the schema changes often</li>
+<li>Data that already looks like JSON objects</li>
+</ul>
+</div>
+<div class="tip-box">
+<strong>Typical classroom shortcut:</strong> “flexible JSON-like documents + nested data + evolving schema” often points toward MongoDB.
+  </div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 12 ═══════════════════════════════════ -->
+<div class="slide" data-slide="11">
+<h2>Why MongoDB Fits This Course Stack</h2>
+<div class="comparison-grid three-col">
+<div class="example-card">
+<h3>JavaScript end-to-end</h3>
+<ul class="tight">
+<li>Request body arrives as JSON</li>
+<li>Express handles JavaScript objects</li>
+<li>MongoDB stores BSON documents</li>
+</ul>
+</div>
+<div class="example-card">
+<h3>Fast iteration</h3>
+<ul class="tight">
+<li>Add fields without redesigning many tables</li>
+<li>Great for project work and prototypes</li>
+<li>Natural fit for REST APIs</li>
+</ul>
+</div>
+<div class="example-card">
+<h3>Good tooling</h3>
+<ul class="tight">
+<li>Official <code>mongodb</code> Node driver</li>
+<li><code>mongoose</code> if you want schemas on top</li>
+<li>Compass for visual exploration</li>
+</ul>
+</div>
+</div>
+<div class="flow-row wide-flow" style="margin-top:26px;">
+<div class="flow-box">Client JSON</div>
+<div class="flow-arrow">→</div>
+<div class="flow-box">Express Object</div>
+<div class="flow-arrow">→</div>
+<div class="flow-box">BSON Document</div>
+</div>
+<div class="example-card" style="margin-top:20px;">
+<h3>Same data, three stages</h3>
+<p style="margin-top:8px;">The key idea is that the <strong>shape of the data stays almost the same</strong>. Only the environment changes: browser request, Express app, then MongoDB storage.</p>
+<div class="comparison-grid" style="margin-top:14px; grid-template-columns: repeat(3, minmax(0, 1fr));">
+<div>
+<h3 style="font-size:1.05em;">1) Client JSON</h3>
+<div class="shell-box" style="margin-top:8px;">
+<div class="shell-box-header">▷ Sent by browser / Postman</div>
+<div class="shell-box-body">
+<div class="shell-line">{</div>
+<div class="shell-line"> <span class="shell-key">"name"</span>: <span class="shell-val">"Alice"</span>,</div>
+<div class="shell-line"> <span class="shell-key">"major"</span>: <span class="shell-val">"HCDD"</span>,</div>
+<div class="shell-line"> <span class="shell-key">"year"</span>: <span class="shell-val">2</span></div>
+<div class="shell-line">}</div>
+</div>
+</div>
+</div>
+<div>
+<h3 style="font-size:1.05em;">2) Express Object</h3>
+<div class="shell-box" style="margin-top:8px;">
+<div class="shell-box-header">▷ In <code>req.body</code></div>
+<div class="shell-box-body">
+<div class="shell-line">{</div>
+<div class="shell-line">  name: <span class="shell-val">"Alice"</span>,</div>
+<div class="shell-line">  major: <span class="shell-val">"HCDD"</span>,</div>
+<div class="shell-line">  year: <span class="shell-val">2</span></div>
+<div class="shell-line">}</div>
+</div>
+</div>
+</div>
+<div>
+<h3 style="font-size:1.05em;">3) BSON Document</h3>
+<div class="shell-box" style="margin-top:8px;">
+<div class="shell-box-header">▷ Stored in MongoDB</div>
+<div class="shell-box-body">
+<div class="shell-line">{</div>
+<div class="shell-line"> <span class="shell-key">"_id"</span>: <span class="shell-val">ObjectId("...")</span>,</div>
+<div class="shell-line"> <span class="shell-key">"name"</span>: <span class="shell-val">"Alice"</span>,</div>
+<div class="shell-line"> <span class="shell-key">"major"</span>: <span class="shell-val">"HCDD"</span>,</div>
+<div class="shell-line"> <span class="shell-key">"year"</span>: <span class="shell-val">2</span></div>
+<div class="shell-line">}</div>
+</div>
+</div>
+</div>
+</div>
+<div class="tip-box" style="margin-top:14px;">
+<strong>Takeaway:</strong> frontend sends JSON → Express reads a JavaScript object → MongoDB stores nearly the same data as a BSON document, often with an added <code>_id</code>.
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 13 ═══════════════════════════════════ -->
+<div class="slide" data-slide="12">
+<h2>MongoDB Core Terms</h2>
+<div class="comparison-grid">
+<div>
+<table class="content-table">
+<thead>
+<tr><th>MongoDB</th><th>Closest SQL idea</th></tr>
+</thead>
+<tbody>
+<tr><td><code>database</code></td><td>database</td></tr>
+<tr><td><code>collection</code></td><td>table</td></tr>
+<tr><td><code>document</code></td><td>row</td></tr>
+<tr><td><code>field</code></td><td>column</td></tr>
+<tr><td><code>_id</code></td><td>primary key</td></tr>
+<tr><td><code>index</code></td><td>index</td></tr>
+</tbody>
+</table>
+</div>
+<div class="example-card">
+<h3>Important difference</h3>
+<ul>
+<li>A MongoDB document can contain arrays</li>
+<li>A MongoDB document can contain nested objects</li>
+<li>Documents in one collection can differ slightly in shape</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 14 ═══════════════════════════════════ -->
+<div class="slide" data-slide="13">
+<h2>What the Same Student Data Looks Like as One MongoDB Document</h2>
+<div class="example-card">
+<div class="shell-box">
+<div class="shell-box-header">▷ One document from the students collection</div>
+<div class="shell-box-body">
+<div class="shell-line">{</div>
+<div class="shell-line">  "_id": ObjectId("67e41fc..."),</div>
+<div class="shell-line">  "studentId": 101,</div>
+<div class="shell-line">  "name": "Alice",</div>
+<div class="shell-line">  "major": "HCDD",</div>
+<div class="shell-line">  "courses": ["HCDD 411", "IST 220"]</div>
+<div class="shell-line">}</div>
+</div>
+</div>
+<div class="info-box micro" style="margin-top:12px;">
+      This is the MongoDB version of the Alice rows from slide 7: one row from <code>students</code> plus Alice's matching rows from <code>enrollments</code>, combined into one document.
+    </div>
+</div>
+<div class="comparison-grid" style="margin-top:18px;">
+<div class="example-card compact-card">
+<h3>Notice</h3>
+<ul class="tight">
+<li><code>_id</code> is automatically added if you do not provide one</li>
+<li><code>studentId</code>, <code>name</code>, and <code>major</code> match the SQL student row</li>
+<li><code>courses</code> holds what SQL stored in separate enrollment rows</li>
+</ul>
+</div>
+<div class="example-card compact-card">
+<h3>Why this matters</h3>
+<ul class="tight">
+<li>You can read one document instead of joining two tables</li>
+<li>The data stays close to the JSON shape your API may already use</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 15 ═══════════════════════════════════ -->
+<div class="slide" data-slide="14">
+<h2>Embedding vs Referencing</h2>
+<div class="comparison-grid">
+<div class="example-card">
+<h3>Embedding</h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ One document contains related data</div>
+<div class="shell-box-body">
+<div class="shell-line">{</div>
+<div class="shell-line">  "title": "1984",</div>
+<div class="shell-line">  "author": { "name": "George Orwell", "born": 1903 }</div>
+<div class="shell-line">}</div>
+</div>
+</div>
+<ul class="tight">
+<li>Good when data is read together</li>
+<li>Good when nested data is small</li>
+</ul>
+</div>
+<div class="example-card">
+<h3>Referencing</h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ Separate documents linked by id</div>
+<div class="shell-box-body">
+<div class="shell-line">{ "title": "1984", "author_id": ObjectId("1111") }</div>
+<div class="shell-line">{ "_id": ObjectId("1111"), "name": "George Orwell" }</div>
+</div>
+</div>
+<ul class="tight">
+<li>Good when related data is shared widely</li>
+<li>Good when related items change independently</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 16 ═══════════════════════════════════ -->
+<div class="slide" data-slide="15">
+<h2>Local Setup: What You Need to Install</h2>
+<div class="comparison-grid three-col">
+<div class="example-card">
+<h3>1. MongoDB Community Server</h3>
+<ul class="tight">
+<li>This is the actual database engine</li>
+<li>Without this, there is no local MongoDB server running</li>
+</ul>
+</div>
+<div class="example-card">
+<h3>2. mongosh</h3>
+<ul class="tight">
+<li>This is the command-line shell</li>
+<li>You type database commands here</li>
+</ul>
+</div>
+<div class="example-card">
+<h3>3. Compass</h3>
+<ul class="tight">
+<li>This is the GUI application</li>
+<li>Optional but strongly recommended for beginners</li>
+</ul>
+</div>
+</div>
+<div class="warning-box">
+<strong>Common beginner mistake:</strong> Compass is <em>not</em> the database server. It is only a visual interface for connecting to a server.
+  </div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 17 ═══════════════════════════════════ -->
+<div class="slide" data-slide="16">
+<h2>Download Strategy Before You Install</h2>
+<div class="example-card">
+<ol class="step-list">
+<li><strong>Install MongoDB Community Server</strong> first.</li>
+<li><strong>Install <code>mongosh</code></strong> second.</li>
+<li><strong>Install Compass</strong> third.</li>
+<li><strong>Start the server</strong>.</li>
+<li><strong>Connect with <code>mongosh</code> or Compass</strong>.</li>
+</ol>
+</div>
+<div class="comparison-grid" style="margin-top:18px;">
+<div class="example-card compact-card">
+<h3>macOS path</h3>
+<ul class="tight">
+<li>Homebrew is the easiest route</li>
+<li>Use Terminal for installation and service commands</li>
+</ul>
+</div>
+<div class="example-card compact-card">
+<h3>Windows path</h3>
+<ul class="tight">
+<li>MSI installer is easiest</li>
+<li>Use File Explorer + installer wizard + Command Prompt/PowerShell</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 18 ═══════════════════════════════════ -->
+<div class="slide" data-slide="17" style="min-height: 1550px;">
+<h2>macOS: Full MongoDB Setup, Step by Step</h2>
+<div class="info-box">
+<strong>Goal:</strong> install the MongoDB server, start it, install <code>mongosh</code>, and connect to your local database on a Mac.
+</div>
+<div class="example-card" style="margin-top:18px;">
+<h3>Step 1 — Check the prerequisites</h3>
+<ul>
+<li>You need the <strong>Terminal</strong> app</li>
+<li>You need <strong>Xcode Command Line Tools</strong></li>
+<li>You need <strong>Homebrew</strong></li>
+</ul>
+<div class="where-badge">Run in: macOS Terminal</div>
+<div class="run-box" style="margin-top:10px;">
+<div class="run-box-header">▶ CHECK / INSTALL PREREQUISITES</div>
+<div class="run-box-body">
+<div class="run-line">xcode-select --install</div>
+<div class="run-line">brew --version</div>
+</div>
+</div>
+<div class="caption">If <code>brew --version</code> fails, install Homebrew from the official Homebrew website, then come back and rerun the command.</div>
+</div>
+<div class="example-card" style="margin-top:18px;">
+<h3>Step 2 — Install MongoDB Community Server</h3>
+<div class="where-badge">Run in: macOS Terminal</div>
+<div class="run-box" style="margin-top:10px;">
+<div class="run-box-header">▶ INSTALL SERVER</div>
+<div class="run-box-body">
+<div class="run-line">brew tap mongodb/brew</div>
+<div class="run-line">brew update</div>
+<div class="run-line">brew install mongodb-community@8.0</div>
+</div>
+</div>
+<ul class="tight" style="margin-top:12px;">
+<li><code>brew tap ...</code> adds MongoDB's package source to Homebrew</li>
+<li><code>brew update</code> refreshes Homebrew's package list</li>
+<li><code>brew install ...</code> installs the MongoDB server on your Mac</li>
+</ul>
+<div class="warning-box" style="margin-top:12px;">
+<strong>Do not run these inside:</strong> <code>mongosh</code> or Compass. These are Terminal commands.
+</div>
+</div>
+<div class="example-card" style="margin-top:18px;">
+<h3>Step 3 — Start MongoDB and verify that it is running</h3>
+<div class="where-badge">Run in: macOS Terminal</div>
+<div class="run-box" style="margin-top:10px;">
+<div class="run-box-header">▶ START / CHECK / STOP</div>
+<div class="run-box-body">
+<div class="run-line">brew services start mongodb-community@8.0</div>
+<div class="run-line">brew services list</div>
+<div class="run-line">brew services stop mongodb-community@8.0</div>
+</div>
+</div>
+<ul class="tight" style="margin-top:12px;">
+<li>Use <code>start</code> to launch MongoDB as a background service</li>
+<li>Use <code>list</code> to confirm the service shows as <code>started</code></li>
+<li>Use <code>stop</code> only when you want to shut the local server down</li>
+</ul>
+<div class="tip-box" style="margin-top:12px;">
+<strong>Best beginner path:</strong> use <code>brew services start ...</code>. It is simpler than manually starting <code>mongod</code>.
+</div>
+</div>
+<div class="example-card" style="margin-top:18px;">
+<h3>Step 4 — Optional manual start command</h3>
+<div class="where-badge">Run in: macOS Terminal</div>
+<div class="run-box" style="margin-top:10px;">
+<div class="run-box-header">▶ OPTIONAL MANUAL START</div>
+<div class="run-box-body">
+<div class="run-line">mongod --config /opt/homebrew/etc/mongod.conf --fork</div>
+</div>
+</div>
+<div class="caption">On Intel Macs, the config path may be <code>/usr/local/etc/mongod.conf</code> instead of <code>/opt/homebrew/etc/mongod.conf</code>.</div>
+<div class="info-box" style="margin-top:12px;">
+Use this only if you are intentionally starting MongoDB manually or troubleshooting. Most students should stay with <code>brew services</code>.
+</div>
+</div>
+<div class="example-card" style="margin-top:18px;">
+<h3>Step 5 — Install the MongoDB shell</h3>
+<div class="where-badge">Run in: macOS Terminal</div>
+<div class="run-box" style="margin-top:10px;">
+<div class="run-box-header">▶ INSTALL MONGOSH</div>
+<div class="run-box-body">
+<div class="run-line">brew install mongosh</div>
+<div class="run-line">mongosh --version</div>
+</div>
+</div>
+<div class="caption">This installs the shell program you will use to type MongoDB commands interactively.</div>
+</div>
+<div class="example-card" style="margin-top:18px;">
+<h3>Step 6 — Connect to your local MongoDB server</h3>
+<div class="where-badge">Run in: macOS Terminal</div>
+<div class="run-box" style="margin-top:10px;">
+<div class="run-box-header">▶ CONNECT</div>
+<div class="run-box-body">
+<div class="run-line">mongosh</div>
+</div>
+</div>
+<ul class="tight" style="margin-top:12px;">
+<li>If MongoDB is running locally, this opens the MongoDB shell</li>
+<li>Now you can type MongoDB commands like <code>show dbs</code> and <code>use school</code></li>
+</ul>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 19 ═══════════════════════════════════ -->
+<div class="slide" data-slide="18" style="min-height: 1680px;">
+<h2>Windows: Full MongoDB Setup, Step by Step</h2>
+<div class="info-box">
+<strong>Goal:</strong> install the MongoDB server on Windows, set it up the easy way as a service, install <code>mongosh</code>, and connect to your local database.
+</div>
+<div class="example-card" style="margin-top:18px;">
+<h3>Step 1 — Download the MongoDB Community Server installer</h3>
+<ul>
+<li>Go to the MongoDB Community Server download page</li>
+<li>Choose <strong>Windows</strong> as the platform</li>
+<li>Choose the <strong>MSI</strong> package</li>
+<li>Download the current course version or current stable version</li>
+</ul>
+<div class="caption">At this point, you are using the browser and File Explorer, not Terminal or <code>mongosh</code>.</div>
+</div>
+<div class="example-card" style="margin-top:18px;">
+<h3>Step 2 — Run the installer and pick the beginner-friendly options</h3>
+<div class="where-badge gui">Do this in: Installer wizard</div>
+<ol class="step-list">
+<li>Double-click the downloaded <code>.msi</code> file</li>
+<li>Choose <strong>Complete</strong> setup unless your instructor says otherwise</li>
+<li>Keep <strong>Install MongoD as a Service</strong> checked</li>
+<li>Use the default <strong>Network Service user</strong></li>
+<li>Let the installer create the data and log directories</li>
+<li>Keep <strong>Install MongoDB Compass</strong> checked if it is offered</li>
+<li>Click <strong>Install</strong> and finish the wizard</li>
+</ol>
+<div class="tip-box" style="margin-top:12px;">
+<strong>Best beginner choice:</strong> installing MongoDB as a Windows service means you do not have to manually start <code>mongod</code> every time.
+</div>
+</div>
+<div class="example-card" style="margin-top:18px;">
+<h3>Step 3 — Start, stop, or restart the MongoDB service</h3>
+<div class="where-badge gui">Do this in: Windows Services app</div>
+<ol class="step-list">
+<li>Open the Start menu and search for <strong>Services</strong></li>
+<li>Open the <strong>Services</strong> application</li>
+<li>Find the service named <strong>MongoDB</strong></li>
+<li>Right-click it and choose <strong>Start</strong>, <strong>Stop</strong>, or <strong>Restart</strong></li>
+</ol>
+<ul class="tight" style="margin-top:12px;">
+<li>Use this when the server is not running</li>
+<li>Use restart after configuration changes or troubleshooting</li>
+</ul>
+</div>
+<div class="example-card" style="margin-top:18px;">
+<h3>Step 4 — Optional manual start, only if the service setup was skipped or failed</h3>
+<div class="where-badge">Run in: Command Prompt or PowerShell as Administrator</div>
+<div class="run-box" style="margin-top:10px;">
+<div class="run-box-header">▶ OPTIONAL MANUAL SERVER START</div>
+<div class="run-box-body">
+<div class="run-line">cd C:\</div>
+<div class="run-line">md \data\db</div>
+<div class="run-line">"C:\Program Files\MongoDB\Server\&lt;version&gt;\bin\mongod.exe" --dbpath="C:\data\db"</div>
+</div>
+</div>
+<div class="warning-box" style="margin-top:12px;">
+<strong>Use this only if needed.</strong> Most students should use the Windows service installed by the MSI wizard instead.
+</div>
+<div class="caption">If this works, the terminal usually shows a message similar to “waiting for connections”.</div>
+</div>
+<div class="example-card" style="margin-top:18px;">
+<h3>Step 5 — Install the MongoDB shell</h3>
+<ul>
+<li>Go to the MongoDB Shell download page</li>
+<li>Download the Windows 64-bit MSI installer for <code>mongosh</code></li>
+<li>Run the installer</li>
+<li>If the installer offers it, allow <code>mongosh.exe</code> to be added to your <code>PATH</code></li>
+</ul>
+<div class="caption">This step uses the browser + installer wizard. You are still not typing MongoDB commands yet.</div>
+</div>
+<div class="example-card" style="margin-top:18px;">
+<h3>Step 6 — Verify <code>mongosh</code> and connect to your local server</h3>
+<div class="where-badge">Run in: Command Prompt or PowerShell</div>
+<div class="run-box" style="margin-top:10px;">
+<div class="run-box-header">▶ VERIFY + CONNECT</div>
+<div class="run-box-body">
+<div class="run-line">mongosh --version</div>
+<div class="run-line">mongosh</div>
+</div>
+</div>
+<ul class="tight" style="margin-top:12px;">
+<li><code>mongosh --version</code> checks that the shell installed correctly</li>
+<li><code>mongosh</code> connects to your local MongoDB server if it is running</li>
+</ul>
+<div class="tip-box" style="margin-top:12px;">
+If <code>mongosh</code> is “not recognized”, close and reopen the terminal. If it still fails, add the <code>mongosh</code> install folder to your PATH.
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 28 ═══════════════════════════════════ -->
+<div class="navigation">
+<button class="nav-button" id="prevBtn">Previous</button>
+<button class="nav-button" id="nextBtn">Next</button>
+</div>
+<script>
+  // ─── Syntax Highlighter ───────────────────────────────────────────────────
+  (function () {
+    const KEYWORDS = new Set([
+      'const','let','var','function','return','if','else','try','catch',
+      'throw','new','require','module','exports','true','false','null',
+      'undefined','async','await','class','extends','import','from',
+      'of','in','for','while','do','switch','case','break','default',
+      'typeof','instanceof'
+    ]);
+
+    const BUILTINS = new Set([
+      'db','req','res','app','router','err','express','console','Date',
+      'JSON','Math','Object','Array','Error','Number','String','Boolean',
+      'Promise','process','ObjectId'
+    ]);
+
+    // MongoDB shell operators that start with $
+    const MONGO_OPS = new Set([
+      '$set','$unset','$inc','$mul','$rename','$push','$pop','$pull',
+      '$addToSet','$eq','$ne','$gt','$gte','$lt','$lte','$in','$nin',
+      '$and','$or','$nor','$not','$exists','$type','$regex','$where',
+      '$all','$elemMatch','$size','$slice'
+    ]);
+
+    function tokenize(text) {
+      const tokens = [];
+      let i = 0;
+      while (i < text.length) {
+        // Line comment
+        if (text[i] === '/' && text[i + 1] === '/') {
+          tokens.push({ type: 'comment', val: text.slice(i) });
+          break;
+        }
+        // Backtick string
+        if (text[i] === '`') {
+          let j = i + 1;
+          while (j < text.length && text[j] !== '`') {
+            if (text[j] === '\\') j++;
+            j++;
+          }
+          tokens.push({ type: 'string', val: text.slice(i, j + 1) });
+          i = j + 1;
+          continue;
+        }
+        // Single / double quoted string
+        if (text[i] === '"' || text[i] === "'") {
+          const q = text[i];
+          let j = i + 1;
+          while (j < text.length && text[j] !== q) {
+            if (text[j] === '\\') j++;
+            j++;
+          }
+          tokens.push({ type: 'string', val: text.slice(i, j + 1) });
+          i = j + 1;
+          continue;
+        }
+        // MongoDB operator: $word
+        if (text[i] === '$') {
+          let j = i + 1;
+          while (j < text.length && /[a-zA-Z0-9_]/.test(text[j])) j++;
+          const word = text.slice(i, j);
+          if (MONGO_OPS.has(word)) {
+            tokens.push({ type: 'mongoOp', val: word });
+          } else {
+            tokens.push({ type: 'other', val: word });
+          }
+          i = j;
+          continue;
+        }
+        // Identifier, keyword, or builtin
+        if (/[a-zA-Z_]/.test(text[i])) {
+          let j = i;
+          while (j < text.length && /[a-zA-Z0-9_$]/.test(text[j])) j++;
+          const word = text.slice(i, j);
+          let k = j;
+          while (k < text.length && text[k] === ' ') k++;
+          const isCall = text[k] === '(';
+          if (KEYWORDS.has(word))       tokens.push({ type: 'keyword', val: word });
+          else if (BUILTINS.has(word))  tokens.push({ type: 'builtin', val: word });
+          else if (isCall)              tokens.push({ type: 'fn', val: word });
+          else                          tokens.push({ type: 'ident', val: word });
+          i = j;
+          continue;
+        }
+        // Number
+        if (/[0-9]/.test(text[i])) {
+          let j = i;
+          while (j < text.length && /[0-9.]/.test(text[j])) j++;
+          tokens.push({ type: 'num', val: text.slice(i, j) });
+          i = j;
+          continue;
+        }
+        tokens.push({ type: 'other', val: text[i] });
+        i++;
+      }
+      return tokens;
+    }
+
+    const COLORS = {
+      keyword  : '#8B5CF6',  // violet
+      string   : '#B45309',  // amber
+      comment  : '#9CA3AF',  // gray
+      num      : '#059669',  // emerald
+      fn       : '#2563EB',  // blue
+      builtin  : '#0891B2',  // cyan
+      mongoOp  : '#D97706',  // orange — for $set, $gt, etc.
+    };
+
+    function esc(s) {
+      return s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderTokens(tokens) {
+      return tokens.map(t => {
+        const color = COLORS[t.type];
+        const e = esc(t.val);
+        return color ? `<span style="color:${color}">${e}</span>` : e;
+      }).join('');
+    }
+
+    function highlight() {
+      document.querySelectorAll('.static-code li').forEach(li => {
+        const text = li.textContent;
+        if (text.trim() === '') return;
+        li.innerHTML = renderTokens(tokenize(text));
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', highlight);
+    } else {
+      highlight();
+    }
+  })();
+
+  // ─── Slide Navigation ─────────────────────────────────────────────────────
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let currentIndex = 0;
+
+  document.getElementById('totalSlides').textContent = slides.length;
+
+  function updateSlides() {
+    slides.forEach((slide, index) => slide.classList.toggle('active', index === currentIndex));
+    document.getElementById('currentSlide').textContent = currentIndex + 1;
+    document.getElementById('prevBtn').disabled = currentIndex === 0;
+    document.getElementById('nextBtn').disabled = currentIndex === slides.length - 1;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    if (currentIndex > 0) { currentIndex--; updateSlides(); }
+  });
+
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if (currentIndex < slides.length - 1) { currentIndex++; updateSlides(); }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+      e.preventDefault();
+      if (currentIndex < slides.length - 1) { currentIndex++; updateSlides(); }
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      if (currentIndex > 0) { currentIndex--; updateSlides(); }
+    }
+  });
+
+  // ─── Copy buttons ─────────────────────────────────────────────────────────
+  const toast = document.getElementById('toast');
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1400);
+  }
+
+  document.querySelectorAll('[data-copy-source]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const text = document.getElementById(btn.getAttribute('data-copy-source')).value;
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Code copied');
+      } catch {
+        showToast('Copy failed');
+      }
+    });
+  });
+
+  updateSlides();
+</script>
+</div></body>
+</html>

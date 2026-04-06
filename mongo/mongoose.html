@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HCDD 411 - Mongoose</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --primary: #3B7DD6; --secondary: #5A6C7D; --accent: #D4940C;
+    --code-bg: #F8F9FA; --success: #059669; --error: #DC2626;
+    --bg-gradient-start: #F0F4F8; --bg-gradient-end: #E1E8ED;
+    --slide-bg: rgba(255,255,255,0.95); --border-color: rgba(59,125,214,0.30);
+    --text-primary: #1F2937; --text-secondary: #6B7280;
+  }
+  body { font-family:'Outfit',sans-serif; background:linear-gradient(135deg,var(--bg-gradient-start) 0%,var(--bg-gradient-end) 100%); color:var(--text-primary); min-height:100vh; padding:140px 0 120px 0; }
+  .presentation-container { width:100%; min-height:100vh; }
+  .slide { width:90%; max-width:1220px; min-height:520px; background:var(--slide-bg); backdrop-filter:blur(10px); border-radius:30px; padding:56px 60px 52px 60px; margin:0 auto; box-shadow:0 20px 60px rgba(0,0,0,0.1); opacity:0; transform:translateX(100px); transition:all 0.45s ease; display:none; border:2px solid var(--border-color); }
+  .slide.active { opacity:1; transform:translateX(0); display:block; }
+  h1 { font-weight:900; font-size:4em; color:var(--primary); margin-bottom:14px; text-transform:uppercase; letter-spacing:-2px; line-height:1.08; }
+  h2 { font-weight:700; font-size:2.45em; color:var(--accent); margin-bottom:24px; letter-spacing:-1px; line-height:1.12; }
+  h3 { font-weight:600; font-size:1.33em; color:var(--primary); margin:0 0 12px 0; line-height:1.25; }
+  p { font-size:1.08em; line-height:1.62; }
+  ul { margin:16px 0 0 0; padding-left:24px; }
+  li { margin:9px 0; font-size:1.06em; line-height:1.55; }
+  code { font-family:'Space Mono',monospace; background:rgba(59,125,214,0.12); padding:2px 7px; border-radius:5px; color:var(--primary); font-size:0.95em; }
+  .info-box,.tip-box,.warning-box { padding:18px 20px; margin:18px 0 0 0; border-radius:12px; }
+  .info-box { background:rgba(212,148,12,0.10); border-left:4px solid var(--accent); }
+  .tip-box  { background:rgba(5,150,105,0.10);  border-left:4px solid var(--success); }
+  .warning-box { background:rgba(220,38,38,0.10); border-left:4px solid var(--error); }
+  .example-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:18px; margin-top:18px; }
+  .comparison-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin-top:18px; align-items:start; }
+  .comparison-grid.three-col { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .comparison-grid.code-stack { grid-template-columns:1fr; }
+  .example-card { background:rgba(255,255,255,0.74); border:2px solid var(--border-color); border-radius:15px; padding:18px 18px 16px 18px; min-width:0; }
+  .compact-card p,.compact-card li { font-size:1em; }
+  .ide-toolbar { display:flex; align-items:center; gap:10px; padding:10px 15px; background:rgba(0,0,0,0.05); border-radius:10px 10px 0 0; margin-top:14px; border-bottom:1px solid var(--border-color); }
+  .file-tab { display:inline-flex; align-items:center; gap:8px; padding:6px 12px; background:var(--primary); color:white; border-radius:6px; font-family:'Space Mono',monospace; font-size:0.8em; font-weight:600; }
+  .toolbar-actions { margin-left:auto; display:flex; gap:8px; }
+  .toolbar-btn { background:rgba(0,0,0,0.05); border:none; color:var(--text-secondary); padding:6px 10px; border-radius:5px; cursor:pointer; font-size:0.85em; transition:all 0.2s ease; font-family:'Outfit',sans-serif; font-weight:700; }
+  .toolbar-btn:hover { background:rgba(0,0,0,0.10); color:var(--text-primary); }
+  .static-code { border:2px solid var(--border-color); border-top:none; border-radius:0 0 12px 12px; overflow:auto; background:linear-gradient(90deg,rgba(59,125,214,0.08) 0 58px,#ffffff 58px 100%); max-height:430px; }
+  .static-code ol { margin:0; padding:16px 18px 16px 58px; list-style:decimal; list-style-position:outside; font-family:'Space Mono',monospace; font-size:0.92em; line-height:1.65; color:#111827; }
+  .static-code li { margin:0; padding:0 12px 0 16px; white-space:pre; border-left:1px solid rgba(59,125,214,0.25); font-size:1em; }
+  .static-code ol li::marker { color:var(--text-secondary); font-weight:700; font-family:'Space Mono',monospace; }
+  .copy-source { display:none; }
+  .content-table { width:100%; border-collapse:separate; border-spacing:0; margin-top:18px; overflow:hidden; border:2px solid var(--border-color); border-radius:14px; background:rgba(255,255,255,0.82); }
+  .content-table th,.content-table td { padding:14px 16px; text-align:left; vertical-align:middle; border-bottom:1px solid rgba(59,125,214,0.18); font-size:1em; line-height:1.45; }
+  .content-table th { background:rgba(59,125,214,0.12); color:var(--primary); font-weight:800; }
+  .content-table tr:last-child td { border-bottom:none; }
+  .navigation { position:fixed; bottom:36px; left:50%; transform:translateX(-50%); display:flex; gap:18px; z-index:1000; }
+  .nav-button { background:var(--primary); color:white; border:none; padding:14px 34px; border-radius:50px; font-family:'Outfit',sans-serif; font-weight:700; font-size:1em; cursor:pointer; transition:all 0.2s ease; text-transform:uppercase; letter-spacing:0.9px; box-shadow:0 4px 15px rgba(0,0,0,0.15); }
+  .nav-button:hover { background:var(--secondary); transform:translateY(-2px); }
+  .nav-button:disabled { opacity:0.35; cursor:not-allowed; transform:none; }
+  .slide-indicator { position:fixed; top:40px; right:40px; background:var(--primary); padding:15px 24px; border-radius:50px; font-family:'Space Mono',monospace; font-weight:700; font-size:1em; z-index:1000; color:white; box-shadow:0 4px 15px rgba(0,0,0,0.15); }
+  .penn-state-badge { position:fixed; top:40px; left:40px; font-weight:900; font-size:1.2em; color:var(--primary); z-index:1000; text-transform:uppercase; letter-spacing:2px; }
+  .toast { position:fixed; top:92px; right:40px; background:rgba(5,150,105,0.94); color:white; padding:10px 16px; border-radius:10px; font-weight:700; opacity:0; transform:translateY(-6px); transition:all 0.2s ease; pointer-events:none; z-index:1100; }
+  .toast.show { opacity:1; transform:translateY(0); }
+  .run-box { background:#0d1117; border-radius:12px; margin:12px 0 0 0; border:2px solid rgba(59,125,214,0.22); overflow:hidden; width:100%; }
+  .run-box-header { background:linear-gradient(90deg,#161b22,#0d1117); padding:7px 16px; font-family:'Space Mono',monospace; font-size:0.79em; color:#4b6a9b; font-weight:700; letter-spacing:0.8px; border-bottom:1px solid rgba(59,125,214,0.12); }
+  .run-box-body { padding:12px 18px 14px 18px; overflow-x:auto; }
+  .run-line { font-family:'Space Mono',monospace; font-size:0.85em; color:#c9d1d9; line-height:1.65; white-space:pre; margin:0; display:block; width:max-content; min-width:100%; }
+  .run-comment { color:#484f58; }
+  .run-prompt  { color:#3fb950; font-weight:700; }
+  .run-output  { color:#79c0ff; }
+  .run-note    { color:#d29922; }
+  .run-error   { color:#ff7b72; }
+  .where-badge { display:inline-block; margin:0 0 12px 0; padding:6px 12px; border-radius:999px; font-family:'Space Mono',monospace; font-size:0.8em; font-weight:700; letter-spacing:0.3px; background:rgba(59,125,214,0.12); color:var(--primary); border:1px solid rgba(59,125,214,0.28); }
+  .where-badge.file { background:rgba(212,148,12,0.12); color:#7C4A00; border-color:rgba(212,148,12,0.28); }
+  .where-badge.warn { background:rgba(220,38,38,0.10); color:#991B1B; border-color:rgba(220,38,38,0.22); }
+  .where-badge.ok   { background:rgba(5,150,105,0.12); color:#065F46; border-color:rgba(5,150,105,0.28); }
+  .flow-row { display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:20px; }
+  .flow-box { background:rgba(59,125,214,0.12); border:2px solid var(--border-color); color:var(--text-primary); padding:14px 18px; border-radius:14px; font-weight:700; text-align:center; }
+  .flow-arrow { font-size:1.6em; color:var(--primary); font-weight:900; }
+  .step-list { margin-top:14px; padding-left:20px; }
+  .step-list li { margin:10px 0; line-height:1.55; }
+  .big-list li { font-size:1.08em; }
+  .tight li { margin:6px 0; }
+  .micro { font-size:0.92em !important; }
+  .mini-table td,.mini-table th { padding:10px 12px; font-size:0.96em; }
+  @media (max-width:980px) {
+    body { padding-top:120px; }
+    .slide { width:94%; padding:48px 28px 42px 28px; }
+    h1 { font-size:3em; } h2 { font-size:2.1em; }
+    .comparison-grid,.comparison-grid.three-col { grid-template-columns:1fr; }
+    .penn-state-badge { left:20px; top:20px; }
+    .slide-indicator { right:20px; top:20px; }
+    .navigation { bottom:20px; }
+  }
+</style>
+</head>
+<body>
+<div class="penn-state-badge">HCDD 411</div>
+<div class="slide-indicator"><span id="currentSlide">1</span> / <span id="totalSlides">?</span></div>
+<div class="toast" id="toast">Code copied</div>
+<div class="presentation-container">
+
+<!-- ═══ SLIDE 1 — TITLE ═══ -->
+<div class="slide active" data-slide="1">
+  <h1>Mongoose</h1>
+  <h2>Md Touhidul Islam</h2>
+  <div class="info-box">
+    <strong>Today:</strong>
+    <ul class="big-list">
+      <li>Mongoose vs. raw MongoDB driver</li>
+      <li>Project setup: installation, folder structure, connecting to MongoDB</li>
+      <li>Schemas and models — defining the shape of your data</li>
+      <li>Building a complete Express + Mongoose REST API</li>
+      <li>Testing every route with <code>curl</code> and verifying the output</li>
+      <li>Validation errors, common pitfalls, and how to fix them</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 2 — WHAT IS MONGOOSE ═══ -->
+<div class="slide" data-slide="2">
+  <h2>What is Mongoose?</h2>
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>The short answer</h3>
+      <p>Mongoose is an <strong>Object Data Modeling (ODM)</strong> library that sits between your Node.js code and MongoDB.</p>
+      <ul style="margin-top:12px;">
+        <li>Install via npm — it is a third-party package</li>
+        <li>Official docs: <a href="https://mongoosejs.com" target="_blank">mongoosejs.com</a></li>
+        <li>The most widely-used Node.js + MongoDB pairing in production</li>
+      </ul>
+    </div>
+    <div class="example-card">
+      <h3>What it gives you</h3>
+      <ul>
+        <li><strong>Schema definitions</strong> — declare what fields a document must have</li>
+        <li><strong>Built-in validation</strong> — required fields, type checks, custom rules</li>
+        <li><strong>Model methods</strong> — <code>find</code>, <code>create</code>, <code>findByIdAndUpdate</code>, and more</li>
+        <li><strong>Middleware (hooks)</strong> — run logic before or after save, delete, etc.</li>
+        <li><strong>Clean Express integration</strong> — designed to work with the stack you already know</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tip-box" style="margin-top:18px;">
+    Think of Mongoose as adding <strong>structure and guardrails</strong> on top of MongoDB's flexibility. The next slide shows exactly what that means in real code.
+  </div>
+</div>
+
+<!-- ═══ SLIDE 3 — RAW DRIVER vs MONGOOSE (CONCRETE CODE) ═══ -->
+<div class="slide" data-slide="3">
+  <h2>Raw Driver vs Mongoose — In Code</h2>
+  <p>Same task: insert a student. Look at what the raw driver silently allows vs. what Mongoose catches.</p>
+  <div class="comparison-grid" style="margin-top:14px;">
+    <div class="example-card">
+      <h3><span class="where-badge warn">Raw MongoDB Driver</span></h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 raw-driver.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-raw">Copy</button></div>
+      </div>
+      <div class="static-code">
+        <ol>
+          <li>const { MongoClient } = require("mongodb");</li>
+          <li></li>
+          <li>async function run() {</li>
+          <li>  const client = new MongoClient("mongodb://127.0.0.1:27017");</li>
+          <li>  await client.connect();</li>
+          <li>  const col = client.db("school").collection("students");</li>
+          <li></li>
+          <li>  // Works — correct data</li>
+          <li>  await col.insertOne({ name: "Alice", age: 20 });</li>
+          <li></li>
+          <li>  // Also works — age is missing. No error!</li>
+          <li>  await col.insertOne({ name: "Bob" });</li>
+          <li></li>
+          <li>  // Also works — completely wrong shape. No error!</li>
+          <li>  await col.insertOne({ foo: "bar" });</li>
+          <li></li>
+          <li>  await client.close();</li>
+          <li>}</li>
+          <li>run();</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-raw">const { MongoClient } = require("mongodb");
+
+async function run() {
+  const client = new MongoClient("mongodb://127.0.0.1:27017");
+  await client.connect();
+  const col = client.db("school").collection("students");
+
+  // Works — correct data
+  await col.insertOne({ name: "Alice", age: 20 });
+
+  // Also works — age is missing. No error!
+  await col.insertOne({ name: "Bob" });
+
+  // Also works — completely wrong shape. No error!
+  await col.insertOne({ foo: "bar" });
+
+  await client.close();
+}
+run();</textarea>
+      <div class="warning-box micro" style="margin-top:10px;">
+        All three inserts succeed. Your collection now has garbage data and you will not find out until something breaks in your app later.
+      </div>
+    </div>
+
+    <div class="example-card">
+      <h3><span class="where-badge ok">Mongoose</span></h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 mongoose-example.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-mongoose-cmp">Copy</button></div>
+      </div>
+      <div class="static-code">
+        <ol>
+          <li>const mongoose = require("mongoose");</li>
+          <li></li>
+          <li>const studentSchema = new mongoose.Schema({</li>
+          <li>  name: { type: String, required: true },</li>
+          <li>  age:  { type: Number, required: true },</li>
+          <li>});</li>
+          <li>const Student = mongoose.model("Student", studentSchema);</li>
+          <li></li>
+          <li>await mongoose.connect("mongodb://127.0.0.1:27017/school");</li>
+          <li></li>
+          <li>// Works — correct data</li>
+          <li>await Student.create({ name: "Alice", age: 20 });</li>
+          <li></li>
+          <li>// Throws — age is required</li>
+          <li>await Student.create({ name: "Bob" });</li>
+          <li>// ValidationError: age: Path `age` is required.</li>
+          <li></li>
+          <li>// Throws — both name and age are required</li>
+          <li>await Student.create({ foo: "bar" });</li>
+          <li>// ValidationError: name: Path `name` is required.</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-mongoose-cmp">const mongoose = require("mongoose");
+
+const studentSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  age:  { type: Number, required: true },
+});
+const Student = mongoose.model("Student", studentSchema);
+
+await mongoose.connect("mongodb://127.0.0.1:27017/school");
+
+// Works — correct data
+await Student.create({ name: "Alice", age: 20 });
+
+// Throws — age is required
+await Student.create({ name: "Bob" });
+// ValidationError: age: Path `age` is required.
+
+// Throws — both name and age are required
+await Student.create({ foo: "bar" });
+// ValidationError: name: Path `name` is required.</textarea>
+      <div class="tip-box micro" style="margin-top:10px;">
+        Mongoose catches bad data at write time — before it reaches the database.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 4 — INSTALLATION ═══ -->
+<div class="slide" data-slide="4">
+  <h2>Installation &amp; Setup</h2>
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>Step 1 — Initialize the project</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ TERMINAL</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> mkdir mongoose-demo &amp;&amp; cd mongoose-demo</div>
+          <div class="run-line"><span class="run-prompt">$</span> npm init -y</div>
+          <div class="run-line"><span class="run-prompt">$</span> npm install mongoose express</div>
+        </div>
+      </div>
+      <div class="tip-box micro" style="margin-top:12px;">
+        We install <code>express</code> alongside <code>mongoose</code> because we are building a REST API. Both are needed.
+      </div>
+    </div>
+    <div class="example-card">
+      <h3>Step 2 — Verify</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ TERMINAL — check installed packages</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> npm list --depth=0</div>
+          <div class="run-line"><span class="run-output">mongoose-demo@1.0.0</span></div>
+          <div class="run-line"><span class="run-output">├── express@4.x.x</span></div>
+          <div class="run-line"><span class="run-output">└── mongoose@8.x.x</span></div>
+        </div>
+      </div>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ package.json — what you should see</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-output">"dependencies": {</span></div>
+          <div class="run-line"><span class="run-output">  "express": "^4.x.x",</span></div>
+          <div class="run-line"><span class="run-output">  "mongoose": "^8.x.x"</span></div>
+          <div class="run-line"><span class="run-output">}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="info-box" style="margin-top:16px;">
+    <strong>Before running anything:</strong> make sure your MongoDB server is running. On macOS/Linux: open a separate terminal and run <code>mongod</code>. On Windows: start the MongoDB service from Services.
+  </div>
+</div>
+
+<!-- ═══ SLIDE 5 — PROJECT STRUCTURE ═══ -->
+<div class="slide" data-slide="5">
+  <h2>Project Structure</h2>
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>Folder layout</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ YOUR PROJECT — final layout</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-output">mongoose-demo/</span></div>
+          <div class="run-line"><span class="run-output">├── config/</span></div>
+          <div class="run-line"><span class="run-output">│   └── database.js       ← connection logic</span></div>
+          <div class="run-line"><span class="run-output">├── models/</span></div>
+          <div class="run-line"><span class="run-output">│   └── students.model.js ← schema + model</span></div>
+          <div class="run-line"><span class="run-output">├── package.json</span></div>
+          <div class="run-line"><span class="run-output">└── server.js             ← Express app + all routes</span></div>
+        </div>
+      </div>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ TERMINAL — create the folders and files</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> mkdir config models</div>
+          <div class="run-line"><span class="run-prompt">$</span> touch config/database.js models/students.model.js server.js</div>
+        </div>
+      </div>
+    </div>
+    <div class="example-card">
+      <h3>What goes in each file</h3>
+      <table class="content-table mini-table" style="margin-top:0;">
+        <thead><tr><th>File</th><th>Responsibility</th></tr></thead>
+        <tbody>
+          <tr><td><code>config/database.js</code></td><td>Open and export the Mongoose connection function</td></tr>
+          <tr><td><code>models/students.model.js</code></td><td>Define schema + compile and export the Student model</td></tr>
+          <tr><td><code>server.js</code></td><td>Create the Express app, register all routes, start listening. The only file you run.</td></tr>
+        </tbody>
+      </table>
+      <div class="tip-box micro" style="margin-top:12px;">
+        Adding a new collection later = add a new file in <code>models/</code>. Nothing else changes.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 6 — DATABASE.JS ═══ -->
+<div class="slide" data-slide="6">
+  <h2>config/database.js</h2>
+  <div class="where-badge file">File: config/database.js</div>
+  <div class="comparison-grid code-stack">
+    <div class="example-card">
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 config/database.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-dbjs">Copy</button></div>
+      </div>
+      <div class="static-code">
+        <ol>
+          <li>const mongoose = require("mongoose");</li>
+          <li></li>
+          <li>const connectDB = async () => {</li>
+          <li>  try {</li>
+          <li>    await mongoose.connect("mongodb://127.0.0.1:27017/school");</li>
+          <li>    console.log("MongoDB connected successfully");</li>
+          <li>  } catch (error) {</li>
+          <li>    console.error("MongoDB connection failed:", error.message);</li>
+          <li>    process.exit(1); // stop the app — no point running without a DB</li>
+          <li>  }</li>
+          <li>};</li>
+          <li></li>
+          <li>module.exports = connectDB;</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-dbjs">const mongoose = require("mongoose");
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect("mongodb://127.0.0.1:27017/school");
+    console.log("MongoDB connected successfully");
+  } catch (error) {
+    console.error("MongoDB connection failed:", error.message);
+    process.exit(1); // stop the app — no point running without a DB
+  }
+};
+
+module.exports = connectDB;</textarea>
+    </div>
+  </div>
+  <div class="comparison-grid" style="margin-top:16px;">
+    <div class="example-card compact-card">
+      <h3>URL breakdown</h3>
+      <ul class="tight">
+        <li><code>mongodb://</code> — protocol</li>
+        <li><code>127.0.0.1:27017</code> — localhost, MongoDB default port</li>
+        <li><code>school</code> — the database name (auto-created on first write)</li>
+      </ul>
+    </div>
+    <div class="example-card compact-card">
+      <h3>process.exit(1)</h3>
+      <p>If the database is unreachable, the whole server should stop. Exiting with code <code>1</code> signals failure — useful in deployment pipelines and scripts that restart the process.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 7 — SCHEMA ═══ -->
+<div class="slide" data-slide="7">
+  <h2>models/students.model.js — Schema &amp; Model</h2>
+  <div class="where-badge file">File: models/students.model.js</div>
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>The complete file</h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 models/students.model.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-model">Copy</button></div>
+      </div>
+      <div class="static-code">
+        <ol>
+          <li>const mongoose = require("mongoose");</li>
+          <li></li>
+          <li>const studentSchema = new mongoose.Schema(</li>
+          <li>  {</li>
+          <li>    // required: field must be present or Mongoose throws</li>
+          <li>    name: { type: String, required: true },</li>
+          <li></li>
+          <li>    // min: number cannot be below 0</li>
+          <li>    age: { type: Number, required: true, min: 0 },</li>
+          <li></li>
+          <li>    // default: value used when field is omitted</li>
+          <li>    major: { type: String, default: "Undeclared" },</li>
+          <li>  },</li>
+          <li>  { versionKey: false } // hides the __v field from output</li>
+          <li>);</li>
+          <li></li>
+          <li>// "Student" → lowercase → pluralize → "students" collection</li>
+          <li>const Student = mongoose.model("Student", studentSchema);</li>
+          <li></li>
+          <li>module.exports = Student;</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-model">const mongoose = require("mongoose");
+
+const studentSchema = new mongoose.Schema(
+  {
+    // required: field must be present or Mongoose throws
+    name: { type: String, required: true },
+
+    // min: number cannot be below 0
+    age: { type: Number, required: true, min: 0 },
+
+    // default: value used when field is omitted
+    major: { type: String, default: "Undeclared" },
+  },
+  { versionKey: false } // hides the __v field from output
+);
+
+// "Student" → lowercase → pluralize → "students" collection
+const Student = mongoose.model("Student", studentSchema);
+
+module.exports = Student;</textarea>
+    </div>
+
+    <div class="example-card">
+      <h3>Common schema options</h3>
+      <table class="content-table mini-table" style="margin-top:0;">
+        <thead><tr><th>Option</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code>required: true</code></td><td>Field must be in the document</td></tr>
+          <tr><td><code>default: value</code></td><td>Used when the field is omitted</td></tr>
+          <tr><td><code>unique: true</code></td><td>No two documents can share this value</td></tr>
+          <tr><td><code>min / max</code></td><td>Number range constraint</td></tr>
+          <tr><td><code>minlength / maxlength</code></td><td>String length constraint</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box micro" style="margin-top:12px;">
+        <strong>Auto-naming:</strong> <code>"Student"</code> → <code>student</code> → <code>students</code>.
+        <p>Mongoose lowercases and pluralizes the model name to find the matching collection.</p>
+        
+        <p>This is just the default. You can choose your own collection name by passing a third argument to mongoose.model(...), or by setting the collection option in the schema.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 8 — SERVER.JS (COMPLETE) ═══ -->
+<div class="slide" data-slide="8">
+  <h2>server.js — Complete Express + Mongoose App</h2>
+  <div class="where-badge file">File: server.js — copy this entire file</div>
+  <div class="comparison-grid code-stack">
+    <div class="example-card">
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 server.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-server">Copy</button></div>
+      </div>
+      <div class="static-code">
+        <ol>
+          <li>const express   = require("express");</li>
+          <li>const connectDB = require("./config/database");</li>
+          <li>const Student   = require("./models/students.model");</li>
+          <li></li>
+          <li>const app = express();</li>
+          <li>app.use(express.json()); // parse incoming JSON request bodies</li>
+          <li></li>
+          <li>// ── GET /students ── return all students ──────────────────────</li>
+          <li>app.get("/students", async (req, res) => {</li>
+          <li>  try {</li>
+          <li>    const students = await Student.find();</li>
+          <li>    res.json(students);</li>
+          <li>  } catch (err) {</li>
+          <li>    res.status(500).json({ error: err.message });</li>
+          <li>  }</li>
+          <li>});</li>
+          <li></li>
+          <li>// ── POST /students ── create a new student ────────────────────</li>
+          <li>app.post("/students", async (req, res) => {</li>
+          <li>  try {</li>
+          <li>    const student = await Student.create(req.body);</li>
+          <li>    res.status(201).json(student);</li>
+          <li>  } catch (err) {</li>
+          <li>    res.status(400).json({ error: err.message });</li>
+          <li>  }</li>
+          <li>});</li>
+          <li></li>
+          <li>// ── PUT /students/:id ── update a student by ID ───────────────</li>
+          <li>app.put("/students/:id", async (req, res) => {</li>
+          <li>  try {</li>
+          <li>    const student = await Student.findByIdAndUpdate(</li>
+          <li>      req.params.id,</li>
+          <li>      { $set: req.body },</li>
+          <li>      { new: true } // return the updated doc, not the old one</li>
+          <li>    );</li>
+          <li>    if (!student) return res.status(404).json({ error: "Not found" });</li>
+          <li>    res.json(student);</li>
+          <li>  } catch (err) {</li>
+          <li>    res.status(400).json({ error: err.message });</li>
+          <li>  }</li>
+          <li>});</li>
+          <li></li>
+          <li>// ── DELETE /students/:id ── delete a student by ID ───────────</li>
+          <li>app.delete("/students/:id", async (req, res) => {</li>
+          <li>  try {</li>
+          <li>    const student = await Student.findByIdAndDelete(req.params.id);</li>
+          <li>    if (!student) return res.status(404).json({ error: "Not found" });</li>
+          <li>    res.json({ message: "Deleted successfully", student });</li>
+          <li>  } catch (err) {</li>
+          <li>    res.status(500).json({ error: err.message });</li>
+          <li>  }</li>
+          <li>});</li>
+          <li></li>
+          <li>// ── Start: connect DB first, then listen ──────────────────────</li>
+          <li>async function startServer() {</li>
+          <li>  await connectDB();</li>
+          <li>  app.listen(3000, () => {</li>
+          <li>    console.log("Server running on http://localhost:3000");</li>
+          <li>  });</li>
+          <li>}</li>
+          <li></li>
+          <li>startServer();</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-server">const express   = require("express");
+const connectDB = require("./config/database");
+const Student   = require("./models/students.model");
+
+const app = express();
+app.use(express.json()); // parse incoming JSON request bodies
+
+// ── GET /students ── return all students ──────────────────────
+app.get("/students", async (req, res) => {
+  try {
+    const students = await Student.find();
+    res.json(students);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /students ── create a new student ────────────────────
+app.post("/students", async (req, res) => {
+  try {
+    const student = await Student.create(req.body);
+    res.status(201).json(student);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── PUT /students/:id ── update a student by ID ───────────────
+app.put("/students/:id", async (req, res) => {
+  try {
+    const student = await Student.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true } // return the updated doc, not the old one
+    );
+    if (!student) return res.status(404).json({ error: "Not found" });
+    res.json(student);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── DELETE /students/:id ── delete a student by ID ───────────
+app.delete("/students/:id", async (req, res) => {
+  try {
+    const student = await Student.findByIdAndDelete(req.params.id);
+    if (!student) return res.status(404).json({ error: "Not found" });
+    res.json({ message: "Deleted successfully", student });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Start: connect DB first, then listen ──────────────────────
+async function startServer() {
+  await connectDB();
+  app.listen(3000, () => {
+    console.log("Server running on http://localhost:3000");
+  });
+}
+
+startServer();</textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 9 — START THE SERVER ═══ -->
+<div class="slide" data-slide="9">
+  <h2>Starting the Server</h2>
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3><span class="where-badge">Run in: Terminal</span></h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ START COMMAND</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+        </div>
+      </div>
+      <h3 style="margin-top:18px;">Expected output — everything OK</h3>
+      <div class="run-box" style="margin-top:8px;">
+        <div class="run-box-header">▶ EXPECTED TERMINAL OUTPUT</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-output">MongoDB connected successfully</span></div>
+          <div class="run-line"><span class="run-output">Server running on http://localhost:3000</span></div>
+        </div>
+      </div>
+      <div class="tip-box micro" style="margin-top:12px;">
+        Both lines must appear. Keep this terminal open — your server runs here. Open a <strong>second terminal</strong> for curl commands.
+      </div>
+    </div>
+    <div class="example-card">
+      <h3>What if it fails?</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ ERROR — MongoDB not running</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-error">MongoDB connection failed:</span></div>
+          <div class="run-line"><span class="run-error">connect ECONNREFUSED 127.0.0.1:27017</span></div>
+        </div>
+      </div>
+      <div class="warning-box micro" style="margin-top:10px;">
+        <strong>Fix:</strong> Open a separate terminal and run <code>mongod</code>. Then run <code>node server.js</code> again.
+      </div>
+      <div class="run-box" style="margin-top:12px;">
+        <div class="run-box-header">▶ ERROR — wrong file path in require()</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-error">Error: Cannot find module './config/database'</span></div>
+        </div>
+      </div>
+      <div class="warning-box micro" style="margin-top:10px;">
+        <strong>Fix:</strong> Make sure you created both files: <code>config/database.js</code> and <code>models/students.model.js</code> inside your project folder.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 10 — TEST: CREATE (POST) ═══ -->
+<div class="slide" data-slide="10">
+  <h2>Test: POST /students — Create</h2>
+  <div class="where-badge">Server running in Terminal 1 — run curl in Terminal 2</div>
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>curl command</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ macOS / Linux</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> curl -X POST http://localhost:3000/students \</div>
+          <div class="run-line">     -H "Content-Type: application/json" \</div>
+          <div class="run-line">     -d '{"name": "Alice", "age": 20, "major": "IST"}'</div>
+        </div>
+      </div>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ Windows (Command Prompt)</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> curl -X POST http://localhost:3000/students ^</div>
+          <div class="run-line">     -H "Content-Type: application/json" ^</div>
+          <div class="run-line">     -d "{\"name\": \"Alice\", \"age\": 20, \"major\": \"IST\"}"</div>
+        </div>
+      </div>
+      <h3 style="margin-top:14px;">Add a few more for testing</h3>
+      <div class="run-box" style="margin-top:8px;">
+        <div class="run-box-header">▶ macOS / Linux — add Bob and Carol</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> curl -X POST http://localhost:3000/students \</div>
+          <div class="run-line">     -H "Content-Type: application/json" \</div>
+          <div class="run-line">     -d '{"name": "Bob", "age": 22, "major": "HCDD"}'</div>
+          <div class="run-line"><span class="run-prompt">$</span> curl -X POST http://localhost:3000/students \</div>
+          <div class="run-line">     -H "Content-Type: application/json" \</div>
+          <div class="run-line">     -d '{"name": "Carol", "age": 19}'</div>
+          <div class="run-line"><span class="run-comment"># Carol omits major — schema default kicks in</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="example-card">
+      <h3>Expected response — 201 Created</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ RESPONSE BODY</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-output">{</span></div>
+          <div class="run-line"><span class="run-output">  "_id": "67f038494c8f9371af7b5cdf",</span></div>
+          <div class="run-line"><span class="run-output">  "name": "Alice",</span></div>
+          <div class="run-line"><span class="run-output">  "age": 20,</span></div>
+          <div class="run-line"><span class="run-output">  "major": "IST"</span></div>
+          <div class="run-line"><span class="run-output">}</span></div>
+        </div>
+      </div>
+      <div class="tip-box micro" style="margin-top:12px;">
+        <strong>Copy Alice's <code>_id</code>.</strong> You will need it for the PUT and DELETE requests coming up.
+      </div>
+      <h3 style="margin-top:14px;">Carol's response — default applied</h3>
+      <div class="run-box" style="margin-top:8px;">
+        <div class="run-box-header">▶ RESPONSE — major defaulted to "Undeclared"</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-output">{</span></div>
+          <div class="run-line"><span class="run-output">  "_id": "67f038494c8f9371af7b5ce1",</span></div>
+          <div class="run-line"><span class="run-output">  "name": "Carol",</span></div>
+          <div class="run-line"><span class="run-output">  "age": 19,</span></div>
+          <div class="run-line"><span class="run-output">  "major": "Undeclared"</span></div>
+          <div class="run-line"><span class="run-output">}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 11 — TEST: READ (GET) ═══ -->
+<div class="slide" data-slide="11">
+  <h2>Test: GET /students — Read</h2>
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>curl command</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ TERMINAL — get all students</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/students</div>
+        </div>
+      </div>
+      <div class="run-box" style="margin-top:12px;">
+        <div class="run-box-header">▶ OPTIONAL — pretty-print the JSON output</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-comment"># If you have Python installed:</span></div>
+          <div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/students | python3 -m json.tool</div>
+          <div class="run-line"></div>
+          <div class="run-line"><span class="run-comment"># Or install jq (a JSON formatter):</span></div>
+          <div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/students | jq</div>
+        </div>
+      </div>
+    </div>
+    <div class="example-card">
+      <h3>Expected response — 200 OK</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ RESPONSE BODY (after inserting Alice, Bob, Carol)</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-output">[</span></div>
+          <div class="run-line"><span class="run-output">  {</span></div>
+          <div class="run-line"><span class="run-output">    "_id": "67f038494c8f9371af7b5cdf",</span></div>
+          <div class="run-line"><span class="run-output">    "name": "Alice",</span></div>
+          <div class="run-line"><span class="run-output">    "age": 20,</span></div>
+          <div class="run-line"><span class="run-output">    "major": "IST"</span></div>
+          <div class="run-line"><span class="run-output">  },</span></div>
+          <div class="run-line"><span class="run-output">  {</span></div>
+          <div class="run-line"><span class="run-output">    "_id": "67f038494c8f9371af7b5ce0",</span></div>
+          <div class="run-line"><span class="run-output">    "name": "Bob",</span></div>
+          <div class="run-line"><span class="run-output">    "age": 22,</span></div>
+          <div class="run-line"><span class="run-output">    "major": "HCDD"</span></div>
+          <div class="run-line"><span class="run-output">  },</span></div>
+          <div class="run-line"><span class="run-output">  {</span></div>
+          <div class="run-line"><span class="run-output">    "_id": "67f038494c8f9371af7b5ce1",</span></div>
+          <div class="run-line"><span class="run-output">    "name": "Carol",</span></div>
+          <div class="run-line"><span class="run-output">    "age": 19,</span></div>
+          <div class="run-line"><span class="run-output">    "major": "Undeclared"</span></div>
+          <div class="run-line"><span class="run-output">  }</span></div>
+          <div class="run-line"><span class="run-output">]</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 12 — TEST: UPDATE (PUT) ═══ -->
+<div class="slide" data-slide="12">
+  <h2>Test: PUT /students/:id — Update</h2>
+  <div class="where-badge warn">Replace the ID in the URL with Alice's actual _id from your GET response</div>
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>curl command</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ TERMINAL — update Alice's age to 21</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> curl -X PUT \</div>
+          <div class="run-line">  http://localhost:3000/students/67f038494c8f9371af7b5cdf \</div>
+          <div class="run-line">  -H "Content-Type: application/json" \</div>
+          <div class="run-line">  -d '{"age": 21}'</div>
+        </div>
+      </div>
+      <div class="info-box micro" style="margin-top:12px;">
+        You only send the fields you want to change. Because the route uses <code>$set</code>, the untouched fields (<code>name</code>, <code>major</code>) remain as-is.
+      </div>
+      <div class="run-box" style="margin-top:12px;">
+        <div class="run-box-header">▶ TERMINAL — update multiple fields at once</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> curl -X PUT \</div>
+          <div class="run-line">  http://localhost:3000/students/67f038494c8f9371af7b5cdf \</div>
+          <div class="run-line">  -H "Content-Type: application/json" \</div>
+          <div class="run-line">  -d '{"age": 21, "major": "HCDD"}'</div>
+        </div>
+      </div>
+    </div>
+    <div class="example-card">
+      <h3>Expected response — 200 OK</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ RESPONSE BODY — the updated document</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-output">{</span></div>
+          <div class="run-line"><span class="run-output">  "_id": "67f038494c8f9371af7b5cdf",</span></div>
+          <div class="run-line"><span class="run-output">  "name": "Alice",</span></div>
+          <div class="run-line"><span class="run-output">  "age": 21,</span></div>
+          <div class="run-line"><span class="run-output">  "major": "IST"</span></div>
+          <div class="run-line"><span class="run-output">}</span></div>
+        </div>
+      </div>
+      <div class="tip-box micro" style="margin-top:10px;">
+        This is the document <strong>after</strong> the update because we passed <code>{ new: true }</code> to <code>findByIdAndUpdate</code>. Without that option, Mongoose returns the document as it was <em>before</em> the update.
+      </div>
+      <h3 style="margin-top:14px;">If the ID does not exist</h3>
+      <div class="run-box" style="margin-top:8px;">
+        <div class="run-box-header">▶ RESPONSE — 404 Not Found</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-error">{ "error": "Not found" }</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 13 — TEST: DELETE ═══ -->
+<div class="slide" data-slide="13">
+  <h2>Test: DELETE /students/:id — Delete</h2>
+  <div class="where-badge warn">Use a real _id from your collection — copy it from the GET response</div>
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>curl command</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ TERMINAL — delete Alice</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> curl -X DELETE \</div>
+          <div class="run-line">  http://localhost:3000/students/67f038494c8f9371af7b5cdf</div>
+        </div>
+      </div>
+      <h3 style="margin-top:14px;">Verify the delete worked</h3>
+      <div class="run-box" style="margin-top:8px;">
+        <div class="run-box-header">▶ TERMINAL — GET all after delete</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> curl http://localhost:3000/students</div>
+          <div class="run-line"><span class="run-comment"># Alice should no longer appear in the array</span></div>
+        </div>
+      </div>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ TERMINAL — try to delete the same ID again</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> curl -X DELETE \</div>
+          <div class="run-line">  http://localhost:3000/students/67f038494c8f9371af7b5cdf</div>
+          <div class="run-line"><span class="run-comment"># Should return 404 — already gone</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="example-card">
+      <h3>Expected response — 200 OK</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ RESPONSE BODY — the deleted document</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-output">{</span></div>
+          <div class="run-line"><span class="run-output">  "message": "Deleted successfully",</span></div>
+          <div class="run-line"><span class="run-output">  "student": {</span></div>
+          <div class="run-line"><span class="run-output">    "_id": "67f038494c8f9371af7b5cdf",</span></div>
+          <div class="run-line"><span class="run-output">    "name": "Alice",</span></div>
+          <div class="run-line"><span class="run-output">    "age": 21,</span></div>
+          <div class="run-line"><span class="run-output">    "major": "IST"</span></div>
+          <div class="run-line"><span class="run-output">  }</span></div>
+          <div class="run-line"><span class="run-output">}</span></div>
+        </div>
+      </div>
+      <div class="tip-box micro" style="margin-top:10px;">
+        We return the deleted document so the client can confirm what was removed.
+      </div>
+      <h3 style="margin-top:14px;">If the ID does not exist</h3>
+      <div class="run-box" style="margin-top:8px;">
+        <div class="run-box-header">▶ RESPONSE — 404 Not Found</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-error">{ "error": "Not found" }</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 14 — VALIDATION IN ACTION ═══ -->
+<div class="slide" data-slide="14">
+  <h2>Validation in Action</h2>
+  <p>Try these intentionally bad requests. Read the errors — they come directly from the Mongoose schema.</p>
+  <div class="comparison-grid" style="margin-top:14px;">
+    <div class="example-card">
+      <h3>Missing a required field</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ TERMINAL — send without age</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> curl -X POST http://localhost:3000/students \</div>
+          <div class="run-line">     -H "Content-Type: application/json" \</div>
+          <div class="run-line">     -d '{"name": "Dan"}'</div>
+        </div>
+      </div>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ RESPONSE — 400 Bad Request</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-error">{</span></div>
+          <div class="run-line"><span class="run-error">  "error": "Student validation failed:</span></div>
+          <div class="run-line"><span class="run-error">   age: Path `age` is required."</span></div>
+          <div class="run-line"><span class="run-error">}</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="example-card">
+      <h3>Wrong data type</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ TERMINAL — send age as a string</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> curl -X POST http://localhost:3000/students \</div>
+          <div class="run-line">     -H "Content-Type: application/json" \</div>
+          <div class="run-line">     -d '{"name": "Eve", "age": "twenty"}'</div>
+        </div>
+      </div>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ RESPONSE — 400 Bad Request</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-error">{</span></div>
+          <div class="run-line"><span class="run-error">  "error": "Student validation failed:</span></div>
+          <div class="run-line"><span class="run-error">   age: Cast to Number failed for</span></div>
+          <div class="run-line"><span class="run-error">   value \"twenty\" at path \"age\""</span></div>
+          <div class="run-line"><span class="run-error">}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tip-box" style="margin-top:18px;">
+    These 400 responses come from the <code>catch</code> block in the POST route: <code>res.status(400).json({ error: err.message })</code>. Mongoose throws the error; Express catches it and sends the message back to the client.
+  </div>
+</div>
+
+<!-- ═══ SLIDE 15 — ASYNC/AWAIT vs PROMISE ═══ -->
+<div class="slide" data-slide="15">
+  <h2>Promise Syntax vs async/await</h2>
+  <p>All Mongoose methods return promises. The routes in <code>server.js</code> use async/await, but you will see both styles in documentation and existing code.</p>
+  <div class="comparison-grid" style="margin-top:14px;">
+    <div class="example-card">
+      <h3>Promise — .then() / .catch()</h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 promise-style.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-promise">Copy</button></div>
+      </div>
+      <div class="static-code">
+        <ol>
+          <li>Student.findById("67f038494c8f9371af7b5cdf")</li>
+          <li>  .then((student) => {</li>
+          <li>    student.age = 25;</li>
+          <li>    return student.save();</li>
+          <li>  })</li>
+          <li>  .then((updated) => console.log("Updated:", updated))</li>
+          <li>  .catch((err) => console.error("Error:", err));</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-promise">Student.findById("67f038494c8f9371af7b5cdf")
+  .then((student) => {
+    student.age = 25;
+    return student.save();
+  })
+  .then((updated) => console.log("Updated:", updated))
+  .catch((err) => console.error("Error:", err));</textarea>
+      <ul class="tight" style="margin-top:12px;">
+        <li>Works in all JavaScript environments</li>
+        <li>Gets deeply nested for multi-step operations</li>
+        <li>Errors handled by <code>.catch()</code></li>
+      </ul>
+    </div>
+    <div class="example-card">
+      <h3>async/await — used in our routes</h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 async-style.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-async">Copy</button></div>
+      </div>
+      <div class="static-code">
+        <ol>
+          <li>async function updateStudent(id) {</li>
+          <li>  try {</li>
+          <li>    const student = await Student.findById(id);</li>
+          <li>    student.age = 25;</li>
+          <li>    const updated = await student.save();</li>
+          <li>    console.log("Updated:", updated);</li>
+          <li>  } catch (err) {</li>
+          <li>    console.error("Error:", err);</li>
+          <li>  }</li>
+          <li>}</li>
+          <li></li>
+          <li>updateStudent("67f038494c8f9371af7b5cdf");</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-async">async function updateStudent(id) {
+  try {
+    const student = await Student.findById(id);
+    student.age = 25;
+    const updated = await student.save();
+    console.log("Updated:", updated);
+  } catch (err) {
+    console.error("Error:", err);
+  }
+}
+
+updateStudent("67f038494c8f9371af7b5cdf");</textarea>
+      <ul class="tight" style="margin-top:12px;">
+        <li>Reads like synchronous code — much easier to follow</li>
+        <li>Stays flat even for multi-step operations</li>
+        <li>Errors caught by <code>try/catch</code></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 16 — COMMON ERRORS ═══ -->
+<div class="slide" data-slide="16">
+  <h2>Common Errors &amp; Fixes</h2>
+  <table class="content-table">
+    <thead>
+      <tr><th>Error message</th><th>What it means</th><th>Fix</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>ECONNREFUSED 127.0.0.1:27017</code></td>
+        <td>MongoDB server is not running</td>
+        <td>Open a separate terminal and run <code>mongod</code></td>
+      </tr>
+      <tr>
+        <td><code>Cannot find module './config/database'</code></td>
+        <td>Wrong path in <code>require()</code>, or the file does not exist</td>
+        <td>Confirm both files exist and paths are relative to <code>server.js</code></td>
+      </tr>
+      <tr>
+        <td><code>Path `age` is required</code></td>
+        <td>A required schema field is missing from the request body</td>
+        <td>Include the field in the JSON you send, or make it optional in the schema</td>
+      </tr>
+      <tr>
+        <td><code>Cast to ObjectId failed</code></td>
+        <td>The <code>:id</code> in the URL is not a valid 24-char MongoDB ObjectId</td>
+        <td>Copy the full <code>_id</code> string from a GET response — do not type it by hand</td>
+      </tr>
+      <tr>
+        <td><code>Cannot read properties of null</code></td>
+        <td><code>findById</code> returned <code>null</code> and you accessed a field on it</td>
+        <td>Always check <code>if (!student) return res.status(404)...</code> before using the result</td>
+      </tr>
+      <tr>
+        <td>PUT returns the old document</td>
+        <td><code>findByIdAndUpdate</code> returns the pre-update doc by default</td>
+        <td>Pass <code>{ new: true }</code> as the third argument</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══ SLIDE 17 — TAKEAWAYS ═══ -->
+<div class="slide" data-slide="17">
+  <h2>Takeaways</h2>
+  <div class="example-card">
+    <ul class="big-list">
+      <li>Mongoose adds <strong>schemas and validation</strong> — the raw driver silently accepts any data shape, Mongoose rejects bad data immediately</li>
+      <li>A <strong>schema</strong> defines what fields a document must have; a <strong>model</strong> compiles that schema into a class with built-in CRUD methods</li>
+      <li>Mongoose auto-maps <code>"Student"</code> → <code>students</code> collection (lowercase + pluralize)</li>
+      <li>All model methods return promises — use <code>async/await + try/catch</code> in route handlers</li>
+      <li>Always pass <code>{ new: true }</code> to <code>findByIdAndUpdate</code> if you want the updated document back</li>
+      <li>Always use <code>$set</code> with update methods — omitting it replaces the entire document</li>
+      <li>Separate your code: <code>config/database.js</code> connects, <code>models/</code> defines shapes, <code>server.js</code> runs the API</li>
+    </ul>
+  </div>
+
+</div>
+
+</div><!-- /presentation-container -->
+
+<div class="navigation">
+  <button class="nav-button" id="prevBtn">Previous</button>
+  <button class="nav-button" id="nextBtn">Next</button>
+</div>
+
+<script>
+  (function () {
+    const KEYWORDS = new Set(['const','let','var','function','return','if','else','try','catch','throw','new','require','module','exports','true','false','null','undefined','async','await','class','extends','import','from','of','in','for','while','do','switch','case','break','default','typeof','instanceof','process']);
+    const BUILTINS = new Set(['mongoose','Student','connectDB','app','express','console','Date','JSON','Math','Object','Array','Error','Number','String','Boolean','Promise','process','ObjectId','studentSchema','MongoClient','req','res','err','client','col','db']);
+    const MONGO_OPS = new Set(['$set','$unset','$inc','$mul','$push','$pull','$eq','$ne','$gt','$gte','$lt','$lte','$in','$nin','$and','$or','$nor','$not','$exists','$regex']);
+
+    function tokenize(text) {
+      const tokens = []; let i = 0;
+      while (i < text.length) {
+        if (text[i]==='/'&&text[i+1]==='/') { tokens.push({type:'comment',val:text.slice(i)}); break; }
+        if (text[i]==='`') {
+          let j=i+1; while(j<text.length&&text[j]!=='`'){if(text[j]==='\\')j++;j++;} tokens.push({type:'string',val:text.slice(i,j+1)}); i=j+1; continue;
+        }
+        if (text[i]==='"'||text[i]==="'") {
+          const q=text[i]; let j=i+1; while(j<text.length&&text[j]!==q){if(text[j]==='\\')j++;j++;} tokens.push({type:'string',val:text.slice(i,j+1)}); i=j+1; continue;
+        }
+        if (text[i]==='$') {
+          let j=i+1; while(j<text.length&&/[a-zA-Z0-9_]/.test(text[j]))j++;
+          const w=text.slice(i,j); tokens.push({type:MONGO_OPS.has(w)?'mongoOp':'other',val:w}); i=j; continue;
+        }
+        if (/[a-zA-Z_]/.test(text[i])) {
+          let j=i; while(j<text.length&&/[a-zA-Z0-9_$]/.test(text[j]))j++;
+          const w=text.slice(i,j); let k=j; while(k<text.length&&text[k]===' ')k++;
+          if(KEYWORDS.has(w)) tokens.push({type:'keyword',val:w});
+          else if(BUILTINS.has(w)) tokens.push({type:'builtin',val:w});
+          else if(text[k]==='(') tokens.push({type:'fn',val:w});
+          else tokens.push({type:'ident',val:w});
+          i=j; continue;
+        }
+        if (/[0-9]/.test(text[i])) {
+          let j=i; while(j<text.length&&/[0-9.]/.test(text[j]))j++;
+          tokens.push({type:'num',val:text.slice(i,j)}); i=j; continue;
+        }
+        tokens.push({type:'other',val:text[i]}); i++;
+      }
+      return tokens;
+    }
+
+    const COLORS = { keyword:'#8B5CF6', string:'#B45309', comment:'#9CA3AF', num:'#059669', fn:'#2563EB', builtin:'#0891B2', mongoOp:'#D97706' };
+    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const render = tokens => tokens.map(t => COLORS[t.type] ? `<span style="color:${COLORS[t.type]}">${esc(t.val)}</span>` : esc(t.val)).join('');
+
+    function highlight() {
+      document.querySelectorAll('.static-code li').forEach(li => {
+        if (li.textContent.trim()==='') return;
+        li.innerHTML = render(tokenize(li.textContent));
+      });
+    }
+    document.readyState==='loading' ? document.addEventListener('DOMContentLoaded',highlight) : highlight();
+  })();
+
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let cur = 0;
+  document.getElementById('totalSlides').textContent = slides.length;
+
+  function updateSlides() {
+    slides.forEach((s,i) => s.classList.toggle('active', i===cur));
+    document.getElementById('currentSlide').textContent = cur+1;
+    document.getElementById('prevBtn').disabled = cur===0;
+    document.getElementById('nextBtn').disabled = cur===slides.length-1;
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => { if(cur>0){cur--;updateSlides();} });
+  document.getElementById('nextBtn').addEventListener('click', () => { if(cur<slides.length-1){cur++;updateSlides();} });
+  document.addEventListener('keydown', e => {
+    if (e.key==='ArrowRight'||e.key==='PageDown'||e.key===' ') { e.preventDefault(); if(cur<slides.length-1){cur++;updateSlides();} }
+    if (e.key==='ArrowLeft'||e.key==='PageUp') { e.preventDefault(); if(cur>0){cur--;updateSlides();} }
+  });
+
+  const toast = document.getElementById('toast');
+  function showToast(m) { toast.textContent=m; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),1400); }
+  document.querySelectorAll('[data-copy-source]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const text = document.getElementById(btn.getAttribute('data-copy-source')).value;
+      try { await navigator.clipboard.writeText(text); showToast('Code copied'); }
+      catch { showToast('Copy failed'); }
+    });
+  });
+
+  updateSlides();
+</script>
+</body>
+</html>

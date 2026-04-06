@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HCDD 411 - MongoDB Part 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Outfit:wght@300;500;700;900&amp;display=swap" rel="stylesheet"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #3B7DD6;
+    --secondary: #5A6C7D;
+    --accent: #D4940C;
+    --code-bg: #F8F9FA;
+    --success: #059669;
+    --error: #DC2626;
+    --bg-gradient-start: #F0F4F8;
+    --bg-gradient-end: #E1E8ED;
+    --slide-bg: rgba(255, 255, 255, 0.95);
+    --border-color: rgba(59, 125, 214, 0.30);
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+  }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 140px 0 120px 0;
+  }
+
+  .presentation-container { width: 100%; min-height: 100vh; }
+
+  .slide {
+    width: 90%;
+    max-width: 1220px;
+    min-height: 520px;
+    background: var(--slide-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 56px 60px 52px 60px;
+    margin: 0 auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateX(100px);
+    transition: all 0.45s ease;
+    display: none;
+    border: 2px solid var(--border-color);
+  }
+
+  .slide.active { opacity: 1; transform: translateX(0); display: block; }
+
+  h1 {
+    font-weight: 900;
+    font-size: 4em;
+    color: var(--primary);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    line-height: 1.08;
+  }
+
+  h2 {
+    font-weight: 700;
+    font-size: 2.45em;
+    color: var(--accent);
+    margin-bottom: 24px;
+    letter-spacing: -1px;
+    line-height: 1.12;
+  }
+
+  h3 {
+    font-weight: 600;
+    font-size: 1.33em;
+    color: var(--primary);
+    margin: 0 0 12px 0;
+    line-height: 1.25;
+  }
+
+  p { font-size: 1.08em; line-height: 1.62; }
+  ul { margin: 16px 0 0 0; padding-left: 24px; }
+  li { margin: 9px 0; font-size: 1.06em; line-height: 1.55; }
+
+  .subtitle {
+    font-size: 1.28em;
+    color: var(--text-secondary);
+    margin-bottom: 34px;
+    font-weight: 300;
+  }
+
+  code {
+    font-family: 'Space Mono', monospace;
+    background: rgba(59, 125, 214, 0.12);
+    padding: 2px 7px;
+    border-radius: 5px;
+    color: var(--primary);
+    font-size: 0.95em;
+  }
+
+  .info-box, .tip-box, .warning-box {
+    padding: 18px 20px;
+    margin: 18px 0 0 0;
+    border-radius: 12px;
+  }
+  .info-box  { background: rgba(212, 148, 12, 0.10);  border-left: 4px solid var(--accent); }
+  .tip-box   { background: rgba(5, 150, 105, 0.10);   border-left: 4px solid var(--success); }
+  .warning-box { background: rgba(220, 38, 38, 0.10); border-left: 4px solid var(--error); }
+
+  .example-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 18px;
+    margin-top: 18px;
+  }
+
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 18px;
+    align-items: start;
+  }
+
+  .comparison-grid.three-col { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  .comparison-grid.code-stack { grid-template-columns: 1fr; }
+
+  @supports selector(.comparison-grid:has(.shell-box)) {
+    .comparison-grid:has(.shell-box),
+    .comparison-grid:has(.run-box) { grid-template-columns: 1fr; }
+  }
+
+
+  .example-card {
+    background: rgba(255, 255, 255, 0.74);
+    border: 2px solid var(--border-color);
+    border-radius: 15px;
+    padding: 18px 18px 16px 18px;
+    min-width: 0;
+  }
+
+  .compact-card p, .compact-card li { font-size: 1em; }
+
+  .code-playground {
+    background: var(--code-bg);
+    border-radius: 15px;
+    padding: 22px;
+    margin: 22px 0 0 0;
+    border: 2px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .code-playground::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 30px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 15px 15px 0 0;
+  }
+
+  .playground-label {
+    position: absolute;
+    top: 5px; left: 18px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.84em;
+    color: white;
+    font-weight: 700;
+    z-index: 1;
+    letter-spacing: 0.2px;
+  }
+
+  .ide-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px 10px 0 0;
+    margin-top: 15px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .file-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--primary);
+    color: white;
+    border-radius: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8em;
+    font-weight: 600;
+  }
+
+  .toolbar-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  .toolbar-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    color: var(--text-secondary);
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: all 0.2s ease;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+  }
+
+  .toolbar-btn:hover { background: rgba(0, 0, 0, 0.10); color: var(--text-primary); }
+
+  .static-code {
+    border: 2px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    overflow: auto;
+    background: linear-gradient(90deg, rgba(59, 125, 214, 0.08) 0 58px, #ffffff 58px 100%);
+    max-height: 430px;
+  }
+
+  .static-code ol {
+    margin: 0;
+    padding: 16px 18px 16px 58px;
+    list-style: decimal;
+    list-style-position: outside;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.92em;
+    line-height: 1.65;
+    color: #111827;
+  }
+
+  .static-code li {
+    margin: 0;
+    padding: 0 12px 0 16px;
+    white-space: pre;
+    border-left: 1px solid rgba(59, 125, 214, 0.25);
+    font-size: 1em;
+  }
+
+  .static-code ol li::marker {
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .copy-source { display: none; }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  .wide-flow .flow-box { min-width: 150px; }
+
+  .flow-box {
+    background: rgba(59, 125, 214, 0.12);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .flow-arrow { font-size: 1.6em; color: var(--primary); font-weight: 900; }
+
+  .content-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 18px;
+    overflow: hidden;
+    border: 2px solid var(--border-color);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.82);
+  }
+
+  .content-table th, .content-table td {
+    padding: 14px 16px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(59, 125, 214, 0.18);
+    font-size: 1em;
+    line-height: 1.45;
+  }
+
+  .content-table th {
+    background: rgba(59, 125, 214, 0.12);
+    color: var(--primary);
+    font-weight: 800;
+  }
+
+  .content-table tr:last-child td { border-bottom: none; }
+
+  .navigation {
+    position: fixed;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 18px;
+    z-index: 1000;
+  }
+
+  .nav-button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px 34px;
+    border-radius: 50px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  .nav-button:hover { background: var(--secondary); transform: translateY(-2px); }
+  .nav-button:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  .slide-indicator {
+    position: fixed;
+    top: 40px;
+    right: 40px;
+    background: var(--primary);
+    padding: 15px 24px;
+    border-radius: 50px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 1em;
+    z-index: 1000;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  .penn-state-badge {
+    position: fixed;
+    top: 40px;
+    left: 40px;
+    font-weight: 900;
+    font-size: 1.2em;
+    color: var(--primary);
+    z-index: 1000;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .toast {
+    position: fixed;
+    top: 92px;
+    right: 40px;
+    background: rgba(5, 150, 105, 0.94);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: all 0.2s ease;
+    pointer-events: none;
+    z-index: 1100;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* Run & Test boxes */
+  .run-box {
+    background: #0d1117;
+    border-radius: 12px;
+    margin: 16px 0 0 0;
+    border: 2px solid rgba(59, 125, 214, 0.22);
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+  }
+  .run-box-header {
+    background: linear-gradient(90deg, #161b22, #0d1117);
+    padding: 7px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.79em;
+    color: #4b6a9b;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid rgba(59, 125, 214, 0.12);
+  }
+  .run-box-body {
+    padding: 12px 18px 14px 18px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .run-line {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85em;
+    color: #c9d1d9;
+    line-height: 1.62;
+    white-space: pre;
+    margin: 0;
+    display: block;
+    width: max-content;
+    min-width: 100%;
+  }
+  .run-comment { color: #484f58; }
+  .run-prompt  { color: #3fb950; font-weight: 700; }
+  .run-output  { color: #79c0ff; }
+  .run-note    { color: #d29922; }
+
+  /* Mongo shell prompt style */
+  .shell-box {
+    background: #0d1117;
+    border-radius: 12px;
+    margin: 16px 0 0 0;
+    border: 2px solid rgba(59, 125, 214, 0.22);
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+  }
+  .shell-box-header {
+    background: linear-gradient(90deg, #161b22, #0d1117);
+    padding: 7px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.79em;
+    color: #4b6a9b;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid rgba(59, 125, 214, 0.12);
+  }
+  .shell-box-body {
+    padding: 12px 18px 14px 18px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .shell-line {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85em;
+    color: #c9d1d9;
+    line-height: 1.7;
+    white-space: pre;
+    margin: 0;
+    display: block;
+    width: max-content;
+    min-width: 100%;
+  }
+  .shell-prompt { color: #3fb950; font-weight: 700; }
+  .shell-out    { color: #79c0ff; }
+  .shell-key    { color: #ff7b72; }
+  .shell-val    { color: #a5d6ff; }
+  .shell-comment { color: #484f58; }
+
+  /* Badge for SQL/NoSQL labels */
+  .db-badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78em;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-sql   { background: rgba(5, 150, 105, 0.15); color: #065F46; }
+  .badge-nosql { background: rgba(59, 125, 214, 0.15); color: #1E3A5F; }
+  .badge-mongo { background: rgba(212, 148, 12, 0.18); color: #7C4A00; }
+
+  @media (max-width: 980px) {
+    body { padding-top: 120px; }
+    .slide { width: 94%; padding: 48px 28px 42px 28px; }
+    h1 { font-size: 3em; }
+    h2 { font-size: 2.1em; }
+    .comparison-grid, .comparison-grid.three-col { grid-template-columns: 1fr; }
+    .penn-state-badge { left: 20px; top: 20px; }
+    .slide-indicator { right: 20px; top: 20px; }
+    .navigation { bottom: 20px; }
+  }
+
+  .where-badge {
+    display: inline-block;
+    margin: 0 0 12px 0;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    background: rgba(59, 125, 214, 0.12);
+    color: var(--primary);
+    border: 1px solid rgba(59, 125, 214, 0.28);
+  }
+
+  .where-badge.gui {
+    background: rgba(212, 148, 12, 0.12);
+    color: #7C4A00;
+    border-color: rgba(212, 148, 12, 0.28);
+  }
+
+  .where-badge.warn {
+    background: rgba(220, 38, 38, 0.10);
+    color: #991B1B;
+    border-color: rgba(220, 38, 38, 0.22);
+  }
+
+  .step-list {
+    margin-top: 14px;
+    padding-left: 20px;
+  }
+
+  .step-list li {
+    margin: 10px 0;
+    line-height: 1.55;
+  }
+
+  .check-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 18px;
+  }
+
+  .micro {
+    font-size: 0.92em !important;
+  }
+
+  .big-list li { font-size: 1.08em; }
+
+  .tight li { margin: 6px 0; }
+
+  .caption {
+    margin-top: 10px;
+    font-size: 0.92em;
+    color: var(--text-secondary);
+  }
+
+  .number-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: var(--primary);
+    color: white;
+    font-weight: 800;
+    margin-right: 8px;
+    font-size: 0.9em;
+  }
+
+  .mini-table td, .mini-table th {
+    padding: 10px 12px;
+    font-size: 0.96em;
+  }
+
+  @media (max-width: 980px) {
+    .check-grid { grid-template-columns: 1fr; }
+  }
+
+</style>
+</head>
+<body>
+<div class="penn-state-badge">HCDD 411</div>
+<div class="slide-indicator"><span id="currentSlide">1</span> / <span id="totalSlides">?</span></div>
+<div class="toast" id="toast">Code copied</div>
+<div class="presentation-container"><div class="slide active" data-slide="1"><h1>MONGODB PART 2</h1><h2>Md Touhidul Islam</h2><div class="info-box"><strong>Today:</strong><ul class="big-list"><li>Installing and connecting MongoDB Compass</li><li>Using mongosh to work with databases and collections</li><li>CRUD operations in MongoDB</li><li>Common beginner problems, troubleshooting, and practice</li></ul></div></div>
+<!-- ═══════════════════════════════════ SLIDE 1 ═══════════════════════════════════ -->
+<div class="slide" data-slide="2">
+<h2>Compass: Install, Open, and Connect</h2>
+<div class="comparison-grid">
+<div class="example-card compact-card">
+<h3>Install MongoDB Compass</h3>
+<div class="info-box micro">
+<strong>macOS</strong>
+<ol class="step-list tight">
+<li>Download the Compass installer for macOS<br><a href="https://www.mongodb.com/try/download/compass" target="_blank" rel="noopener noreferrer">https://www.mongodb.com/try/download/compass</a></li>
+<li>Open the downloaded <code>.dmg</code> file</li>
+<li>Drag <strong>MongoDB Compass</strong> into <strong>Applications</strong></li>
+<li>Open Compass from Applications</li>
+</ol>
+</div>
+<div class="info-box micro">
+<strong>Windows</strong>
+<ol class="step-list tight">
+<li>Download the Compass installer for Windows<br><a href="https://www.mongodb.com/try/download/compass" target="_blank" rel="noopener noreferrer">https://www.mongodb.com/try/download/compass</a></li>
+<li>Run the installer and keep the normal default options</li>
+<li>Finish installation and open <strong>MongoDB Compass</strong></li>
+</ol>
+</div>
+</div>
+<div class="example-card">
+<h3><span class="where-badge gui">Do this in: Compass GUI</span></h3>
+<ol class="step-list">
+<li>First make sure your local MongoDB server is already running</li>
+<li>Open Compass and go to the <strong>New Connection</strong> screen</li>
+<li>In the connection box, paste <code>mongodb://localhost:27017</code></li>
+<li>Leave the local defaults alone unless your setup is different</li>
+<li>Click <strong>Connect</strong> or <strong>Save &amp; Connect</strong></li>
+<li>You should now see your local deployment in the left sidebar</li>
+</ol>
+</div>
+</div>
+<div class="tip-box">
+<strong>Important:</strong> Compass is only the viewer/editor. If the MongoDB server is not running, Compass cannot connect.
+  </div>
+<div class="info-box">
+<strong>Meaning of <code>localhost:27017</code>:</strong> same computer, default MongoDB port.
+  </div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 29 ═══════════════════════════════════ -->
+<div class="slide" data-slide="3">
+<h2>Compass: Where to Click to See Your Data</h2>
+<div class="comparison-grid">
+<div class="example-card">
+<h3>After Compass connects</h3>
+<ol class="step-list">
+<li>In the left sidebar, click your local deployment</li>
+<li>Click the database name, for example <code>school</code></li>
+<li>Click the collection name, for example <code>students</code></li>
+<li>Open the <strong>Documents</strong> tab to see the stored documents</li>
+<li>After you run commands in <code>mongosh</code>, click <strong>Refresh</strong> in Compass</li>
+</ol>
+</div>
+<div class="example-card">
+<h3>What you should look for</h3>
+<table class="content-table mini-table" style="margin-top:10px;">
+<thead>
+<tr><th>Where in Compass</th><th>What it shows</th></tr>
+</thead>
+<tbody>
+<tr><td>Left sidebar</td><td>Your connection and database names</td></tr>
+<tr><td>Database view</td><td>The collections inside that database</td></tr>
+<tr><td>Documents tab</td><td>The actual JSON-like documents</td></tr>
+<tr><td>Refresh button</td><td>Any inserts, updates, or deletes you just ran in <code>mongosh</code></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="tip-box">
+Best beginner workflow: keep <strong>Compass open on one side</strong> and <strong>mongosh on the other</strong>. Run a command, then refresh Compass so you can watch the data change.
+  </div>
+</div><div class="slide" data-slide="4">
+<h2>Before We Start: Where Do Commands Go?</h2>
+<div class="comparison-grid">
+<div class="example-card">
+<h3><span class="where-badge">Run in: Terminal / Command Prompt / PowerShell</span></h3>
+<ul>
+<li>Install software</li>
+<li>Start or stop MongoDB server</li>
+<li>Check versions</li>
+<li>Run <code>mongosh</code></li>
+</ul>
+</div>
+<div class="example-card">
+<h3><span class="where-badge">Run in: mongosh</span></h3>
+<ul>
+<li>Create databases and collections</li>
+<li>Insert, read, update, delete documents</li>
+<li>Run MongoDB commands like <code>use school</code> or <code>db.students.find()</code></li>
+</ul>
+</div>
+</div>
+<div class="comparison-grid" style="margin-top:18px;">
+<div class="example-card">
+<h3><span class="where-badge gui">Do this in: Compass GUI</span></h3>
+<ul>
+<li>Create a connection</li>
+<li>Browse collections visually</li>
+<li>Insert/edit documents with forms</li>
+<li>Run queries without typing everything manually</li>
+</ul>
+</div>
+<div class="example-card">
+<h3><span class="where-badge warn">Do not mix them up</span></h3>
+<ul>
+<li><code>brew install ...</code> does <strong>not</strong> go in <code>mongosh</code></li>
+<li><code>db.users.find()</code> does <strong>not</strong> go in Terminal</li>
+<li>Compass steps are clicks, not shell commands</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 30 ═══════════════════════════════════ -->
+<div class="slide" data-slide="5">
+<h2>What You See After Running <code>mongosh</code></h2>
+<div class="comparison-grid code-stack">
+<div class="example-card">
+<h3><span class="where-badge">Run in: Terminal / Command Prompt / PowerShell</span></h3>
+<div class="run-box" style="margin-top:10px;">
+<div class="run-box-header">▶ START THE SHELL</div>
+<div class="run-box-body">
+<div class="run-line">mongosh</div>
+</div>
+</div>
+</div>
+<div class="example-card">
+<h3>Then you are inside <code>mongosh</code></h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ MONGOSH SESSION</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> show dbs</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> use school</div>
+<div class="shell-line"><span class="shell-out">switched to db school</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 31 ═══════════════════════════════════ -->
+<div class="slide" data-slide="6">
+<h2>Working with Databases</h2>
+<div class="where-badge">Run in: mongosh</div>
+<div class="comparison-grid code-stack">
+<div class="example-card">
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ DATABASE COMMANDS</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> show dbs</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> use school</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db</div>
+</div>
+</div>
+</div>
+<div class="example-card">
+<h3>What you should see</h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ EXPECTED OUTPUT</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> show dbs</div>
+<div class="shell-line"><span class="shell-out">admin   40.00 KiB</span></div>
+<div class="shell-line"><span class="shell-out">config  72.00 KiB</span></div>
+<div class="shell-line"><span class="shell-out">local   72.00 KiB</span></div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> use school</div>
+<div class="shell-line"><span class="shell-out">switched to db school</span></div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db</div>
+<div class="shell-line"><span class="shell-out">school</span></div>
+</div>
+</div>
+<ul class="tight" style="margin-top:12px;">
+<li><code>show dbs</code> lists databases that already have data</li>
+<li><code>use school</code> switches to the <code>school</code> database</li>
+<li><code>db</code> prints the current database name</li>
+</ul>
+</div>
+</div>
+<div class="tip-box micro"><strong>Common beginner surprise:</strong> after <code>use school</code>, the database may still not appear in <code>show dbs</code> or Compass until it actually contains data.</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 32 ═══════════════════════════════════ -->
+<div class="slide" data-slide="7">
+<h2>Working with Collections</h2>
+<div class="where-badge">Run in: mongosh</div>
+<div class="comparison-grid code-stack">
+<div class="example-card">
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ COLLECTION COMMANDS</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.createCollection("students")</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> show collections</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.drop()</div>
+</div>
+</div>
+</div>
+<div class="example-card">
+<h3>What you should see</h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ OUTPUT + COMPASS VIEW</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.createCollection("students")</div>
+<div class="shell-line"><span class="shell-out">{ ok: 1 }</span></div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> show collections</div>
+<div class="shell-line"><span class="shell-out">students</span></div>
+<div class="shell-line"><span class="shell-comment"># After refreshing Compass: school -&gt; students appears</span></div>
+<div class="shell-line"><span class="shell-comment"># If you click students now, it is still empty</span></div>
+</div>
+</div>
+<div class="warning-box micro">
+<strong>Caution:</strong> <code>db.students.drop()</code> removes the whole collection. After refresh, <code>students</code> disappears from Compass.
+      </div>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 33 ═══════════════════════════════════ -->
+<div class="slide" data-slide="8">
+<h2>CRUD Overview</h2>
+<div class="example-grid">
+<div class="example-card compact-card">
+<h3>Create</h3>
+<p>Insert new documents</p>
+</div>
+<div class="example-card compact-card">
+<h3>Read</h3>
+<p>Find documents</p>
+</div>
+<div class="example-card compact-card">
+<h3>Update</h3>
+<p>Modify documents</p>
+</div>
+<div class="example-card compact-card">
+<h3>Delete</h3>
+<p>Remove documents</p>
+</div>
+</div>
+<div class="info-box">
+    We will do all CRUD examples in <strong>mongosh</strong>. You can later do many of the same actions in Compass with buttons and forms.
+  </div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 34 ═══════════════════════════════════ -->
+<div class="slide" data-slide="9">
+<h2>Create: Insert One Document</h2>
+<div class="where-badge">Run in: mongosh</div>
+<div class="comparison-grid code-stack">
+<div class="example-card">
+<div class="shell-box">
+<div class="shell-box-header">▷ INSERTONE</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.insertOne({ name: "Alice", age: 20, major: "HCDD" })</div>
+</div>
+</div>
+</div>
+<div class="example-card">
+<h3>What changes after you run it</h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ RESULT + COMPASS AFTER REFRESH</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-out">{ acknowledged: true, insertedId: ObjectId("...") }</span></div>
+<div class="shell-line"><span class="shell-comment"># Compass -&gt; school -&gt; students -&gt; Documents</span></div>
+<div class="shell-line"><span class="shell-out">{ _id: ObjectId("..."), name: "Alice", age: 20, major: "HCDD" }</span></div>
+</div>
+</div>
+</div>
+</div>
+<div class="tip-box">
+    If you do not provide <code>_id</code>, MongoDB creates one automatically.
+  </div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 35 ═══════════════════════════════════ -->
+<div class="slide" data-slide="10">
+<h2>Create: Insert Many Documents</h2>
+<div class="where-badge">Run in: mongosh</div>
+<div class="comparison-grid code-stack">
+<div class="example-card">
+<div class="shell-box">
+<div class="shell-box-header">▷ INSERTMANY</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.insertMany([{ name: "Bob", age: 21, major: "IST" }, { name: "Carol", age: 19, major: "HCDD" }, { name: "David", age: 22, major: "CS" }])</div>
+</div>
+</div>
+</div>
+<div class="example-card">
+<h3>What changes after you run it</h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ RESULT + COMPASS AFTER REFRESH</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-out">{ acknowledged: true, insertedIds: { 0: ObjectId("..."), 1: ObjectId("..."), 2: ObjectId("...") } }</span></div>
+<div class="shell-line"><span class="shell-comment"># Compass now shows 4 documents total:</span></div>
+<div class="shell-line"><span class="shell-out">Alice, Bob, Carol, David</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 36 ═══════════════════════════════════ -->
+<div class="slide" data-slide="11">
+<h2>Read: Find Documents</h2>
+<div class="where-badge">Run in: mongosh</div>
+<div class="comparison-grid code-stack">
+<div class="example-card">
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ BASIC READS</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find()</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.findOne({ name: "Alice" })</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find({ major: "HCDD" })</div>
+</div>
+</div>
+</div>
+<div class="example-card">
+<h3>What you should see</h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ MATCHING DOCUMENTS</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.findOne({ name: "Alice" })</div>
+<div class="shell-line"><span class="shell-out">{ _id: ObjectId("..."), name: "Alice", age: 20, major: "HCDD" }</span></div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find({ major: "HCDD" })</div>
+<div class="shell-line"><span class="shell-out">{ name: "Alice", age: 20, major: "HCDD" }</span></div>
+<div class="shell-line"><span class="shell-out">{ name: "Carol", age: 19, major: "HCDD" }</span></div>
+<div class="shell-line"><span class="shell-comment"># Compass shows the same documents in the Documents tab</span></div>
+</div>
+</div>
+<ul class="tight" style="margin-top:12px;">
+<li><code>find()</code> returns many matching documents</li>
+<li><code>findOne()</code> returns one matching document</li>
+<li>The object inside <code>find(...)</code> is your filter</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 37 ═══════════════════════════════════ -->
+<div class="slide" data-slide="12">
+<h2>Read Operators: Comparison</h2>
+<div class="where-badge">Run in: mongosh</div>
+<div class="comparison-grid code-stack">
+<div class="example-card">
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ COMPARISON QUERIES</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find({ age: { $gt: 20 } })</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find({ age: { $gte: 20 } })</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find({ age: { $lt: 21 } })</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find({ age: { $in: [19, 20] } })</div>
+</div>
+</div>
+</div>
+<div class="example-card">
+<h3>Useful operators</h3>
+<ul>
+<li><code>$gt</code> greater than</li>
+<li><code>$gte</code> greater than or equal</li>
+<li><code>$lt</code> less than</li>
+<li><code>$lte</code> less than or equal</li>
+<li><code>$in</code> value appears in a list</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 38 ═══════════════════════════════════ -->
+<div class="slide" data-slide="13">
+<h2>Read Operators: Logical + Projection + Sort</h2>
+<div class="where-badge">Run in: mongosh</div>
+<div class="comparison-grid code-stack">
+<div class="example-card">
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ LOGICAL + OUTPUT CONTROL</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find({ $and: [{ major: "HCDD" }, { age: { $gte: 20 } }] })</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find({}, { name: 1, major: 1, _id: 0 })</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find().sort({ age: -1 })</div>
+</div>
+</div>
+</div>
+<div class="example-card">
+<h3>Meaning</h3>
+<ul>
+<li><code>$and</code> combines conditions</li>
+<li>Projection chooses which fields appear</li>
+<li><code>1</code> means ascending, <code>-1</code> means descending sort</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 39 ═══════════════════════════════════ -->
+<div class="slide" data-slide="14">
+<h2>Update: Modify One or Many Documents</h2>
+<div class="where-badge">Run in: mongosh</div>
+<div class="comparison-grid code-stack">
+<div class="example-card">
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ UPDATEONE / UPDATEMANY</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.updateOne({ name: "Alice" }, { $set: { age: 21 } })</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.updateMany({ major: "HCDD" }, { $set: { active: true } })</div>
+</div>
+</div>
+</div>
+<div class="example-card">
+<h3>What changes after refresh</h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ RESULT + COMPASS AFTER REFRESH</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-out">Alice now has age: 21</span></div>
+<div class="shell-line"><span class="shell-out">Alice and Carol now have active: true</span></div>
+<div class="shell-line"><span class="shell-out">{ name: "Alice", age: 21, major: "HCDD", active: true }</span></div>
+<div class="shell-line"><span class="shell-out">{ name: "Carol", age: 19, major: "HCDD", active: true }</span></div>
+</div>
+</div>
+<ul class="tight" style="margin-top:12px;">
+<li>First argument = which documents</li>
+<li>Second argument = what change to apply</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 40 ═══════════════════════════════════ -->
+<div class="slide" data-slide="15">
+<h2>Update Operators You Will Use Most Often</h2>
+<div class="where-badge">Run in: mongosh</div>
+<table class="content-table">
+<thead>
+<tr><th>Operator</th><th>What it does</th><th>Example</th></tr>
+</thead>
+<tbody>
+<tr><td><code>$set</code></td><td>Set a field to a value</td><td><code>{ $set: { major: "DS" } }</code></td></tr>
+<tr><td><code>$inc</code></td><td>Increase a number</td><td><code>{ $inc: { age: 1 } }</code></td></tr>
+<tr><td><code>$unset</code></td><td>Remove a field</td><td><code>{ $unset: { nickname: "" } }</code></td></tr>
+<tr><td><code>$push</code></td><td>Add one item to an array</td><td><code>{ $push: { courses: "IST 256" } }</code></td></tr>
+</tbody>
+</table>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 41 ═══════════════════════════════════ -->
+<div class="slide" data-slide="16">
+<h2>Delete: Remove Documents</h2>
+<div class="where-badge">Run in: mongosh</div>
+<div class="comparison-grid code-stack">
+<div class="example-card">
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ DELETEONE / DELETEMANY</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.deleteOne({ name: "Bob" })</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.deleteMany({ active: true })</div>
+</div>
+</div>
+</div>
+<div class="example-card">
+<h3>What disappears after refresh</h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ RESULT + COMPASS AFTER REFRESH</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-out">Bob is removed</span></div>
+<div class="shell-line"><span class="shell-out">Alice and Carol are removed because they had active: true</span></div>
+<div class="shell-line"><span class="shell-comment"># Remaining document in Compass:</span></div>
+<div class="shell-line"><span class="shell-out">{ name: "David", age: 22, major: "CS" }</span></div>
+</div>
+</div>
+<ul class="tight" style="margin-top:12px;">
+<li><code>deleteOne()</code> removes only the first matching document</li>
+<li><code>deleteMany()</code> removes all matching documents that match the filter</li>
+<li>Always double-check the filter before running delete operations</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 42 ═══════════════════════════════════ -->
+<div class="slide" data-slide="17">
+<h2>Compass vs mongosh</h2>
+<div class="comparison-grid">
+<div class="example-card">
+<h3>Use Compass when…</h3>
+<ul>
+<li>You want to browse data visually</li>
+<li>You are learning the shape of documents</li>
+<li>You want forms instead of typing</li>
+</ul>
+</div>
+<div class="example-card">
+<h3>Use mongosh when…</h3>
+<ul>
+<li>You want repeatable commands</li>
+<li>You are following code examples from class</li>
+<li>You need quick CRUD/testing from the terminal</li>
+</ul>
+</div>
+</div>
+<div class="tip-box">
+    Good workflow for beginners: <strong>explore in Compass, practice commands in mongosh</strong>.
+  </div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 43 ═══════════════════════════════════ -->
+<div class="slide" data-slide="18">
+<h2>Common Beginner Problems</h2>
+<div class="comparison-grid">
+<div class="example-card">
+<h3>Problem</h3>
+<ul>
+<li><code>mongosh</code> not recognized</li>
+<li>Compass cannot connect</li>
+<li>Connection refused on <code>localhost:27017</code></li>
+<li>Started server in wrong shell or wrong command</li>
+</ul>
+</div>
+<div class="example-card">
+<h3>Check first</h3>
+<ul>
+<li>Is MongoDB server actually running?</li>
+<li>Did you install <code>mongosh</code> separately?</li>
+<li>Are you using the correct connection string?</li>
+<li>Did you reopen the terminal after installation?</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 44 ═══════════════════════════════════ -->
+<div class="slide" data-slide="19">
+<h2>Troubleshooting Cheatsheet</h2>
+<div class="comparison-grid code-stack">
+<div class="example-card">
+<h3>macOS</h3>
+<div class="where-badge">Run in: macOS Terminal</div>
+<div class="run-box" style="margin-top:10px;">
+<div class="run-box-header">▶ QUICK CHECKS</div>
+<div class="run-box-body">
+<div class="run-line">brew services list</div>
+<div class="run-line">mongosh --version</div>
+<div class="run-line">mongosh</div>
+</div>
+</div>
+</div>
+<div class="example-card">
+<h3>Windows</h3>
+<div class="where-badge">Run in: Command Prompt / PowerShell</div>
+<div class="run-box" style="margin-top:10px;">
+<div class="run-box-header">▶ QUICK CHECKS</div>
+<div class="run-box-body">
+<div class="run-line">mongosh --version</div>
+<div class="run-line">mongosh</div>
+</div>
+</div>
+<div class="caption">Also open the Services app and verify the MongoDB service is running.</div>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 45 ═══════════════════════════════════ -->
+<div class="slide" data-slide="20">
+<h2>Practice: Build a Tiny Student Roster DB</h2>
+<div class="where-badge">Run in: mongosh</div>
+<div class="shell-box">
+<div class="shell-box-header">▷ PRACTICE FLOW</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> use roster</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.createCollection("students")</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.insertMany([{ name: "Ava", year: 2, major: "HCDD" }, { name: "Liam", year: 1, major: "IST" }])</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find()</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.updateOne({ name: "Ava" }, { $set: { year: 3 } })</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.deleteOne({ name: "Liam" })</div>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 46 ═══════════════════════════════════ -->
+<div class="slide" data-slide="21">
+<h2>Mongo Shell: Count + Sort</h2>
+<div class="where-badge">Run in: mongosh</div>
+<div class="shell-box">
+<div class="shell-box-header">▷ COUNT + SORT</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.countDocuments()</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find().sort({ year: 1 })</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find().sort({ year: -1 })</div>
+</div>
+</div>
+<div class="comparison-grid code-stack" style="margin-top:18px;">
+<div class="example-card">
+<h3>What these do</h3>
+<ul>
+<li><code>countDocuments()</code> gives the number of documents in the collection</li>
+<li><code>sort({ year: 1 })</code> sorts ascending</li>
+<li><code>sort({ year: -1 })</code> sorts descending</li>
+</ul>
+</div>
+<div class="example-card">
+<h3>Example result</h3>
+<div class="shell-box" style="margin-top:10px;">
+<div class="shell-box-header">▷ SAMPLE OUTPUT</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-out">2</span></div>
+<div class="shell-line"><span class="shell-out">{ name: "Liam", year: 1, major: "IST" }</span></div>
+<div class="shell-line"><span class="shell-out">{ name: "Ava", year: 2, major: "HCDD" }</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 47 ═══════════════════════════════════ -->
+<div class="slide" data-slide="22">
+<h2>Mongo Shell: Skip + Limit</h2>
+<div class="where-badge">Run in: mongosh</div>
+<div class="shell-box">
+<div class="shell-box-header">▷ PAGINATION STYLE QUERIES</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find().sort({ name: 1 }).limit(2)</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find().sort({ name: 1 }).skip(2)</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.find().sort({ name: 1 }).skip(2).limit(2)</div>
+</div>
+</div>
+<div class="info-box">
+<strong>Idea:</strong> <code>limit()</code> caps how many documents you get back. <code>skip()</code> ignores the first few matches. Together, they act like simple pagination.
+</div>
+<div class="example-card" style="margin-top:18px;">
+<h3>Example</h3>
+<p>If the names are sorted as Ava, Bob, Carol, David, then <code>skip(2).limit(2)</code> returns Carol and David.</p>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 48 ═══════════════════════════════════ -->
+<div class="slide" data-slide="23">
+<h2>Indexes: Why They Matter</h2>
+<div class="comparison-grid code-stack">
+<div class="example-card">
+<h3>Without an index</h3>
+<ul>
+<li>MongoDB may scan many documents to find matches</li>
+<li>That is fine for tiny class examples</li>
+<li>It becomes slow on large collections</li>
+</ul>
+</div>
+<div class="example-card">
+<h3>With an index</h3>
+<ul>
+<li>MongoDB keeps a structure that helps it find values faster</li>
+<li>This improves query performance for common filters and sorts</li>
+<li>Indexes cost extra storage and slightly slower writes</li>
+</ul>
+</div>
+</div>
+<div class="tip-box">
+A good beginner mental model: an index is like the index at the back of a textbook. You do not scan every page from the beginning to find one topic.
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 49 ═══════════════════════════════════ -->
+<div class="slide" data-slide="24">
+<h2>Mongo Shell: getIndexes() + createIndex() + dropIndex()</h2>
+<div class="where-badge">Run in: mongosh</div>
+<div class="shell-box">
+<div class="shell-box-header">▷ INDEX COMMANDS</div>
+<div class="shell-box-body">
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.getIndexes()</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.createIndex({ major: 1 })</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.getIndexes()</div>
+<div class="shell-line"><span class="shell-prompt">&gt;</span> db.students.dropIndex("major_1")</div>
+</div>
+</div>
+<div class="comparison-grid code-stack" style="margin-top:18px;">
+<div class="example-card">
+<h3>What to expect</h3>
+<ul>
+<li>Before you create one, you usually only see the default <code>_id</code> index</li>
+<li><code>createIndex({ major: 1 })</code> creates an ascending index on <code>major</code></li>
+<li>The name is usually <code>major_1</code></li>
+</ul>
+</div>
+<div class="example-card">
+<h3>Good use case</h3>
+<p>If you often run <code>db.students.find({ major: "HCDD" })</code>, indexing <code>major</code> can make those lookups faster.</p>
+</div>
+</div>
+</div>
+<!-- ═══════════════════════════════════ SLIDE 50 ═══════════════════════════════════ -->
+<div class="slide" data-slide="25">
+<h2>Takeaways</h2>
+<div class="example-card">
+<ul class="big-list">
+<li>Use databases for persistence, querying, and shared access</li>
+<li>SQL and NoSQL solve different kinds of problems</li>
+<li>MongoDB fits well with JSON-heavy Node/Express apps</li>
+<li>You need three separate pieces: server, <code>mongosh</code>, and Compass</li>
+<li>Always know <strong>where</strong> a command should be run</li>
+</ul>
+</div>
+</div>
+</div><!-- /presentation-container -->
+<div class="navigation">
+<button class="nav-button" id="prevBtn">Previous</button>
+<button class="nav-button" id="nextBtn">Next</button>
+</div>
+<script>
+  // ─── Syntax Highlighter ───────────────────────────────────────────────────
+  (function () {
+    const KEYWORDS = new Set([
+      'const','let','var','function','return','if','else','try','catch',
+      'throw','new','require','module','exports','true','false','null',
+      'undefined','async','await','class','extends','import','from',
+      'of','in','for','while','do','switch','case','break','default',
+      'typeof','instanceof'
+    ]);
+
+    const BUILTINS = new Set([
+      'db','req','res','app','router','err','express','console','Date',
+      'JSON','Math','Object','Array','Error','Number','String','Boolean',
+      'Promise','process','ObjectId'
+    ]);
+
+    // MongoDB shell operators that start with $
+    const MONGO_OPS = new Set([
+      '$set','$unset','$inc','$mul','$rename','$push','$pop','$pull',
+      '$addToSet','$eq','$ne','$gt','$gte','$lt','$lte','$in','$nin',
+      '$and','$or','$nor','$not','$exists','$type','$regex','$where',
+      '$all','$elemMatch','$size','$slice'
+    ]);
+
+    function tokenize(text) {
+      const tokens = [];
+      let i = 0;
+      while (i < text.length) {
+        // Line comment
+        if (text[i] === '/' && text[i + 1] === '/') {
+          tokens.push({ type: 'comment', val: text.slice(i) });
+          break;
+        }
+        // Backtick string
+        if (text[i] === '`') {
+          let j = i + 1;
+          while (j < text.length && text[j] !== '`') {
+            if (text[j] === '\\') j++;
+            j++;
+          }
+          tokens.push({ type: 'string', val: text.slice(i, j + 1) });
+          i = j + 1;
+          continue;
+        }
+        // Single / double quoted string
+        if (text[i] === '"' || text[i] === "'") {
+          const q = text[i];
+          let j = i + 1;
+          while (j < text.length && text[j] !== q) {
+            if (text[j] === '\\') j++;
+            j++;
+          }
+          tokens.push({ type: 'string', val: text.slice(i, j + 1) });
+          i = j + 1;
+          continue;
+        }
+        // MongoDB operator: $word
+        if (text[i] === '$') {
+          let j = i + 1;
+          while (j < text.length && /[a-zA-Z0-9_]/.test(text[j])) j++;
+          const word = text.slice(i, j);
+          if (MONGO_OPS.has(word)) {
+            tokens.push({ type: 'mongoOp', val: word });
+          } else {
+            tokens.push({ type: 'other', val: word });
+          }
+          i = j;
+          continue;
+        }
+        // Identifier, keyword, or builtin
+        if (/[a-zA-Z_]/.test(text[i])) {
+          let j = i;
+          while (j < text.length && /[a-zA-Z0-9_$]/.test(text[j])) j++;
+          const word = text.slice(i, j);
+          let k = j;
+          while (k < text.length && text[k] === ' ') k++;
+          const isCall = text[k] === '(';
+          if (KEYWORDS.has(word))       tokens.push({ type: 'keyword', val: word });
+          else if (BUILTINS.has(word))  tokens.push({ type: 'builtin', val: word });
+          else if (isCall)              tokens.push({ type: 'fn', val: word });
+          else                          tokens.push({ type: 'ident', val: word });
+          i = j;
+          continue;
+        }
+        // Number
+        if (/[0-9]/.test(text[i])) {
+          let j = i;
+          while (j < text.length && /[0-9.]/.test(text[j])) j++;
+          tokens.push({ type: 'num', val: text.slice(i, j) });
+          i = j;
+          continue;
+        }
+        tokens.push({ type: 'other', val: text[i] });
+        i++;
+      }
+      return tokens;
+    }
+
+    const COLORS = {
+      keyword  : '#8B5CF6',  // violet
+      string   : '#B45309',  // amber
+      comment  : '#9CA3AF',  // gray
+      num      : '#059669',  // emerald
+      fn       : '#2563EB',  // blue
+      builtin  : '#0891B2',  // cyan
+      mongoOp  : '#D97706',  // orange — for $set, $gt, etc.
+    };
+
+    function esc(s) {
+      return s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderTokens(tokens) {
+      return tokens.map(t => {
+        const color = COLORS[t.type];
+        const e = esc(t.val);
+        return color ? `<span style="color:${color}">${e}</span>` : e;
+      }).join('');
+    }
+
+    function highlight() {
+      document.querySelectorAll('.static-code li').forEach(li => {
+        const text = li.textContent;
+        if (text.trim() === '') return;
+        li.innerHTML = renderTokens(tokenize(text));
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', highlight);
+    } else {
+      highlight();
+    }
+  })();
+
+  // ─── Slide Navigation ─────────────────────────────────────────────────────
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let currentIndex = 0;
+
+  document.getElementById('totalSlides').textContent = slides.length;
+
+  function updateSlides() {
+    slides.forEach((slide, index) => slide.classList.toggle('active', index === currentIndex));
+    document.getElementById('currentSlide').textContent = currentIndex + 1;
+    document.getElementById('prevBtn').disabled = currentIndex === 0;
+    document.getElementById('nextBtn').disabled = currentIndex === slides.length - 1;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    if (currentIndex > 0) { currentIndex--; updateSlides(); }
+  });
+
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if (currentIndex < slides.length - 1) { currentIndex++; updateSlides(); }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+      e.preventDefault();
+      if (currentIndex < slides.length - 1) { currentIndex++; updateSlides(); }
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      if (currentIndex > 0) { currentIndex--; updateSlides(); }
+    }
+  });
+
+  // ─── Copy buttons ─────────────────────────────────────────────────────────
+  const toast = document.getElementById('toast');
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1400);
+  }
+
+  document.querySelectorAll('[data-copy-source]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const text = document.getElementById(btn.getAttribute('data-copy-source')).value;
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Code copied');
+      } catch {
+        showToast('Copy failed');
+      }
+    });
+  });
+
+  updateSlides();
+</script>
+</body>
+</html>
