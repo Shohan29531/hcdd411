@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HCDD 411 - React Advanced Topics</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css" rel="stylesheet"/>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #3B7DD6;
+  --secondary: #5A6C7D;
+  --accent: #D4940C;
+  --code-bg: #F8F9FA;
+  --success: #059669;
+  --error: #DC2626;
+  --bg-gradient-start: #F0F4F8;
+  --bg-gradient-end: #E1E8ED;
+  --slide-bg: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(59, 125, 214, 0.3);
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+body {
+  font-family: 'Outfit', sans-serif;
+  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding: 140px 0 120px 0;
+}
+.presentation-container { width: 100%; min-height: 100vh; }
+.slide {
+  width: 90%;
+  max-width: 1200px;
+  min-height: 420px;
+  background: var(--slide-bg);
+  backdrop-filter: blur(10px);
+  border-radius: 30px;
+  padding: 60px;
+  margin: 0 auto;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translateX(100px);
+  transition: all 0.45s ease;
+  display: none;
+  border: 2px solid var(--border-color);
+}
+.slide.active { opacity: 1; transform: translateX(0); display: block; }
+h1 { font-weight: 900; font-size: 4.1em; color: var(--primary); margin-bottom: 20px; text-transform: uppercase; letter-spacing: -2px; line-height: 1.05; }
+h2 { font-weight: 700; font-size: 2.5em; color: var(--accent); margin-bottom: 24px; letter-spacing: -1px; }
+h3 { font-weight: 600; font-size: 1.28em; color: var(--primary); margin: 18px 0 12px 0; }
+p { font-size: 1.08em; line-height: 1.65; }
+ul { margin: 16px 0; padding-left: 28px; }
+li { margin: 10px 0; font-size: 1.05em; line-height: 1.55; }
+code { font-family: 'Space Mono', monospace; background: rgba(59, 125, 214, 0.12); padding: 3px 8px; border-radius: 5px; color: var(--primary); }
+.subtitle { font-size: 1.28em; color: var(--text-secondary); margin-bottom: 24px; font-weight: 300; max-width: 920px; line-height: 1.6; }
+.penn-state-badge { position: fixed; top: 40px; left: 40px; font-weight: 900; font-size: 1.2em; color: var(--primary); z-index: 1000; text-transform: uppercase; letter-spacing: 2px; }
+.slide-indicator { position: fixed; top: 40px; right: 40px; background: var(--primary); padding: 15px 25px; border-radius: 50px; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 1em; z-index: 1000; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+.navigation { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; z-index: 1000; }
+.nav-button { background: var(--primary); color: white; border: none; padding: 15px 35px; border-radius: 50px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1em; cursor: pointer; transition: all 0.25s ease; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+.nav-button:hover { background: var(--secondary); transform: scale(1.04); }
+.nav-button:disabled { opacity: 0.3; cursor: not-allowed; }
+.info-box, .tip-box, .warning-box { padding: 20px; margin: 20px 0; border-radius: 12px; }
+.info-box { background: rgba(212, 148, 12, 0.1); border-left: 4px solid var(--accent); }
+.tip-box { background: rgba(5, 150, 105, 0.1); border-left: 4px solid var(--success); }
+.warning-box { background: rgba(220, 38, 38, 0.1); border-left: 4px solid var(--error); }
+.hero-grid, .example-grid, .hooks-grid, .redux-flow { display: grid; gap: 18px; }
+.hero-grid { grid-template-columns: 1.1fr 0.9fr; align-items: center; }
+.example-grid { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-top: 18px; }
+.hooks-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 14px; }
+.redux-flow { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 18px; }
+.example-card, .hook-card, .redux-box, .tree-card { background: rgba(255,255,255,0.78); border: 2px solid var(--border-color); border-radius: 16px; padding: 18px; }
+.metric-strip { display: flex; flex-wrap: wrap; gap: 12px; margin: 22px 0 12px; }
+.metric-pill { background: rgba(97,218,251,0.16); border: 1px solid rgba(59,125,214,0.18); color: var(--text-primary); border-radius: 999px; padding: 10px 16px; font-weight: 600; }
+.react-wordmark { font-size: 7em; color: rgba(97, 218, 251, 0.32); font-weight: 900; text-align: right; letter-spacing: -6px; line-height: 0.85; }
+.hook-name { font-family: 'Space Mono', monospace; color: var(--primary); font-weight: 700; display: block; margin-bottom: 8px; }
+.hook-name.covered { color: var(--success); }
+.tree-card pre { font-family: 'Space Mono', monospace; font-size: 0.96em; line-height: 1.8; white-space: pre-wrap; overflow-x: auto; }
+.anatomy-bar { background: #111827; color: #E5E7EB; border-radius: 12px; padding: 16px 20px; font-family: 'Space Mono', monospace; font-size: 0.9em; line-height: 2; border: 2px solid rgba(59,125,214,0.25); margin: 16px 0; }
+.anatomy-bar .hl-blue { color: #61DAFB; }
+.anatomy-bar .hl-green { color: #34D399; }
+.dep-table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 1em; }
+.dep-table th { background: var(--primary); color: white; padding: 12px 16px; text-align: left; font-family: 'Space Mono', monospace; font-size: 0.9em; }
+.dep-table td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+.dep-table tr:nth-child(even) td { background: rgba(59,125,214,0.04); }
+.code-window { background: var(--code-bg); border-radius: 15px; overflow: hidden; border: 2px solid var(--border-color); margin: 20px 0; box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
+.code-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 15px; background: rgba(0, 0, 0, 0.05); border-bottom: 1px solid var(--border-color); }
+.file-tab { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--primary); color: white; border-radius: 6px; font-family: 'Space Mono', monospace; font-size: 0.8em; font-weight: 600; }
+.copy-btn { border: none; background: rgba(0, 0, 0, 0.05); color: var(--text-secondary); padding: 6px 10px; border-radius: 5px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
+.copy-btn:hover { background: rgba(0, 0, 0, 0.1); color: var(--text-primary); }
+.code-block { margin: 0; padding: 0; background: #ffffff; border-top: 1px solid rgba(59,125,214,0.12); }
+.code-block code { background: transparent !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; }
+.code-source { display: none; }
+.code-window .CodeMirror { font-family: 'Space Mono', monospace !important; font-size: 0.94em !important; line-height: 1.6 !important; height: auto; min-height: 260px; background: #ffffff; color: #1F2937; }
+.code-window .CodeMirror-scroll { min-height: 260px; max-height: 420px; }
+.code-window .CodeMirror-gutters { background: #F8F9FA; border-right: 1px solid rgba(59,125,214,0.18); min-width: 44px; }
+.code-window .CodeMirror-linenumbers { width: 44px !important; }
+.code-window .CodeMirror-linenumber { color: #6B7280; padding: 0 8px 0 6px; min-width: 28px; text-align: right; }
+.code-window .CodeMirror-lines { padding: 10px 0; }
+.code-window .CodeMirror pre.CodeMirror-line,
+.code-window .CodeMirror pre.CodeMirror-line-like { padding: 0 16px; }
+.code-note { padding: 12px 18px 18px; color: var(--text-secondary); font-size: 0.96em; line-height: 1.55; border-top: 1px solid rgba(59,125,214,0.12); background: rgba(0,0,0,0.03); }
+.command-block { background: #111827; color: #E5E7EB; padding: 20px; border-radius: 16px; font-family: 'Space Mono', monospace; border: 2px solid rgba(59,125,214,0.18); overflow-x: auto; margin: 18px 0; }
+.command-line { color: #A7F3D0; display: block; margin: 10px 0; }
+.command-line strong { color: #FDE68A; }
+.command-comment { color: #6B7280; display: block; margin: 4px 0 4px 20px; font-size: 0.9em; }
+.redux-box strong { display: block; color: var(--primary); font-size: 1.15em; margin-bottom: 8px; }
+.redux-box p { font-size: 0.95em; color: var(--text-secondary); line-height: 1.5; }
+.copy-toast { position: fixed; right: 40px; bottom: 100px; background: #111827; color: white; padding: 12px 16px; border-radius: 12px; font-weight: 700; opacity: 0; transform: translateY(12px); pointer-events: none; transition: all 0.25s ease; z-index: 1200; }
+.copy-toast.show { opacity: 1; transform: translateY(0); }
+.step-list { counter-reset: steps; list-style: none; padding-left: 0; margin: 16px 0; }
+.step-list li { counter-increment: steps; padding: 10px 14px 10px 50px; position: relative; margin: 8px 0; background: rgba(59,125,214,0.05); border-radius: 10px; font-size: 1.05em; line-height: 1.55; }
+.step-list li::before { content: counter(steps); position: absolute; left: 14px; top: 50%; transform: translateY(-50%); background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 0.8em; font-weight: 700; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 18px; }
+.verify-box { background: rgba(5,150,105,0.08); border: 2px solid rgba(5,150,105,0.3); border-radius: 14px; padding: 18px 22px; margin: 18px 0; }
+.verify-box strong { color: var(--success); display: block; margin-bottom: 8px; font-size: 1.1em; }
+@media (max-width: 980px) {
+  .slide { padding: 40px 28px; width: 94%; }
+  .hero-grid, .hooks-grid, .redux-flow, .two-col { grid-template-columns: 1fr; }
+  h1 { font-size: 3em; }
+  h2 { font-size: 2em; }
+  .react-wordmark { text-align: left; font-size: 4em; }
+  .navigation { bottom: 18px; }
+  .penn-state-badge, .slide-indicator { top: 14px; }
+  .copy-toast { right: 20px; bottom: 78px; }
+}
+</style>
+</head>
+<body>
+<div class="penn-state-badge">HCDD 411</div>
+<div class="slide-indicator"><span id="currentSlide">1</span> / <span id="totalSlides"></span></div>
+<div class="presentation-container">
+
+<!-- SLIDE 1: Title -->
+<div class="slide active" data-slide="1">
+<div class="hero-grid">
+  <div>
+    <h1>REACT: Advanced Topics</h1>
+    <h2>Md Touhidul Islam</h2>
+    <div class="metric-strip">
+      <div class="metric-pill">DevTools</div>
+      <div class="metric-pill">Controlled Forms</div>
+      <div class="metric-pill">useEffect</div>
+      <div class="metric-pill">Redux Toolkit</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 2: Starting point -->
+<div class="slide" data-slide="2">
+<h2>Where we are starting from</h2>
+<p>This deck extends the <code>school-frontend</code> project from the last deck. Before continuing, confirm your starting state matches what is shown here.</p>
+
+<h3>Prerequisites: confirm these are in place</h3>
+<ul class="step-list">
+  <li>The <code>school-frontend</code> Vite project exists on your machine from the intro deck.</li>
+  <li>You can run <code>npm run dev</code> from inside that folder and open <code>localhost:5173</code> in a browser without errors.</li>
+</ul>
+
+<div class="tree-card" style="margin-top:18px;">
+<pre>school-frontend/
+├── index.html
+├── package.json
+├── vite.config.js
+└── src/
+    ├── main.jsx   ← starts React and renders &lt;App /&gt;
+    └── App.jsx    ← current root component</pre>
+</div>
+
+</div>
+
+<!-- SLIDE 3: Project growth plan -->
+<div class="slide" data-slide="3">
+<h2>How this deck will grow the project</h2>
+<p>By the end of this deck your project will contain these folders and files. Each one is introduced step by step — do not create any of them now.</p>
+<div class="tree-card">
+<pre>school-frontend/
+└── src/
+    ├── main.jsx
+    ├── App.jsx
+    ├── components/
+    │   ├── RegistrationForm.jsx    ← controlled form with useState
+    │   ├── StudentDirectory.jsx    ← fetches from API with useEffect
+    │   └── SessionTimer.jsx        ← timer with useEffect cleanup
+    ├── store/
+    │   └── store.js                ← Redux store configuration
+    └── features/
+        └── students/
+            ├── studentsSlice.js    ← Redux slice: state + reducers
+            └── StudentList.jsx     ← reads and dispatches Redux state</pre>
+</div>
+<div class="example-grid">
+  <div class="example-card"><h3>components/</h3><p>Reusable UI pieces with their own local state. Each component manages its own concerns and is imported into <code>App.jsx</code>.</p></div>
+  <div class="example-card"><h3>store/</h3><p>Redux store setup. This becomes the global state container that any component can read from or write to.</p></div>
+  <div class="example-card"><h3>features/</h3><p>Feature-specific Redux logic. Keeps the slice definition and the component that uses it together in the same folder.</p></div>
+</div>
+</div>
+
+
+
+<!-- SLIDE 6: Controlled forms idea -->
+<div class="slide" data-slide="6">
+<h2>Controlled forms: the idea</h2>
+<p>A controlled input is one whose value is always driven by React state — not by the DOM. React owns the value, so it is always in sync with the rest of the component.</p>
+
+<div class="anatomy-bar">
+<span class="hl-green">1.</span> Create state:&nbsp;&nbsp;<span class="hl-blue">const [name, setName] = useState("")</span><br/>
+<span class="hl-green">2.</span> Bind state to the input:&nbsp;&nbsp;<span class="hl-blue">value={name}</span><br/>
+<span class="hl-green">3.</span> Update state on every keystroke:&nbsp;&nbsp;<span class="hl-blue">onChange={(e) =&gt; setName(e.target.value)}</span>
+</div>
+
+<div class="two-col">
+  <div class="example-card">
+    <h3>Uncontrolled input (avoid)</h3>
+    <p>No <code>value</code> prop, no <code>onChange</code>. The DOM holds the value. You read it later with <code>ref.current.value</code> or <code>event.target.value</code> only on submit. React has no awareness of what the user is typing between keystrokes.</p>
+    <p style="margin-top:10px; color:var(--error);"><strong>Problem:</strong> you cannot validate as the user types, you cannot disable a button based on what is in the field, and you cannot show a live preview.</p>
+  </div>
+  <div class="example-card">
+    <h3>Controlled input (use this)</h3>
+    <p>The <code>value</code> prop comes from state. Every keystroke fires <code>onChange</code>, which calls the setter, which triggers a re-render with the new value shown in the input. React is always the source of truth.</p>
+    <p style="margin-top:10px; color:var(--success);"><strong>Benefit:</strong> you can validate in real time, disable the submit button until the form is valid, and read all field values directly from state at any moment.</p>
+  </div>
+</div>
+<div class="info-box">
+  <strong>Where we will put the form</strong>
+  <p style="margin-top:8px;">We move all form logic into <code>src/components/RegistrationForm.jsx</code> so <code>App.jsx</code> stays clean. The next slide shows exactly how to create that file.</p>
+</div>
+</div>
+
+<!-- SLIDE 7: RegistrationForm.jsx -->
+<div class="slide" data-slide="7">
+<h2>New file: <code>src/components/RegistrationForm.jsx</code></h2>
+
+<h3>Step 1: Create the folder and file</h3>
+<div class="command-block">
+  <span class="command-line"><strong>$</strong> cd school-frontend/src</span>
+  <span class="command-line"><strong>$</strong> mkdir components</span>
+  <span class="command-comment"># Now create a new file inside that folder named RegistrationForm.jsx</span>
+  <span class="command-line"><strong>$</strong> touch components/RegistrationForm.jsx</span>
+</div>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 src/components/RegistrationForm.jsx</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>import { useState } from &#x27;react&#x27;
+
+function RegistrationForm() {
+  const [name, setName] = useState(&#x27;&#x27;)
+  const [email, setEmail] = useState(&#x27;&#x27;)
+  const [major, setMajor] = useState(&#x27;IST&#x27;)
+
+  const isValid = name.trim() !== &#x27;&#x27; &amp;&amp; email.includes(&#x27;@&#x27;)
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    console.log({ name, email, major })
+  }
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;h2&gt;Student Registration&lt;/h2&gt;
+
+      &lt;input
+        value={name}
+        onChange={(e) =&gt; setName(e.target.value)}
+        placeholder=&quot;Full name&quot;
+      /&gt;
+
+      &lt;input
+        value={email}
+        onChange={(e) =&gt; setEmail(e.target.value)}
+        placeholder=&quot;PSU email&quot;
+      /&gt;
+
+      &lt;select value={major} onChange={(e) =&gt; setMajor(e.target.value)}&gt;
+        &lt;option value=&quot;IST&quot;&gt;IST&lt;/option&gt;
+        &lt;option value=&quot;CS&quot;&gt;CS&lt;/option&gt;
+        &lt;option value=&quot;HCDD&quot;&gt;HCDD&lt;/option&gt;
+      &lt;/select&gt;
+
+      &lt;button disabled={!isValid}&gt;Register&lt;/button&gt;
+    &lt;/form&gt;
+  )
+}
+
+export default RegistrationForm</code></pre>
+  <div class="code-note">Three useState calls — one per field. isValid is a derived value: it is recomputed on every render from the current state, not stored separately. The button is disabled until isValid is true.</div>
+</div>
+</div>
+
+<!-- SLIDE 8: App.jsx with form -->
+<div class="slide" data-slide="8">
+<h2>Update <code>src/App.jsx</code> to use the form</h2>
+<p><code>App.jsx</code> stays as the root component. Its only job here is to import and render the new child. No logic moves into it.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 src/App.jsx</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>import RegistrationForm from &#x27;./components/RegistrationForm.jsx&#x27;
+
+function App() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;School Frontend&lt;/h1&gt;
+      &lt;RegistrationForm /&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default App</code></pre>
+  <div class="code-note">The import path ./components/RegistrationForm.jsx is relative to App.jsx, which lives in src/. That is why the path starts with ./components/ and not src/components/.</div>
+</div>
+
+<h3>Complete data flow at this point</h3>
+<div class="anatomy-bar">
+<span class="hl-green">index.html</span> → loads main.jsx → renders &lt;App /&gt; → renders &lt;RegistrationForm /&gt;
+</div>
+
+<div class="verify-box">
+  <strong>How to test this component works</strong>
+  <p>Run <code>npm run dev</code>. The form renders. The Register button is grey/disabled. Type a name — button stays disabled. Now type an email with @ in it — button becomes clickable. Click it and open the browser Console (F12 &gt; Console): you should see <code>{name: "...", email: "...", major: "IST"}</code> printed there.</p>
+</div>
+</div>
+
+
+<!-- SLIDE 4: React DevTools — Install -->
+<div class="slide" data-slide="4">
+<h2>React Developer Tools: Install</h2>
+<p>React DevTools is a free browser extension made by Meta. It adds two new panels to your browser's developer tools — <strong>Components</strong> and <strong>Profiler</strong> — that only appear when you are on a page running React.</p>
+
+<h3>Install in Chrome (recommended for this course)</h3>
+<ol class="step-list">
+  <li>Open Chrome and go to <code>chromewebstore.google.com</code>.</li>
+  <li>Search for <strong>React Developer Tools</strong>. The publisher should say <strong>Meta</strong>.</li>
+  <li>Click <strong>Add to Chrome</strong>, then confirm by clicking <strong>Add extension</strong> in the popup.</li>
+  <li>Look at the top-right of Chrome — a new React icon (⚛) will appear in the extensions bar.</li>
+</ol>
+
+<h3>Install in Firefox</h3>
+<ol class="step-list">
+  <li>Go to <code>addons.mozilla.org</code> and search <strong>React Developer Tools</strong>.</li>
+  <li>Click <strong>Add to Firefox</strong> and confirm the permission dialog.</li>
+</ol>
+
+<div class="verify-box">
+  <strong>How to verify the install worked</strong>
+  <p>Run <code>npm run dev</code> in your project, then open <code>localhost:5173</code> in the browser. The React icon (⚛) in your extensions bar should turn <strong>dark/coloured</strong>. If it stays grey, the page is not using React or something is wrong with the dev server. On non-React pages the icon stays grey — that is expected.</p>
+</div>
+</div>
+
+
+<!-- SLIDE 9: React DevTools — Using it -->
+<div class="slide" data-slide="9">
+<h2>React Developer Tools: Using It</h2>
+<p>Once installed, open the browser's developer tools and you will see two new tabs next to Console, Network, and the others.</p>
+
+<h3>Step 1: Open DevTools</h3>
+<div class="command-block">
+  <span class="command-line"><strong>Windows / Linux:</strong> press F12</span>
+  <span class="command-line"><strong>Mac:</strong> press Cmd + Option + I</span>
+  <span class="command-line">Look along the top tab bar for <strong>Components</strong> and <strong>Profiler</strong>.</span>
+  <span class="command-line">If you do not see them, click the <strong>&gt;&gt;</strong> overflow arrow at the far right of the tab bar.</span>
+</div>
+
+<div class="two-col">
+  <div class="example-card">
+    <h3>Components tab</h3>
+    <p>Shows your live React tree — <code>App</code> at the root, child components nested underneath. Click any component on the left and the right panel shows its current <strong>props</strong>, <strong>state</strong>, and <strong>hook values</strong>. These update in real time as you interact with the app.</p>
+    <p style="margin-top:10px;"><strong>Try it:</strong> click on <code>RegistrationForm</code>, type in the name field, and watch the <code>name</code> state value change live in the right panel.</p>
+  </div>
+  <div class="example-card">
+    <h3>Profiler tab</h3>
+    <p>Measures render performance. Click <strong>Record</strong> (the circle icon), interact with the app, then click <strong>Stop</strong>. A flame chart shows which components re-rendered, in what order, and how many milliseconds each took. Use this when a UI feels slow and you want to find the cause.</p>
+    <p style="margin-top:10px;"><strong>Try it:</strong> record while typing in the form and confirm only <code>RegistrationForm</code> re-renders, not the whole tree.</p>
+  </div>
+</div>
+
+<div class="verify-box">
+  <strong>What a working inspection looks like</strong>
+  <p>You click on <code>RegistrationForm</code> in the Components tree. On the right you see three hooks listed under <em>hooks</em>: State <code>""</code>, State <code>""</code>, State <code>"IST"</code> — one for each <code>useState</code> call. As you type in the name field, the first State value updates character by character. This confirms React owns the input value and the controlled pattern is working.</p>
+</div>
+</div>
+
+<!-- SLIDE 10: useEffect intro -->
+<div class="slide" data-slide="10">
+<h2><code>useEffect</code>: code that runs after React updates the screen</h2>
+
+<p>
+A React component does two different jobs:
+</p>
+
+<div class="two-col">
+  <div class="example-card">
+    <h3>Job 1: Render the UI</h3>
+    <p>
+      The component returns JSX that describes what should appear on the page.
+      This part should stay predictable: same state + same props → same JSX.
+    </p>
+  </div>
+  <div class="example-card">
+    <h3>Job 2: Do outside work</h3>
+    <p>
+      Some work is not just "draw the UI." Examples: fetching data, starting a timer,
+      or changing the browser tab title. That work goes in <code>useEffect</code>.
+    </p>
+  </div>
+</div>
+
+<div class="info-box">
+  <strong>Simple idea</strong>
+  <p style="margin-top:8px;">
+    <code>useEffect</code> lets you say: <em>"After React finishes updating the page, run this extra code."</em>
+  </p>
+</div>
+
+<h3>Example: update the browser tab title</h3>
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 Example.jsx</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>import { useEffect, useState } from 'react'
+
+function Counter() {
+  const [count, setCount] = useState(0)
+
+  useEffect(() =&gt; {
+    document.title = `Count: ${count}`
+  }, [count])
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Counter&lt;/h2&gt;
+      &lt;p&gt;Current count: {count}&lt;/p&gt;
+      &lt;button onClick={() =&gt; setCount(count + 1)}&gt;Increase&lt;/button&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default Counter</code></pre>
+  <div class="code-note">
+    What happens here: the component renders the button and the number. After the render finishes,
+    <code>useEffect</code> runs and updates the browser tab title. When <code>count</code> changes,
+    React renders again, then the effect runs again with the new value.
+  </div>
+</div>
+
+<h3>What is the dependency array?</h3>
+<p>
+The dependency array is the <strong>second argument</strong> to <code>useEffect</code>:
+</p>
+
+<div class="anatomy-bar">
+useEffect(<span class="hl-green">() =&gt; { /* effect code */ }</span>, <span class="hl-blue">[count]</span>)
+</div>
+
+<div class="tip-box">
+  <strong>Definition</strong>
+  <p style="margin-top:8px;">
+    The dependency array is a list of values that React should <strong>watch</strong>.
+    If one of those values changes, React runs the effect again after the next render.
+  </p>
+</div>
+
+<h3>Three common patterns</h3>
+<table class="dep-table">
+  <thead>
+    <tr>
+      <th>Code</th>
+      <th>What it means</th>
+      <th>Simple example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>useEffect(() =&gt; { ... })</code></td>
+      <td>Run after <em>every</em> render</td>
+      <td>Usually avoid this unless you truly need it every time</td>
+    </tr>
+    <tr>
+      <td><code>useEffect(() =&gt; { ... }, [])</code></td>
+      <td>Run once after the first render</td>
+      <td>Fetch initial data when the page first loads</td>
+    </tr>
+    <tr>
+      <td><code>useEffect(() =&gt; { ... }, [count])</code></td>
+      <td>Run after the first render, and again whenever <code>count</code> changes</td>
+      <td>Update the tab title whenever the counter changes</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>One more example: fetch data once when the component first appears</h3>
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 StudentDirectory.jsx</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>useEffect(() =&gt; {
+  async function loadStudents() {
+    const response = await fetch('http://localhost:3000/students')
+    const data = await response.json()
+    setStudents(data)
+  }
+
+  loadStudents()
+}, [])</code></pre>
+  <div class="code-note">
+    The empty dependency array <code>[]</code> means: run this effect once when the component first appears.
+    That is why it is a common pattern for an initial fetch.
+  </div>
+</div>
+
+<div class="warning-box">
+  <strong>Important distinction</strong>
+  <p style="margin-top:8px;">
+    Rendering answers: <em>"What should be shown on the page?"</em><br/>
+    <code>useEffect</code> answers: <em>"After the page updates, what extra work should happen?"</em>
+  </p>
+</div>
+</div>
+
+<!-- SLIDE 11: StudentDirectory.jsx -->
+<div class="slide" data-slide="11">
+<h2>New file: <code>src/components/StudentDirectory.jsx</code></h2>
+<p>This component fetches students from the Express API. Before testing it, your backend must be running.</p>
+
+<h3>Prerequisite: start the backend</h3>
+<div class="command-block">
+  <span class="command-comment"># Open a separate terminal window for the backend</span>
+  <span class="command-line"><strong>$</strong> cd school-backend</span>
+  <span class="command-line"><strong>$</strong> node server.js</span>
+  <span class="command-comment"># You should see: Server running on port 3000</span>
+  <span class="command-comment"># Keep this terminal open — the backend must stay running</span>
+</div>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 src/components/StudentDirectory.jsx</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>import { useEffect, useState } from &#x27;react&#x27;
+
+function StudentDirectory() {
+  const [students, setStudents] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(&#x27;&#x27;)
+
+  useEffect(() =&gt; {
+    async function loadStudents() {
+      try {
+        const response = await fetch(&#x27;http://localhost:3000/students&#x27;)
+        if (!response.ok) {
+          throw new Error(&#x27;Request failed&#x27;)
+        }
+        const data = await response.json()
+        setStudents(data)
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadStudents()
+  }, [])
+
+  if (loading) return &lt;p&gt;Loading...&lt;/p&gt;
+  if (error) return &lt;p&gt;Error: {error}&lt;/p&gt;
+
+  return (
+    &lt;ul&gt;
+      {students.map((student) =&gt; (
+        &lt;li key={student._id}&gt;{student.name} — {student.major}&lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  )
+}
+
+export default StudentDirectory</code></pre>
+  <div class="code-note">The empty [] means the fetch runs once after the first render. Three state variables handle the three possible outcomes: loading, error, and success. The finally block runs after either try or catch, ensuring loading is always set to false.</div>
+</div>
+<div class="verify-box">
+  <strong>How to test this component</strong>
+  <p>With the backend running and this component imported in App.jsx, open <code>localhost:5173</code>. For a split second you should see "Loading…" and then the student list appears. To test the error state: stop the backend (<code>Ctrl+C</code>) and refresh — you should see "Error: Request failed" instead of a crash.</p>
+</div>
+</div>
+
+<!-- SLIDE 12: App.jsx intermediate -->
+<div class="slide" data-slide="12">
+<h2><code>App.jsx</code> after adding <code>StudentDirectory</code></h2>
+<p><code>App.jsx</code> now composes two child components. Each has its own responsibility and its own local state — they do not share state with each other.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 src/App.jsx</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>import RegistrationForm from &#x27;./components/RegistrationForm.jsx&#x27;
+import StudentDirectory from &#x27;./components/StudentDirectory.jsx&#x27;
+
+function App() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;School Frontend&lt;/h1&gt;
+      &lt;RegistrationForm /&gt;
+      &lt;StudentDirectory /&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default App</code></pre>
+  <div class="code-note">App imports both files from src/components and renders them vertically. The state inside RegistrationForm (name, email, major) is completely separate from the state inside StudentDirectory (students, loading, error).</div>
+</div>
+
+<div class="tip-box">
+  <strong>Verify in React DevTools</strong>
+  <p style="margin-top:8px;">Open the Components tab. You will now see both <code>RegistrationForm</code> and <code>StudentDirectory</code> nested under <code>App</code>. Click <code>StudentDirectory</code> — on the right you can watch its <code>loading</code> state switch from <code>true</code> to <code>false</code> in real time as the fetch completes. Click <code>RegistrationForm</code> — its state is completely independent.</p>
+</div>
+</div>
+
+<!-- SLIDE 13: SessionTimer cleanup -->
+<div class="slide" data-slide="13">
+<h2>Cleanup: stop work when the component changes</h2>
+<p>Some effects must clean up after themselves. If you start a timer in <code>useEffect</code> and do nothing else, the timer keeps running even after the component is removed — causing duplicate ticks and confusing bugs.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 src/components/SessionTimer.jsx</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>import { useEffect, useState } from &#x27;react&#x27;
+
+function SessionTimer() {
+  const [seconds, setSeconds] = useState(0)
+  const [running, setRunning] = useState(false)
+
+  useEffect(() =&gt; {
+    if (!running) return        // do nothing when paused
+
+    const intervalId = setInterval(() =&gt; {
+      setSeconds((prevSeconds) =&gt; prevSeconds + 1)
+    }, 1000)
+
+    return () =&gt; clearInterval(intervalId)   // cleanup function
+  }, [running])
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Session Timer&lt;/h2&gt;
+      &lt;p&gt;{seconds}s&lt;/p&gt;
+      &lt;button onClick={() =&gt; setRunning(true)}&gt;Start&lt;/button&gt;
+      &lt;button onClick={() =&gt; setRunning(false)}&gt;Stop&lt;/button&gt;
+      &lt;button onClick={() =&gt; { setRunning(false); setSeconds(0) }}&gt;Reset&lt;/button&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default SessionTimer</code></pre>
+  <div class="code-note">The function returned from useEffect is the cleanup. React calls it before running the effect again (when running changes) and when the component unmounts. clearInterval(intervalId) stops the specific interval that this effect created.</div>
+</div>
+
+<h3>Why cleanup matters — step by step</h3>
+<ul>
+  <li>User clicks <strong>Start</strong> → <code>running</code> becomes <code>true</code> → effect runs → interval starts, counting up every second.</li>
+  <li>User clicks <strong>Stop</strong> → <code>running</code> becomes <code>false</code> → React calls the cleanup function → <code>clearInterval</code> stops the old interval → effect runs again but returns immediately because <code>!running</code> is true.</li>
+  <li>Without the cleanup: clicking Stop would not actually stop the old interval. Clicking Start again would create a <em>second</em> interval running on top of the first. The counter would count at double speed.</li>
+</ul>
+
+<div class="verify-box">
+  <strong>How to test cleanup is working</strong>
+  <p>Click Start, let it count for a few seconds, click Stop — the counter freezes. Click Start again — it resumes from where it stopped, not at double speed. If it counts faster and faster each time you Start/Stop, the cleanup is broken.</p>
+</div>
+</div>
+
+<!-- SLIDE 14: App.jsx after SessionTimer -->
+<div class="slide" data-slide="14">
+<h2>Update <code>src/App.jsx</code> to include <code>SessionTimer</code></h2>
+<p><code>App.jsx</code> now composes three child components. Same pattern as before — import and render. Each component manages its own local state independently.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">&#x1F4C4; src/App.jsx</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>import RegistrationForm from &#x27;./components/RegistrationForm.jsx&#x27;
+import StudentDirectory from &#x27;./components/StudentDirectory.jsx&#x27;
+import SessionTimer from &#x27;./components/SessionTimer.jsx&#x27;
+
+function App() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;School Frontend&lt;/h1&gt;
+      &lt;RegistrationForm /&gt;
+      &lt;StudentDirectory /&gt;
+      &lt;SessionTimer /&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default App</code></pre>
+  <div class="code-note">The pattern is the same as before — add an import at the top, then render the component inside the root div. App stays focused entirely on composition.</div>
+</div>
+
+<div class="tree-card" style="margin-top:18px;">
+<pre>src/
+&#x251C;&#x2500;&#x2500; main.jsx
+&#x251C;&#x2500;&#x2500; App.jsx
+&#x2514;&#x2500;&#x2500; components/
+    &#x251C;&#x2500;&#x2500; RegistrationForm.jsx
+    &#x251C;&#x2500;&#x2500; StudentDirectory.jsx
+    &#x2514;&#x2500;&#x2500; SessionTimer.jsx</pre>
+</div>
+
+<div class="tip-box">
+  <strong>Verify in React DevTools</strong>
+  <p style="margin-top:8px;">Open the Components tab. You should now see <code>RegistrationForm</code>, <code>StudentDirectory</code>, and <code>SessionTimer</code> all nested under <code>App</code>. Click <code>SessionTimer</code> and watch its <code>seconds</code> and <code>running</code> state update live as you press Start and Stop.</p>
+</div>
+</div>
+
+<!-- SLIDE 15: When local state stops being enough -->
+<div class="slide" data-slide="15">
+<h2>Redux: When local state stops being enough</h2>
+<p>Local state is the right tool when exactly one component owns and uses a piece of data. The problem arises when two or more components need to read or update the <em>same</em> data.</p>
+
+<div class="two-col">
+  <div class="example-card">
+    <h3>The problem: "prop drilling"</h3>
+    <p>Suppose <code>RegistrationForm</code> adds a student and you want <code>StudentDirectory</code> to immediately show the new student. With local state you have to lift state into <code>App</code>, then pass it down as props to both components. As the tree gets deeper, props must pass through components that do not even use them — this is called prop drilling and it becomes unmanageable quickly.</p>
+  </div>
+  <div class="example-card">
+    <h3>The solution: global store</h3>
+    <p>Redux provides a single store that sits outside the component tree. Any component at any depth can read from it with <code>useSelector</code> or write to it with <code>useDispatch</code>. No props need to be threaded through intermediate components.</p>
+  </div>
+</div>
+
+
+<div class="info-box">
+  <strong>Practical rule: do not over-use Redux</strong>
+  <p style="margin-top:8px;">Start with local state. Only promote data to the Redux store when two or more distant components genuinely need to share it. Form field values, loading spinners, and open/closed menus almost always belong in local state.</p>
+</div>
+</div>
+
+<!-- SLIDE 16: Install Redux -->
+<div class="slide" data-slide="16">
+<h2>Install Redux Toolkit and React Redux</h2>
+<p>Run these commands in the terminal from the root of the <code>school-frontend</code> project — the same folder that contains <code>package.json</code>.</p>
+
+<div class="command-block">
+  <span class="command-line"><strong>$</strong> cd school-frontend</span>
+  <span class="command-comment"># Confirm you are in the right place — you should see package.json listed</span>
+  <span class="command-line"><strong>$</strong> ls</span>
+  <span class="command-line"><strong>$</strong> npm install @reduxjs/toolkit react-redux</span>
+  <span class="command-comment"># npm will print a list of installed packages and a line like: added 6 packages</span>
+</div>
+
+<div class="two-col" style="margin-top:18px;">
+  <div class="example-card">
+    <h3><code>@reduxjs/toolkit</code></h3>
+    <p>The official modern way to write Redux. It provides helpers such as <code>configureStore</code> and <code>createSlice</code> so you do not have to write old Redux boilerplate by hand.</p>
+  </div>
+  <div class="example-card">
+    <h3><code>react-redux</code></h3>
+    <p>This is the bridge between React components and the Redux store. It provides <code>Provider</code>, <code>useSelector</code>, and <code>useDispatch</code>.</p>
+  </div>
+</div>
+
+<div class="verify-box">
+  <strong>How to verify the install succeeded</strong>
+  <p>Open <code>package.json</code> after running npm install. Under <code>"dependencies"</code> you should see entries for <code>"@reduxjs/toolkit"</code> and <code>"react-redux"</code> with version numbers. Also check that <code>node_modules/@reduxjs/toolkit</code> and <code>node_modules/react-redux</code> folders exist.</p>
+</div>
+<div class="warning-box">
+  <strong>Common mistake: running npm install in the wrong folder</strong>
+  <p style="margin-top:8px;">Run it from <code>school-frontend/</code>, not from <code>src/</code>. If npm cannot find <code>package.json</code>, you are in the wrong place.</p>
+</div>
+</div>
+
+<!-- SLIDE 17: Why Redux suddenly adds new words -->
+<div class="slide" data-slide="17">
+<h2>Redux key concepts</h2>
+<p>Redux introduces a few small concepts that work together. The good news is that each one has one job. Once those jobs are clear, the code becomes much easier to read.</p>
+
+<div class="example-grid">
+  <div class="example-card"><h3>Store</h3><p>The central box that holds shared state.</p></div>
+  <div class="example-card"><h3>Action</h3><p>A plain object that describes <em>what happened</em>.</p></div>
+  <div class="example-card"><h3>Reducer</h3><p>A function that receives the old state and the action, then decides the new state.</p></div>
+<div class="example-card"><h3>Slice</h3><p>A slice is one small part of your Redux state plus the code that updates that part.</p></div>
+</div>
+
+<div class="info-box">
+  <strong>The big picture</strong>
+  <p style="margin-top:8px;">A component does <strong>not</strong> directly edit the store. Instead it dispatches an action. Redux sends that action to a reducer. The reducer returns updated state. Then components read the new state and re-render.</p>
+</div>
+
+</div>
+
+<!-- SLIDE 18: Three core ideas -->
+<div class="slide" data-slide="18">
+<h2>Redux key concepts (continued)</h2>
+<p>Before touching files, lock in these three ideas. Everything else is built on top of them.</p>
+
+<div class="redux-flow">
+  <div class="redux-box">
+    <strong>1. Shared state lives in one store</strong>
+    <p>Instead of scattering one shared value across many components, Redux keeps it in one place.</p>
+  </div>
+  <div class="redux-box">
+    <strong>2. Components describe changes with actions</strong>
+    <p>A click does not directly mutate state. It dispatches an action that says what happened.</p>
+  </div>
+  <div class="redux-box">
+    <strong>3. Reducers decide the next state</strong>
+    <p>The reducer reads the action and returns the updated state.</p>
+  </div>
+  <div class="redux-box">
+    <strong>4. Components read the result</strong>
+    <p><code>useSelector</code> reads the latest store state, and React re-renders the UI.</p>
+  </div>
+</div>
+
+<div class="tip-box">
+  <strong>Good mental model</strong>
+  <p style="margin-top:8px;">Think of Redux like a front desk for shared data. Components do not sneak into the office and change records directly. They submit a request, the rule system processes it, and then everyone sees the updated record.</p>
+</div>
+</div>
+
+<!-- SLIDE 19: What the store is -->
+<div class="slide" data-slide="19">
+<h2>What exactly is the store?</h2>
+<p>The store is the object that holds your global state. In this deck, the shared state is a students section containing the student list and the currently selected student.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 Concept only</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>{
+  students: {
+    list: [
+      { id: 1, name: 'Ava', major: 'IST' },
+      { id: 2, name: 'Noah', major: 'CS' },
+      { id: 3, name: 'Liam', major: 'Data Science' }
+    ],
+    selected: null
+  }
+}</code></pre>
+  <div class="code-note">This is not a separate file. This is the <em>shape</em> of the data that will end up inside the Redux store once everything is wired together.</div>
+</div>
+
+<div class="example-grid">
+  <div class="example-card"><h3><code>students</code></h3><p>The top-level key for this slice of global state.</p></div>
+  <div class="example-card"><h3><code>list</code></h3><p>The array of students that every interested component can read.</p></div>
+  <div class="example-card"><h3><code>selected</code></h3><p>The one student the user most recently chose, or <code>null</code> if none is selected.</p></div>
+</div>
+</div>
+
+<!-- SLIDE 20: What an action is -->
+<div class="slide" data-slide="20">
+<h2>What is an action?</h2>
+<p>An action is just a plain JavaScript object that describes something that happened. It does not change state by itself. It only carries information to the reducer.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 Concept only</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>{
+  type: 'students/selectStudent',
+  payload: { id: 2, name: 'Noah', major: 'CS' }
+}</code></pre>
+  <div class="code-note">The <code>type</code> string says what happened. The <code>payload</code> carries extra data needed for the update. In this case, the payload is the student that was clicked.</div>
+</div>
+
+<div class="two-col">
+  <div class="example-card">
+    <h3><code>type</code></h3>
+    <p>A label for the event. Reducers use it to decide which update logic should run.</p>
+  </div>
+  <div class="example-card">
+    <h3><code>payload</code></h3>
+    <p>The extra data that travels with the action. Some actions need it, some do not.</p>
+  </div>
+</div>
+
+</div>
+
+<!-- SLIDE 21: What a reducer is -->
+<div class="slide" data-slide="21">
+<h2>What is a reducer?</h2>
+<p>A reducer is a function that receives the current state and an action, then decides what the next state should be. In Redux Toolkit, the reducer logic is written inside a slice.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 Concept only</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>selectStudent(state, action) {
+  state.selected = action.payload
+}</code></pre>
+  <div class="code-note">This reducer says: when the selectStudent action arrives, copy the student from <code>action.payload</code> into <code>state.selected</code>.</div>
+</div>
+
+</div>
+
+<!-- SLIDE 22: What a slice is -->
+<div class="slide" data-slide="22">
+<h2>What is a slice?</h2>
+<p>A slice is Redux Toolkit's way of grouping related Redux pieces together in one file. One slice usually represents one feature or one logical section of the app's state.</p>
+
+<div class="example-grid">
+  <div class="example-card"><h3><code>name</code></h3><p>A label such as <code>'students'</code>. Redux Toolkit uses it when creating action type strings.</p></div>
+  <div class="example-card"><h3><code>initialState</code></h3><p>The starting value for this section of the store.</p></div>
+  <div class="example-card"><h3><code>reducers</code></h3><p>The update rules for this slice. Redux Toolkit also auto-generates action creators from these reducer names.</p></div>
+</div>
+
+<div class="info-box">
+  <strong>Why this is useful</strong>
+  <p style="margin-top:8px;">Without <code>createSlice</code>, you would manually write action type strings, action creator functions, and reducer switch statements in different places. A slice keeps them together so the feature is easier to follow.</p>
+</div>
+
+<div class="anatomy-bar">
+createSlice({ <span class="hl-blue">name</span>, <span class="hl-green">initialState</span>, reducers: { ... } })
+</div>
+</div>
+
+<!-- SLIDE 23: studentsSlice file -->
+<div class="slide" data-slide="23">
+<h2>New file: <code>src/features/students/studentsSlice.js</code></h2>
+<p>Now that the terms are clear, here is the actual slice file. This file defines the initial students state, the reducers, and the generated actions.</p>
+
+<h3>Step 1: Create the feature folder structure</h3>
+<div class="command-block">
+  <span class="command-line"><strong>$</strong> cd school-frontend/src</span>
+  <span class="command-line"><strong>$</strong> mkdir -p features/students</span>
+  <span class="command-line"><strong>$</strong> touch features/students/studentsSlice.js</span>
+</div>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 src/features/students/studentsSlice.js</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>import { createSlice } from &#x27;@reduxjs/toolkit&#x27;
+
+const initialState = {
+  list: [
+    { id: 1, name: &#x27;Ava&#x27;, major: &#x27;IST&#x27; },
+    { id: 2, name: &#x27;Noah&#x27;, major: &#x27;CS&#x27; },
+    { id: 3, name: &#x27;Liam&#x27;, major: &#x27;Data Science&#x27; },
+  ],
+  selected: null,
+}
+
+const studentsSlice = createSlice({
+  name: &#x27;students&#x27;,
+  initialState,
+  reducers: {
+    selectStudent(state, action) {
+      state.selected = action.payload
+    },
+    clearSelection(state) {
+      state.selected = null
+    },
+  },
+})
+
+export const { selectStudent, clearSelection } = studentsSlice.actions
+export default studentsSlice.reducer</code></pre>
+  <div class="code-note">This one file gives you three things at once: the initial state, the reducer logic, and the generated action creators <code>selectStudent</code> and <code>clearSelection</code>.</div>
+</div>
+</div>
+
+<!-- SLIDE 24: unpack studentsSlice -->
+<div class="slide" data-slide="24">
+<h2>Unpacking <code>studentsSlice.js</code> line by line</h2>
+<p>Do not treat the slice file as magic. Each part maps directly to one of the concepts you just learned.</p>
+
+<div class="example-grid">
+  <div class="example-card"><h3><code>initialState</code></h3><p>This becomes the starting value under <code>state.students</code> once the slice is added to the store.</p></div>
+  <div class="example-card"><h3><code>name: 'students'</code></h3><p>This helps build action type strings such as <code>students/selectStudent</code>.</p></div>
+  <div class="example-card"><h3><code>selectStudent</code></h3><p>A reducer case that copies <code>action.payload</code> into <code>selected</code>.</p></div>
+  <div class="example-card"><h3><code>clearSelection</code></h3><p>A reducer case with no payload. It just resets <code>selected</code> to <code>null</code>.</p></div>
+</div>
+
+<div class="tip-box">
+  <strong>Two exports, two different purposes</strong>
+  <p style="margin-top:8px;"><code>studentsSlice.actions</code> gives you action creators to dispatch from components. <code>studentsSlice.reducer</code> is the reducer function that the store needs to register.</p>
+</div>
+
+</div>
+
+<!-- SLIDE 25: store.js concept -->
+<div class="slide" data-slide="25">
+<h2>Why do we still need <code>store.js</code>?</h2>
+<p>The slice defines one piece of Redux logic, but nothing uses it yet. The store is where all slices are registered so Redux knows the full global state tree.</p>
+
+<div class="anatomy-bar">
+store = configureStore({
+  reducer: {
+    <span class="hl-blue">students</span>: <span class="hl-green">studentsReducer</span>
+  }
+})
+</div>
+
+<div class="two-col">
+  <div class="example-card">
+    <h3>Left side: <code>students</code></h3>
+    <p>The state key. This is why you later read from <code>state.students</code>.</p>
+  </div>
+  <div class="example-card">
+    <h3>Right side: <code>studentsReducer</code></h3>
+    <p>The reducer function exported from the slice file.</p>
+  </div>
+</div>
+
+<div class="info-box">
+  <strong>Key takeaway</strong>
+  <p style="margin-top:8px;">A slice defines a feature. The store combines features into one global state object.</p>
+</div>
+</div>
+
+<!-- SLIDE 26: store.js file -->
+<div class="slide" data-slide="26">
+<h2>New file: <code>src/store/store.js</code></h2>
+<p>Now we register the students slice inside the Redux store.</p>
+
+<h3>Step 1: Create the folder and file</h3>
+<div class="command-block">
+  <span class="command-line"><strong>$</strong> cd school-frontend/src</span>
+  <span class="command-line"><strong>$</strong> mkdir store</span>
+  <span class="command-line"><strong>$</strong> touch store/store.js</span>
+</div>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 src/store/store.js</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>import { configureStore } from &#x27;@reduxjs/toolkit&#x27;
+import studentsReducer from &#x27;../features/students/studentsSlice.js&#x27;
+
+const store = configureStore({
+  reducer: {
+    students: studentsReducer,
+  },
+})
+
+export default store</code></pre>
+  <div class="code-note">Because the reducer is registered under the key <code>students</code>, components will later read from paths such as <code>state.students.list</code> and <code>state.students.selected</code>.</div>
+</div>
+
+<div class="verify-box">
+  <strong>What <code>configureStore</code> gives you</strong>
+  <p>It creates the Redux store, combines reducers, and sets up Redux DevTools support automatically. This is why modern Redux code is much shorter than old Redux tutorials.</p>
+</div>
+</div>
+
+<!-- SLIDE 27: Provider concept -->
+<div class="slide" data-slide="27">
+<h2>Before components can use Redux: <code>Provider</code></h2>
+<p>You now have a Redux store object, but React components still cannot see it yet. <code>Provider</code> is the bridge that makes the store available to the whole component tree.</p>
+
+<div class="anatomy-bar">
+&lt;Provider store={store}&gt;
+  &lt;App /&gt;
+&lt;/Provider&gt;
+</div>
+
+<div class="two-col">
+  <div class="example-card">
+    <h3>Why wrap high in the tree?</h3>
+    <p>Any component below <code>Provider</code> can use <code>useSelector</code> and <code>useDispatch</code>. Placing it in <code>main.jsx</code> covers the entire app.</p>
+  </div>
+  <div class="example-card">
+    <h3>What if you forget it?</h3>
+    <p>Components that try to use Redux hooks will throw an error saying React Redux context was not found.</p>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 28: update main.jsx -->
+<div class="slide" data-slide="28">
+<h2>Update <code>src/main.jsx</code> to provide the store</h2>
+<p>This is the first and only Redux-related change in <code>main.jsx</code>. We import the store and wrap <code>App</code> in <code>Provider</code>.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 src/main.jsx</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>import React from &#x27;react&#x27;
+import ReactDOM from &#x27;react-dom/client&#x27;
+import { Provider } from &#x27;react-redux&#x27;
+import App from &#x27;./App.jsx&#x27;
+import store from &#x27;./store/store.js&#x27;
+
+ReactDOM.createRoot(document.getElementById(&#x27;root&#x27;)).render(
+  &lt;React.StrictMode&gt;
+    &lt;Provider store={store}&gt;
+      &lt;App /&gt;
+    &lt;/Provider&gt;
+  &lt;/React.StrictMode&gt;
+)</code></pre>
+  <div class="code-note">Nothing else in <code>main.jsx</code> changes. Its job is still to mount the root React tree. The only new piece is that the tree is now wrapped in Redux's <code>Provider</code>.</div>
+</div>
+</div>
+
+<!-- SLIDE 29: useSelector -->
+<div class="slide" data-slide="29">
+<h2>Reading from the store with <code>useSelector</code></h2>
+<p><code>useSelector</code> lets a component read data from the Redux store. You pass it a function that says which piece of the state you want.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 Concept only</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>const students = useSelector((state) =&gt; state.students.list)
+const selected = useSelector((state) =&gt; state.students.selected)</code></pre>
+  <div class="code-note">The parameter named <code>state</code> is the entire Redux store state object. Your selector function picks out only the part this component needs.</div>
+</div>
+
+<div class="example-grid">
+  <div class="example-card"><h3>First selector</h3><p>Reads the student array from <code>state.students.list</code>.</p></div>
+  <div class="example-card"><h3>Second selector</h3><p>Reads the currently selected student from <code>state.students.selected</code>.</p></div>
+  <div class="example-card"><h3>Automatic re-render</h3><p>If the selected piece of state changes, React re-renders this component with the new value.</p></div>
+</div>
+</div>
+
+<!-- SLIDE 30: useDispatch -->
+<div class="slide" data-slide="30">
+<h2>Writing to the store with <code>useDispatch</code></h2>
+<p><code>useDispatch</code> gives a component the <code>dispatch</code> function. That function is how the component sends actions into Redux.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 Concept only</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>const dispatch = useDispatch()
+
+dispatch(selectStudent(student))
+dispatch(clearSelection())</code></pre>
+  <div class="code-note"><code>selectStudent(student)</code> creates an action object with a payload. <code>clearSelection()</code> creates an action object without one.</div>
+</div>
+
+<div class="tip-box">
+  <strong>Important distinction</strong>
+  <p style="margin-top:8px;"><code>selectStudent</code> is an action creator function. Calling it creates an action object. <code>dispatch(...)</code> is what actually sends that action to Redux.</p>
+</div>
+</div>
+
+<!-- SLIDE 31: StudentList.jsx -->
+<div class="slide" data-slide="31">
+<h2>New file: <code>src/features/students/StudentList.jsx</code></h2>
+<p>This component uses both Redux hooks together: <code>useSelector</code> to read store data and <code>useDispatch</code> to send updates.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 src/features/students/StudentList.jsx</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>import { useDispatch, useSelector } from &#x27;react-redux&#x27;
+import { clearSelection, selectStudent } from &#x27;./studentsSlice.js&#x27;
+
+function StudentList() {
+  const students = useSelector((state) =&gt; state.students.list)
+  const selected = useSelector((state) =&gt; state.students.selected)
+  const dispatch = useDispatch()
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Students&lt;/h2&gt;
+      &lt;ul&gt;
+        {students.map((student) =&gt; (
+          &lt;li key={student.id}&gt;
+            &lt;button onClick={() =&gt; dispatch(selectStudent(student))}&gt;
+              {student.name} — {student.major}
+            &lt;/button&gt;
+          &lt;/li&gt;
+        ))}
+      &lt;/ul&gt;
+
+      &lt;button onClick={() =&gt; dispatch(clearSelection())}&gt;Clear selection&lt;/button&gt;
+
+      &lt;p&gt;
+        {selected
+          ? `Selected: ${selected.name} (${selected.major})`
+          : &#x27;Selected: none&#x27;}
+      &lt;/p&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default StudentList</code></pre>
+  <div class="code-note">This is the full Redux cycle in one component: read students from the store, render buttons from that data, dispatch an action when a student is clicked, and read the updated <code>selected</code> value back from the store.</div>
+</div>
+
+<div class="verify-box">
+  <strong>How to test this with React DevTools</strong>
+  <p>Open DevTools &gt; Components, click on <code>StudentList</code>. Click a student button in the UI. In the right panel, watch <code>selected</code> change from <code>null</code> to the student object in real time. Click "Clear selection" — watch it return to <code>null</code>. This confirms the full dispatch → reducer → store → selector → re-render cycle is working.</p>
+</div>
+</div>
+
+<!-- SLIDE 32: Final App.jsx -->
+<div class="slide" data-slide="32">
+<h2><code>App.jsx</code> after all additions</h2>
+<p>This is the final state of the root component. Notice that the file structure is still the same as before — we only slowed down the explanation of the Redux part.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">📄 src/App.jsx</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><code>import RegistrationForm from &#x27;./components/RegistrationForm.jsx&#x27;
+import StudentDirectory from &#x27;./components/StudentDirectory.jsx&#x27;
+import SessionTimer from &#x27;./components/SessionTimer.jsx&#x27;
+import StudentList from &#x27;./features/students/StudentList.jsx&#x27;
+
+function App() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;School Frontend&lt;/h1&gt;
+      &lt;RegistrationForm /&gt;
+      &lt;StudentDirectory /&gt;
+      &lt;SessionTimer /&gt;
+      &lt;StudentList /&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default App</code></pre>
+  <div class="code-note">App still stays focused on composition. All Redux logic lives in the Redux files, and all earlier local-state components remain untouched.</div>
+</div>
+
+<div class="tree-card" style="margin-top:18px;">
+<pre>school-frontend/
+└── src/
+    ├── main.jsx
+    ├── App.jsx
+    ├── components/
+    │   ├── RegistrationForm.jsx
+    │   ├── StudentDirectory.jsx
+    │   └── SessionTimer.jsx
+    ├── store/
+    │   └── store.js
+    └── features/
+        └── students/
+            ├── studentsSlice.js
+            └── StudentList.jsx</pre>
+</div>
+</div>
+
+<!-- SLIDE 33: Summary -->
+<div class="slide" data-slide="33">
+<h2>Summary</h2>
+<div class="example-grid">
+  <div class="example-card">
+    <h3>React DevTools</h3>
+    <p>Install from the browser extension store. Use the Components tab to inspect live React state and props while the app is running.</p>
+  </div>
+  <div class="example-card">
+    <h3>Controlled forms and effects</h3>
+    <p>Local state is still the default tool for component-specific logic such as form fields, loading flags, and timers.</p>
+  </div>
+  <div class="example-card">
+    <h3>Redux vocabulary</h3>
+    <p><strong>Store</strong> holds shared state. <strong>Action</strong> describes what happened. <strong>Reducer</strong> decides the next state. <strong>Slice</strong> groups a feature's state and reducers together.</p>
+  </div>
+  <div class="example-card">
+    <h3>Redux workflow</h3>
+    <p>Create a slice, register it in the store, wrap the app in <code>Provider</code>, read with <code>useSelector</code>, and update with <code>useDispatch</code>.</p>
+  </div>
+</div>
+</div>
+</div><!-- end presentation-container -->
+<div class="navigation">
+  <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+  <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+</div>
+<div class="copy-toast" id="copyToast">Copied</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script>
+let currentSlide = 1;
+const slides = document.querySelectorAll('.slide');
+document.getElementById('totalSlides').textContent = slides.length;
+function showSlide(n) {
+  if (n < 1) n = 1;
+  if (n > slides.length) n = slides.length;
+  slides.forEach((slide, index) => {
+    slide.classList.toggle('active', index === n - 1);
+  });
+  currentSlide = n;
+  document.getElementById('currentSlide').textContent = currentSlide;
+  document.getElementById('prevBtn').disabled = currentSlide === 1;
+  document.getElementById('nextBtn').disabled = currentSlide === slides.length;
+  refreshEditorsInSlide(slides[currentSlide - 1]);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function changeSlide(direction) {
+  showSlide(currentSlide + direction);
+}
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'ArrowRight' || event.key === ' ') changeSlide(1);
+  if (event.key === 'ArrowLeft') changeSlide(-1);
+});
+function showToast(message) {
+  const toast = document.getElementById('copyToast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(window.__copyToastTimer);
+  window.__copyToastTimer = setTimeout(() => toast.classList.remove('show'), 1300);
+}
+function initializeCodeEditors(root = document) {
+  root.querySelectorAll('.code-window .code-block').forEach((pre) => {
+    const windowEl = pre.closest('.code-window');
+    if (pre.dataset.enhanced === 'true') {
+      if (windowEl && windowEl.__cm) {
+        requestAnimationFrame(() => windowEl.__cm.refresh());
+      }
+      return;
+    }
+    const codeEl = pre.querySelector('code');
+    const rawCode = codeEl ? codeEl.textContent.replace(/\n$/, '') : pre.textContent.replace(/\n$/, '');
+    const textarea = document.createElement('textarea');
+    textarea.className = 'code-source';
+    textarea.value = rawCode;
+    pre.innerHTML = '';
+    pre.appendChild(textarea);
+    const cm = CodeMirror.fromTextArea(textarea, {
+      mode: { name: 'javascript', jsx: true },
+      theme: 'eclipse',
+      lineNumbers: true,
+      readOnly: true,
+      lineWrapping: false,
+      viewportMargin: Infinity
+    });
+    windowEl.__cm = cm;
+    pre.dataset.enhanced = 'true';
+    requestAnimationFrame(() => cm.refresh());
+  });
+}
+function refreshEditorsInSlide(slide) {
+  if (!slide) return;
+  initializeCodeEditors(slide);
+  requestAnimationFrame(() => {
+    slide.querySelectorAll('.code-window').forEach((windowEl) => {
+      if (windowEl.__cm) windowEl.__cm.refresh();
+    });
+  });
+}
+async function copyCode(button) {
+  const windowEl = button.closest('.code-window');
+  const code = windowEl.__cm ? windowEl.__cm.getValue() : (windowEl.querySelector('code')?.innerText || '');
+  try {
+    await navigator.clipboard.writeText(code);
+    const old = button.textContent;
+    button.textContent = 'Copied';
+    showToast('Code copied');
+    setTimeout(() => button.textContent = old, 1000);
+  } catch (err) {
+    showToast('Copy failed');
+  }
+}
+showSlide(1);
+</script>
+</body>
+</html>

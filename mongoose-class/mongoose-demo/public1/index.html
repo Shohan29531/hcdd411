@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Manager</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1 { margin-bottom: 8px; }
+    .subtitle { color: #6b7280; margin-bottom: 20px; }
+    .message {
+      display: none;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 18px;
+      font-weight: 700;
+    }
+    .message.success {
+      display: block;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .message.error {
+      display: block;
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 18px;
+    }
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+    .card {
+      background: white;
+      border: 1px solid #dbe3ef;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    h2 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+    form {
+      display: grid;
+      gap: 10px;
+    }
+    label {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      background: white;
+    }
+    button {
+      border: none;
+      background: #2563eb;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #475569;
+    }
+    button.danger {
+      background: #dc2626;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: top;
+      font-size: 0.92rem;
+    }
+    th {
+      color: #334155;
+      background: #f8fafc;
+    }
+    .detail-box {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 12px;
+      line-height: 1.7;
+    }
+    .muted {
+      color: #64748b;
+      font-size: 0.92rem;
+    }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Student Manager</h1>
+    <p class="subtitle">Frontend → Express → Mongoose → MongoDB</p>
+
+    <div id="message" class="message"></div>
+
+    <div class="layout">
+      <section class="card">
+        <div class="card-header">
+          <h2>All Students</h2>
+          <button id="refreshBtn" class="secondary" type="button">Refresh</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Major</th>
+            </tr>
+          </thead>
+          <tbody id="studentsBody">
+            <tr><td colspan="3">Loading...</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <div class="stack">
+        <section class="card">
+          <h2>Add Student</h2>
+          <form id="addForm">
+            <div>
+              <label for="addName">Name</label>
+              <input id="addName" required />
+            </div>
+            <div>
+              <label for="addAge">Age</label>
+              <input id="addAge" type="number" min="0" required />
+            </div>
+            <div>
+              <label for="addMajor">Major</label>
+              <input id="addMajor" />
+            </div>
+            <button type="submit">Add Student</button>
+          </form>
+        </section>
+
+        <section class="card">
+          <h2>View One Student</h2>
+          <form id="getForm">
+            <div>
+              <label for="getStudentSelect">Choose a student</label>
+              <select id="getStudentSelect" required>
+                <option value="">Select a student</option>
+              </select>
+            </div>
+            <button type="submit">Show Student</button>
+          </form>
+          <div id="singleStudentBox" class="detail-box">No student loaded yet.</div>
+        </section>
+
+        <section class="card">
+          <h2>Update Student</h2>
+          <p class="muted">Pick a student from the dropdown, then change only the fields you want.</p>
+          <form id="updateForm">
+            <div>
+              <label for="updateStudentSelect">Choose a student</label>
+              <select id="updateStudentSelect" required>
+                <option value="">Select a student</option>
+              </select>
+            </div>
+            <div>
+              <label for="updateName">New Name</label>
+              <input id="updateName" />
+            </div>
+            <div>
+              <label for="updateAge">New Age</label>
+              <input id="updateAge" type="number" min="0" />
+            </div>
+            <div>
+              <label for="updateMajor">New Major</label>
+              <input id="updateMajor" />
+            </div>
+            <button type="submit">Update Student</button>
+          </form>
+        </section>
+
+        <section class="card">
+          <h2>Delete Student</h2>
+          <form id="deleteForm">
+            <div>
+              <label for="deleteStudentSelect">Choose a student</label>
+              <select id="deleteStudentSelect" required>
+                <option value="">Select a student</option>
+              </select>
+            </div>
+            <button type="submit" class="danger">Delete Student</button>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

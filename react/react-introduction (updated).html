@@ -1,0 +1,2241 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HCDD 411 - React Introduction</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Outfit:wght@300;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css" rel="stylesheet"/>
+<style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #3B7DD6;
+            --secondary: #5A6C7D;
+            --accent: #D4940C;
+            --code-bg: #F8F9FA;
+            --success: #059669;
+            --error: #DC2626;
+            --bg-gradient-start: #F0F4F8;
+            --bg-gradient-end: #E1E8ED;
+            --slide-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(59, 125, 214, 0.3);
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --react: #61DAFB;
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 140px 0 120px 0;
+        }
+
+        .presentation-container { width: 100%; min-height: 100vh; }
+
+        .slide {
+            width: 90%;
+            max-width: 1200px;
+            min-height: 420px;
+            background: var(--slide-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 60px;
+            margin: 0 auto;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: none;
+            border: 2px solid var(--border-color);
+        }
+
+        .slide.active { opacity: 1; transform: translateX(0); display: block; }
+
+        h1 {
+            font-weight: 900;
+            font-size: 4.1em;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            line-height: 1.05;
+        }
+
+        h2 {
+            font-weight: 700;
+            font-size: 2.5em;
+            color: var(--accent);
+            margin-bottom: 28px;
+            letter-spacing: -1px;
+        }
+
+        h3 {
+            font-weight: 600;
+            font-size: 1.35em;
+            color: var(--primary);
+            margin: 18px 0 12px 0;
+        }
+
+        p { font-size: 1.1em; line-height: 1.65; }
+        ul { margin: 16px 0; padding-left: 28px; }
+        li { margin: 10px 0; font-size: 1.08em; line-height: 1.55; }
+
+        code {
+            font-family: 'Space Mono', monospace;
+            background: rgba(59, 125, 214, 0.15);
+            padding: 3px 8px;
+            border-radius: 5px;
+            color: var(--primary);
+        }
+
+        .subtitle {
+            font-size: 1.35em;
+            color: var(--text-secondary);
+            margin-bottom: 38px;
+            font-weight: 300;
+            max-width: 900px;
+        }
+
+        .penn-state-badge {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            font-weight: 900;
+            font-size: 1.2em;
+            color: var(--primary);
+            z-index: 1000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .slide-indicator {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            background: var(--primary);
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 1em;
+            z-index: 1000;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-button:hover { background: var(--secondary); transform: scale(1.05); }
+        .nav-button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .info-box,
+        .tip-box,
+        .warning-box {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+        }
+
+        .info-box {
+            background: rgba(212, 148, 12, 0.1);
+            border-left: 4px solid var(--accent);
+        }
+
+        .tip-box {
+            background: rgba(5, 150, 105, 0.1);
+            border-left: 4px solid var(--success);
+        }
+
+        .warning-box {
+            background: rgba(220, 38, 38, 0.1);
+            border-left: 4px solid var(--error);
+        }
+
+        .hero-grid,
+        .two-column,
+        .comparison-grid,
+        .runner-grid,
+        .setup-grid,
+        .structure-grid {
+            display: grid;
+            gap: 22px;
+        }
+
+        .hero-grid { grid-template-columns: 1.15fr 0.85fr; align-items: center; }
+        .two-column { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .comparison-grid { grid-template-columns: 1fr; align-items: start; }
+        .runner-grid { grid-template-columns: 1fr; align-items: start; }
+        .setup-grid { grid-template-columns: 1fr; align-items: start; }
+        .structure-grid { grid-template-columns: 1fr; align-items: start; }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+            margin: 18px 0 8px;
+        }
+
+        .example-card,
+        .metric-card,
+        .pain-card,
+        .flow-step,
+        .tree-card {
+            background: rgba(255, 255, 255, 0.78);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .example-card:hover,
+        .metric-card:hover,
+        .pain-card:hover,
+        .flow-step:hover,
+        .tree-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .metric-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 22px 0 12px;
+        }
+
+        .metric-pill {
+            background: rgba(97, 218, 251, 0.16);
+            border: 1px solid rgba(59, 125, 214, 0.18);
+            color: var(--text-primary);
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-weight: 600;
+        }
+
+        .code-playground {
+            background: var(--code-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-playground::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 30px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 15px 15px 0 0;
+        }
+
+        .playground-label {
+            position: absolute;
+            top: 5px;
+            left: 20px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9em;
+            color: white;
+            font-weight: 700;
+            z-index: 1;
+        }
+
+        .ide-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px 10px 0 0;
+            margin-top: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .file-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--primary);
+            color: white;
+            border-radius: 6px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .toolbar-actions { margin-left: auto; display: flex; gap: 8px; }
+
+        .toolbar-btn {
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s ease;
+        }
+
+        .toolbar-btn:hover { background: rgba(0, 0, 0, 0.1); color: var(--text-primary); }
+
+        .editor-wrapper {
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+        }
+
+        .CodeMirror {
+            font-family: 'Space Mono', monospace !important;
+            font-size: 0.94em !important;
+            height: auto !important;
+            min-height: 260px;
+            line-height: 1.6 !important;
+            border-radius: 10px;
+        }
+
+        .CodeMirror-scroll { min-height: 260px; }
+        .CodeMirror-gutters { border-right: 2px solid var(--border-color) !important; }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 15px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 0 0 10px 10px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .status-bar .language { color: var(--primary); font-weight: 600; }
+
+        .run-button,
+        .clear-button {
+            color: white;
+            border: none;
+            padding: 12px 26px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .run-button {
+            background: linear-gradient(135deg, var(--success), #10B981);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .clear-button {
+            background: linear-gradient(135deg, var(--secondary), #6B7280);
+            margin-left: 10px;
+        }
+
+        .run-button:hover,
+        .clear-button:hover { transform: translateY(-3px); }
+
+        .output-console {
+            background: #1F2937;
+            border-radius: 10px;
+            padding: 18px;
+            margin-top: 18px;
+            min-height: 110px;
+            max-height: 280px;
+            overflow-y: auto;
+            font-family: 'Space Mono', monospace;
+            color: #10B981;
+            border: 1px solid var(--success);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-label { color: #F59E0B; font-weight: 700; margin-bottom: 10px; display: inline-block; }
+        .output-console .error { color: #EF4444; }
+        .output-console .warn { color: #F59E0B; }
+        .output-console .info { color: #60A5FA; }
+
+        .preview-panel {
+            background: rgba(255,255,255,0.85);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .preview-frame {
+            width: 100%;
+            height: 320px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: white;
+        }
+
+        .label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .label-row span {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.86em;
+            color: var(--text-secondary);
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .tag {
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(59, 125, 214, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.95em;
+            border: 1px solid rgba(59, 125, 214, 0.18);
+        }
+
+        .code-block {
+            background: #1F2937;
+            color: #E5E7EB;
+            padding: 18px;
+            border-radius: 14px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.86em;
+            line-height: 1.68;
+            overflow-x: auto;
+            border: 1px solid rgba(255,255,255,0.08);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .code-block .accent { color: #61DAFB; }
+        .code-block .success { color: #34D399; }
+        .code-block .warn { color: #FBBF24; }
+        .code-block .comment { color: #6B7280; font-style: italic; }
+
+        .command-block {
+            background: #111827;
+            color: #E5E7EB;
+            padding: 20px;
+            border-radius: 16px;
+            font-family: 'Space Mono', monospace;
+            border: 2px solid rgba(59, 125, 214, 0.18);
+            overflow-x: auto;
+        }
+
+        .command-line { color: #A7F3D0; display: block; margin: 10px 0; }
+        .command-line strong { color: #FDE68A; }
+
+        .flow-row {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin: 24px 0 8px;
+        }
+
+        .flow-step strong { display: block; color: var(--primary); margin-bottom: 8px; }
+
+        .flow-arrow {
+            text-align: center;
+            color: var(--secondary);
+            font-size: 1.7em;
+            line-height: 1;
+        }
+
+        .tree-card pre {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.95em;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        .centered { display: flex; align-items: center; }
+
+        .title-highlight {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(97, 218, 251, 0.18), rgba(59, 125, 214, 0.14));
+            border: 1px solid rgba(59, 125, 214, 0.2);
+            color: var(--primary);
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 1.02em;
+            font-weight: 700;
+            margin-bottom: 22px;
+        }
+
+        .big-note {
+            font-size: 1.18em;
+            color: var(--text-secondary);
+            max-width: 880px;
+            line-height: 1.6;
+        }
+
+        .mini-note {
+            font-size: 0.94em;
+            color: var(--text-secondary);
+            margin-top: 12px;
+            line-height: 1.6;
+        }
+
+        .react-wordmark {
+            font-size: 7em;
+            color: rgba(97, 218, 251, 0.32);
+            font-weight: 900;
+            text-align: right;
+            letter-spacing: -6px;
+            line-height: 0.85;
+        }
+
+        .callout-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-top: 16px;
+        }
+
+        .callout-grid .pain-card strong { display: block; margin-bottom: 8px; color: var(--primary); }
+
+
+        .inline-code-playground {
+            margin: 20px 0 10px;
+        }
+
+        .inline-runner-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .inline-code-playground .preview-panel {
+            margin-top: 6px;
+        }
+
+        .inline-code-playground .preview-frame {
+            height: 360px;
+        }
+
+        /* anatomy bar for useState explanation */
+        .anatomy-bar {
+            background: #111827;
+            color: #E5E7EB;
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9em;
+            line-height: 2;
+            border: 2px solid rgba(59,125,214,0.25);
+            margin: 16px 0;
+        }
+        .anatomy-bar .hl-blue { color: #61DAFB; }
+        .anatomy-bar .hl-green { color: #34D399; }
+        .anatomy-bar .hl-yellow { color: #FBBF24; }
+        .anatomy-bar .hl-gray { color: #9CA3AF; font-style: italic; }
+
+        .comp-tree {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.95em;
+            line-height: 2;
+            color: var(--text-secondary);
+            background: rgba(59,125,214,0.06);
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            padding: 18px 22px;
+        }
+        .comp-tree .node { color: var(--primary); font-weight: 700; }
+        .comp-tree .leaf { color: var(--success); }
+
+        a { color: var(--primary); }
+
+        @media (max-width: 980px) {
+            .slide { padding: 40px 28px; width: 94%; }
+            .hero-grid, .two-column, .comparison-grid, .runner-grid, .setup-grid, .structure-grid, .flow-row, .callout-grid, .inline-runner-grid {
+                grid-template-columns: 1fr;
+            }
+            h1 { font-size: 3em; }
+            h2 { font-size: 2em; }
+            .react-wordmark { text-align: left; font-size: 4em; }
+            .navigation { bottom: 18px; }
+            .penn-state-badge, .slide-indicator { top: 14px; }
+        }
+    </style>
+</head>
+<body>
+<div class="penn-state-badge">HCDD 411</div>
+<div class="slide-indicator">
+<span id="currentSlide">1</span> / <span id="totalSlides">0</span>
+</div>
+<div class="presentation-container">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="slide active" data-slide="1">
+<div class="hero-grid">
+<div>
+<h1>REACT</h1>
+<h2>Md Touhidul Islam</h2>
+<div class="metric-strip">
+<div class="metric-pill">Why React</div>
+<div class="metric-pill">JSX</div>
+<div class="metric-pill">Lists</div>
+<div class="metric-pill">Events</div>
+<div class="metric-pill">Props</div>
+<div class="metric-pill">State</div>
+<div class="metric-pill">Vite</div>
+</div>
+</div>
+
+
+
+</div>
+</div><div class="slide" data-slide="2">
+<h2>Table of Content</h2>
+
+<div class="tip-box">
+<strong style="color: var(--success);">Agenda</strong>
+<ul style="margin-top: 10px;">
+<li>First, understand <strong>why</strong> React exists.</li>
+<li>Then learn the <strong>language of React UI</strong>: JSX.</li>
+<li>Then learn how React builds larger UIs with <strong>components</strong> and <strong>props</strong>.</li>
+<li>Then learn how the UI changes over time with <strong>state</strong> and <strong>events</strong>.</li>
+<li>Only after that do we move to <strong>Vite</strong> and the real project structure.</li>
+</ul>
+</div>
+
+
+</div><div class="slide" data-slide="3">
+<h2>A more realistic frontend problem</h2>
+<p>Suppose one page must do all of this for the <strong>student collection</strong>.</p>
+<div class="callout-grid" style="margin-top: 20px; grid-template-columns: repeat(3, minmax(0, 1fr));">
+<div class="pain-card">
+<strong>1. Render a list</strong>
+<p>Show all students returned from the API.</p>
+</div>
+<div class="pain-card">
+<strong>2. Filter while typing</strong>
+<p>As the search text changes, the visible list should change immediately.</p>
+</div>
+<div class="pain-card">
+<strong>3. Show selected details</strong>
+<p>Clicking one student should update the details area on the same page.</p>
+</div>
+</div>
+<div class="info-box" style="margin-top: 18px;">
+<strong>The important part</strong>
+<p style="margin-top: 8px;">This is not a one-time DOM task. The page keeps changing. Search text changes. The filtered list changes. The selected student changes. This is exactly the kind of UI React is good at.</p>
+</div>
+<!-- <div class="code-playground inline-code-playground" data-runner-type="js"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-01.js</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-1')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-1-preview" data-output-id="auto-code-1-output" data-runner-type="js" id="auto-code-1">const pageState = {
+  searchText: "",
+  visibleStudents: ["Ava", "Noah", "Liam"],
+  selectedStudent: null
+};
+
+console.log("Pieces of UI state:", pageState);</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-1">Ln 1, Col 1</span><span class="language">Auto JavaScript</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-1', 'auto-code-1-preview', 'auto-code-1-output', 'js')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-1-output')">Clear</button><div class="output-console" id="auto-code-1-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-1-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">JavaScript</div></div></div></div></div> -->
+
+
+</div><div class="slide" data-slide="4">
+<h2>Plain JavaScript approach</h2>
+<p>With vanilla DOM code, <strong>we must manually keep the UI in sync</strong>. That is where things become repetitive and fragile.</p>
+<h3>Example: search + selected student</h3>
+<div class="code-playground inline-code-playground" data-runner-type="js"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-02.js</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-2')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-2-preview" data-output-id="auto-code-2-output" data-runner-type="js" id="auto-code-2">// All DOM elements and data are created right here in this code.
+
+const students = [
+  { _id: "1", name: "Ava",  major: "IST" },
+  { _id: "2", name: "Noah", major: "CS" },
+  { _id: "3", name: "Liam", major: "Data Science" },
+  { _id: "4", name: "Mia",  major: "HCDD" }
+];
+
+const state = { search: "", selectedId: null };
+
+// Build the page elements
+const searchInput = document.createElement("input");
+searchInput.placeholder = "Search by name";
+document.body.appendChild(searchInput);
+
+const listEl = document.createElement("ul");
+document.body.appendChild(listEl);
+
+const selectedEl = document.createElement("div");
+selectedEl.textContent = "Selected: none";
+document.body.appendChild(selectedEl);
+
+function renderList() {
+  const filtered = students.filter((s) =&gt;
+    s.name.toLowerCase().includes(state.search.toLowerCase())
+  );
+  listEl.innerHTML = "";
+  filtered.forEach((student) =&gt; {
+    const li = document.createElement("li");
+    li.textContent = `${student.name} (${student.major})`;
+    li.addEventListener("click", () =&gt; {
+      state.selectedId = student._id;
+      renderSelectedStudent();
+    });
+    listEl.appendChild(li);
+  });
+}
+
+function renderSelectedStudent() {
+  const found = students.find((s) =&gt; s._id === state.selectedId);
+  selectedEl.textContent = found
+    ? `Selected: ${found.name} (${found.major})`
+    : "Selected: none";
+}
+
+renderList();
+
+searchInput.addEventListener("input", (e) =&gt; {
+  state.search = e.target.value;
+  renderList();
+});</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-2">Ln 1, Col 1</span><span class="language">Auto JavaScript</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-2', 'auto-code-2-preview', 'auto-code-2-output', 'js')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-2-output')">Clear</button><div class="output-console" id="auto-code-2-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-2-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">JavaScript</div></div></div></div></div>
+<div class="warning-box">
+<strong style="color: var(--error);">What starts to hurt</strong>
+<ul style="margin-top: 10px;">
+<li>You create and attach DOM nodes manually.</li>
+<li>You decide which render function to call and when.</li>
+<li>You must remember which part of the page depends on which piece of data.</li>
+<li>As the page grows, missing one update becomes easy.</li>
+</ul>
+</div>
+</div><div class="slide" data-slide="5">
+<h2>The same idea in React</h2>
+<p>In React, we keep the changing data as <strong>state</strong>, then describe what the UI should look like for that state.</p>
+<div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-03.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-3')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-3-preview" data-output-id="auto-code-3-output" data-runner-type="react" id="auto-code-3">const students = [
+  { _id: "1", name: "Ava",  major: "IST" },
+  { _id: "2", name: "Noah", major: "CS" },
+  { _id: "3", name: "Liam", major: "Data Science" },
+  { _id: "4", name: "Mia",  major: "HCDD" }
+];
+
+function StudentDirectory({ students }) {
+  const [search, setSearch] = React.useState("");
+  const [selectedStudent, setSelectedStudent] = React.useState(null);
+
+  const filteredStudents = students.filter((student) =&gt;
+    student.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    &lt;div&gt;
+      &lt;input
+        value={search}
+        onChange={(e) =&gt; setSearch(e.target.value)}
+        placeholder="Search by name"
+      /&gt;
+
+      &lt;ul&gt;
+        {filteredStudents.map((student) =&gt; (
+          &lt;li key={student._id}&gt;
+            &lt;button onClick={() =&gt; setSelectedStudent(student)}&gt;
+              {student.name} ({student.major})
+            &lt;/button&gt;
+          &lt;/li&gt;
+        ))}
+      &lt;/ul&gt;
+
+      &lt;p&gt;
+        {selectedStudent
+          ? `${selectedStudent.name} - ${selectedStudent.major}`
+          : "Pick a student"}
+      &lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;StudentDirectory students={students} /&gt;);</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-3">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-3', 'auto-code-3-preview', 'auto-code-3-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-3-output')">Clear</button><div class="output-console" id="auto-code-3-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-3-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div>
+<div class="tip-box">
+<strong style="color: var(--success);">What React removed from our job</strong>
+<ul style="margin-top: 10px;">
+<li>No <code>document.createElement()</code></li>
+<li>No <code>innerHTML = ""</code></li>
+<li>No manual <code>renderSelectedStudent()</code> call</li>
+<li>We update <strong>state</strong>; React updates the page</li>
+</ul>
+</div>
+<div class="info-box" style="margin-top:18px;">
+<strong>The mental model to remember</strong>
+<p style="margin-top:8px;"><code>UI = f(state)</code>. Read that as: the UI is a function of the current state. When state changes, React runs the component again and updates the page to match.</p>
+</div>
+</div>
+
+
+<div class="slide" data-slide="6">
+<h2>So what is React, exactly?</h2>
+<div class="example-grid">
+<div class="example-card">
+<h3>It is a library</h3>
+<p>React is a JavaScript <strong>library</strong> for building user interfaces.</p>
+</div>
+<div class="example-card">
+<h3>It builds with components</h3>
+<p>You break the page into reusable pieces like <code>&lt;SearchBox /&gt;</code> and <code>&lt;StudentList /&gt;</code>.</p>
+</div>
+<div class="example-card">
+<h3>It renders from data</h3>
+<p>You describe the UI from data instead of manually editing DOM nodes all over the page.</p>
+</div>
+<div class="example-card">
+<h3>It is UI-focused</h3>
+<p>React mainly handles the interface layer. The backend, database, and API still stay separate.</p>
+</div>
+</div>
+<div class="comparison-grid" style="margin-top: 18px;">
+<div class="info-box" style="margin:0;">
+<strong>Where the next ideas come from</strong>
+<p style="margin-top: 8px;">If React builds UI from components, then the next questions naturally become: what do components return, how do they receive data, and how do they react to change?</p>
+</div>
+</div>
+</div><div class="slide" data-slide="7">
+<h2>JSX: the language React code usually returns</h2>
+<p>JSX stands for <strong>JavaScript XML</strong>. It lets us write HTML-like code inside JavaScript. It is <strong>not exactly HTML</strong>, even though it looks similar.</p>
+<div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-04.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-4')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-4-preview" data-output-id="auto-code-4-output" data-runner-type="react" id="auto-code-4">function App() {
+  return (
+    &lt;div className="page"&gt;
+      &lt;h1&gt;Hello HCDD 411&lt;/h1&gt;
+      &lt;p&gt;Welcome to React.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-4">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-4', 'auto-code-4-preview', 'auto-code-4-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-4-output')">Clear</button><div class="output-console" id="auto-code-4-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-4-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div>
+<div class="example-grid" style="margin-top: 18px;">
+<div class="example-card">
+<h3>Why people like it</h3>
+<p>The UI structure is easier to read because it looks close to HTML.</p>
+</div>
+<div class="example-card">
+<h3>Why it is powerful</h3>
+<p>It still lives inside JavaScript, so we can use variables, expressions, arrays, and functions.</p>
+</div>
+<div class="example-card">
+<h3>What actually runs</h3>
+<p>Tools like Babel translate JSX into JavaScript code that describes the UI.</p>
+</div>
+</div>
+<div class="callout-grid" style="margin-top: 18px;">
+<div class="pain-card">
+<strong>Rule 1</strong>
+<p>Use <code>className</code> instead of HTML's <code>class</code>.</p>
+</div>
+<div class="pain-card">
+<strong>Rule 2</strong>
+<p>Use <code>{ }</code> when you want to place JavaScript inside JSX.</p>
+</div>
+<div class="pain-card">
+<strong>Rule 3</strong>
+<p>A component returns one root element, or a Fragment like <code>&lt;&gt;...&lt;/&gt;</code>.</p>
+</div>
+</div>
+</div><div class="slide" data-slide="8">
+<h2>JSX expressions: put JavaScript inside { }</h2>
+<p>In JSX, the curly braces mean: <strong>evaluate this JavaScript expression and put the result here</strong>.</p>
+<div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-05.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-5')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-5-preview" data-output-id="auto-code-5-output" data-runner-type="react" id="auto-code-5">function App() {
+  const course = "HCDD 411";
+  const totalStudents = 40;
+  const getTitle = () =&gt; "React Basics";
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;{course}&lt;/h1&gt;
+      &lt;p&gt;{3 + 5}&lt;/p&gt;
+      &lt;p&gt;{course + " - Frontend Development"}&lt;/p&gt;
+      &lt;p&gt;{getTitle()}&lt;/p&gt;
+      &lt;p&gt;{totalStudents &gt; 30 ? "Large class" : "Small class"}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-5">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-5', 'auto-code-5-preview', 'auto-code-5-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-5-output')">Clear</button><div class="output-console" id="auto-code-5-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-5-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div>
+<div class="example-grid" style="margin-top: 18px;">
+<div class="example-card">
+<h3>Common things inside { }</h3>
+<p>Variables, arithmetic, function calls that return a value, and ternary expressions.</p>
+</div>
+<div class="example-card">
+<h3>Comments in JSX</h3>
+<p>Use <code>{/* comment here */}</code> when the comment is inside JSX markup.</p>
+</div>
+<div class="example-card">
+<h3>Important word</h3>
+<p>The braces expect an <strong>expression</strong>, not a full multi-line statement block.</p>
+</div>
+</div>
+</div><div class="slide" data-slide="9"><h2>What works directly in JSX, and what does not</h2><p>This is where beginners often get confused: JSX accepts <strong>values and expressions</strong>, not every JavaScript construct.</p><h3>Good inside JSX</h3><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-06.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-6')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-6-preview" data-output-id="auto-code-6-output" data-runner-type="react" id="auto-code-6">const student = { name: "Ava", major: "IST", gpa: 3.92 };
+const isHonors = true;
+const isLoggedIn = true;
+
+function App() {
+  return (
+    &lt;div&gt;
+      &lt;p&gt;{student.name}&lt;/p&gt;
+      &lt;p&gt;{student.gpa.toFixed(2)}&lt;/p&gt;
+      &lt;p&gt;{isHonors ? "Honors" : "Regular standing"}&lt;/p&gt;
+      &lt;p&gt;{isLoggedIn &amp;&amp; "Welcome back"}&lt;/p&gt;
+      {/* JSX comment */}
+    &lt;/div&gt;
+  );
+}</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-6">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-6', 'auto-code-6-preview', 'auto-code-6-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-6-output')">Clear</button><div class="output-console" id="auto-code-6-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-6-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div></div><div class="slide" data-slide="10"><h2>What doesn't work in JSX — and the fix</h2><p>JSX expects expressions, not full statements. Here is the pattern to avoid and the cleaner alternative.</p><h3 style="margin-top: 22px;">Not written directly inside JSX braces</h3><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-07.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-7')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-7-preview" data-output-id="auto-code-7-output" data-runner-type="react" id="auto-code-7">const isHonors = true;
+
+/*
+This is INVALID inside JSX:
+&lt;div&gt;
+  {if (isHonors) { return "Honors"; }}
+&lt;/div&gt;
+*/
+
+function App() {
+  const label = isHonors ? "Honors" : "Regular standing";
+  return &lt;div&gt;{label}&lt;/div&gt;;
+}</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-7">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-7', 'auto-code-7-preview', 'auto-code-7-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-7-output')">Clear</button><div class="output-console" id="auto-code-7-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-7-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div><div class="info-box">
+<strong>The fix</strong>
+<p style="margin-top: 8px;">Do the more complex logic <strong>before</strong> the returned JSX, save the result in a variable, then place that result into JSX.</p>
+</div><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-08.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-8')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-8-preview" data-output-id="auto-code-8-output" data-runner-type="react" id="auto-code-8">const isHonors = true;
+
+function App() {
+  let label = "Regular standing";
+
+  if (isHonors) {
+    label = "Honors";
+  }
+
+  return &lt;p&gt;{label}&lt;/p&gt;;
+}</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-8">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-8', 'auto-code-8-preview', 'auto-code-8-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-8-output')">Clear</button><div class="output-console" id="auto-code-8-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-8-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div></div><div class="slide" data-slide="11"><h2>Rendering lists in JSX</h2><p>Rendering lists is one of the first things React does very well. In practice, this is how we turn an array of students into UI.</p><h3>Most common: use <code>map()</code> inside JSX</h3><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-09.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-9')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-9-preview" data-output-id="auto-code-9-output" data-runner-type="react" id="auto-code-9">function StudentList({ students }) {
+  return (
+    &lt;ul&gt;
+      {students.map((student) =&gt; (
+        &lt;li key={student.id}&gt;
+          {student.name} - {student.major}
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}
+
+function App() {
+  const students = [
+    { id: 1, name: "Ava",  major: "IST" },
+    { id: 2, name: "Noah", major: "CS" },
+    { id: 3, name: "Liam", major: "Data Science" },
+    { id: 4, name: "Mia",  major: "HCDD" }
+  ];
+  return &lt;StudentList students={students} /&gt;;
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;App /&gt;);</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-9">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-9', 'auto-code-9-preview', 'auto-code-9-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-9-output')">Clear</button><div class="output-console" id="auto-code-9-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-9-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div><div class="tip-box">
+<strong style="color: var(--success);">Why <code>key</code> matters</strong>
+<p style="margin-top: 8px;">Each rendered item should have a unique <code>key</code> prop so React can track which item is which between renders.</p>
+</div></div><div class="slide" data-slide="12"><h2>Rendering lists: building items before returning JSX</h2><p>When you need conditional logic inside a list, build the array first, then render it.</p><h3 style="margin-top: 22px;">For more complex logic, build first, render after</h3><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-10.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-10')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-10-preview" data-output-id="auto-code-10-output" data-runner-type="react" id="auto-code-10">function StudentList({ students }) {
+  const rows = [];
+
+  for (const student of students) {
+    if (student.gpa &gt;= 3.5) {
+      rows.push(
+        &lt;li key={student.id}&gt;
+          {student.name} - Dean's List
+        &lt;/li&gt;
+      );
+    }
+  }
+
+  return &lt;ul&gt;{rows}&lt;/ul&gt;;
+}
+
+function App() {
+  const students = [
+    { id: 1, name: "Ava",  major: "IST",          gpa: 3.92 },
+    { id: 2, name: "Noah", major: "CS",            gpa: 3.61 },
+    { id: 3, name: "Liam", major: "Data Science",  gpa: 3.44 },
+    { id: 4, name: "Mia",  major: "HCDD",          gpa: 3.88 }
+  ];
+  return &lt;StudentList students={students} /&gt;;
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;App /&gt;);</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-10">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-10', 'auto-code-10-preview', 'auto-code-10-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-10-output')">Clear</button><div class="output-console" id="auto-code-10-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-10-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div></div>
+
+
+<div class="slide" data-slide="13"><h2>Event handling in JSX</h2><p>React handles browser events with props like <code>onClick</code>, <code>onChange</code>, and <code>onSubmit</code>.</p><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-11.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-11')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-11-preview" data-output-id="auto-code-11-output" data-runner-type="react" id="auto-code-11">function App() {
+  const clickHandler = () =&gt; {
+    console.log("Button clicked");
+  };
+
+  return &lt;button onClick={clickHandler}&gt;Click me&lt;/button&gt;;
+}
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;App /&gt;);
+
+</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-11">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-11', 'auto-code-11-preview', 'auto-code-11-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-11-output')">Clear</button><div class="output-console" id="auto-code-11-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-11-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div><div class="example-grid" style="margin-top: 18px;">
+<div class="example-card">
+<h3><code>onClick</code></h3>
+<p>Button clicks</p>
+</div>
+<div class="example-card">
+<h3><code>onChange</code></h3>
+<p>Input field changes</p>
+</div>
+<div class="example-card">
+<h3><code>onSubmit</code></h3>
+<p>Form submission</p>
+</div>
+<div class="example-card">
+<h3><code>onMouseEnter</code> / <code>onKeyDown</code></h3>
+<p>Hover and keyboard events</p>
+</div>
+</div></div><div class="slide" data-slide="14"><h2>Passing arguments to event handlers</h2><p>When the handler needs an argument beyond the event object, wrap it in an arrow function.</p><h3><code>onClick</code></h3><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-12.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-12')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-12-preview" data-output-id="auto-code-12-output" data-runner-type="react" id="auto-code-12">function App() {
+  const handleSelect = (studentId, event) =&gt; {
+    console.log("Selected:", studentId);
+    console.log("Clicked element:", event.target);
+  };
+
+  return (
+    &lt;button onClick={(event) =&gt; handleSelect(42, event)}&gt;
+      Select student
+    &lt;/button&gt;
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;App /&gt;);
+
+</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-12">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-12', 'auto-code-12-preview', 'auto-code-12-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-12-output')">Clear</button><div class="output-console" id="auto-code-12-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-12-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div><div class="warning-box">
+<strong style="color: var(--error);">Common beginner mistake</strong>
+<p style="margin-top: 8px;">Do not call the function immediately like <code>onClick={handleSelect(42)}</code> unless you truly want it to run during rendering. Use an arrow function when you need to pass arguments.</p>
+</div></div>
+
+
+<div class="slide" data-slide="15"><h2>Components: reusable pieces of UI</h2><p>A React component is a reusable UI piece, usually written as a JavaScript function that returns JSX.</p><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-13.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-13')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-13-preview" data-output-id="auto-code-13-output" data-runner-type="react" id="auto-code-13">function Button() {
+  return &lt;button&gt;Click Me&lt;/button&gt;;
+}
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;Button /&gt;);
+
+</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-13">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-13', 'auto-code-13-preview', 'auto-code-13-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-13-output')">Clear</button><div class="output-console" id="auto-code-13-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-13-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div><div class="tree-card" style="margin-top: 18px;">
+<pre>&lt;App&gt;
+├── &lt;Header /&gt;
+├── &lt;SearchBox /&gt;
+├── &lt;StudentList /&gt;
+└── &lt;StudentDetails /&gt;</pre>
+</div><div class="example-grid" style="margin-top: 18px;">
+<div class="example-card">
+<h3>Why components help</h3>
+<p>They break a large page into smaller parts that are easier to understand and reuse.</p>
+</div>
+<div class="example-card">
+<h3>Composition</h3>
+<p>You can build larger UIs by combining smaller components together.</p>
+</div>
+<div class="example-card">
+<h3>How we use one</h3>
+<p>Once defined, a component is rendered with syntax like <code>&lt;Button /&gt;</code>.</p>
+</div>
+</div></div>
+
+
+
+<div class="slide" data-slide="16"><h2>Composing components together</h2><p>Once components are defined, you use them by name inside other components' JSX — just like HTML tags.</p><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-14.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-14')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-14-preview" data-output-id="auto-code-14-output" data-runner-type="react" id="auto-code-14">function Header() {
+  return &lt;h2&gt;School DB&lt;/h2&gt;;
+}
+
+function StudentList() {
+  return (
+    &lt;ul&gt;
+      &lt;li&gt;Ava — IST&lt;/li&gt;
+      &lt;li&gt;Noah — CS&lt;/li&gt;
+      &lt;li&gt;Liam — Data Science&lt;/li&gt;
+    &lt;/ul&gt;
+  );
+}
+
+function App() {
+  return (
+    &lt;div&gt;
+      &lt;Header /&gt;
+      &lt;StudentList /&gt;
+    &lt;/div&gt;
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;App /&gt;);
+
+</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-14">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-14', 'auto-code-14-preview', 'auto-code-14-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-14-output')">Clear</button><div class="output-console" id="auto-code-14-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-14-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div><div class="tip-box"><strong style="color: var(--success);">The page is built by nesting components</strong><ul style="margin-top: 10px;"><li>&lt;App&gt; is the root. It composes Header and StudentList.</li><li>Each component is responsible for its own small piece of UI.</li><li>This keeps each piece easy to understand, test, and reuse.</li></ul></div></div>
+
+
+
+<div class="slide" data-slide="17">
+<h2>Props: how components receive data</h2>
+<p>Props are <strong>read-only inputs</strong> to a component. The easiest way to think about them is: props are like function parameters for UI.</p>
+<div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-15.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-15')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-15-preview" data-output-id="auto-code-15-output" data-runner-type="react" id="auto-code-15">function StudentCard(props) {
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;{props.name}&lt;/h3&gt;
+      &lt;p&gt;{props.major}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+function App() {
+  return &lt;StudentCard name="Ava" major="IST" /&gt;;
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;App /&gt;);
+
+
+</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-15">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-15', 'auto-code-15-preview', 'auto-code-15-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-15-output')">Clear</button><div class="output-console" id="auto-code-15-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-15-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div>
+<div class="example-grid" style="margin-top: 18px;">
+<div class="example-card">
+<h3>Parent → child flow</h3>
+<p>Data flows from the parent component down into the child component.</p>
+</div>
+<div class="example-card">
+<h3>Read-only</h3>
+<p>The child should not treat props as its own mutable state.</p>
+</div>
+<div class="example-card">
+<h3>Typical use</h3>
+<p>Pass names, arrays, numbers, booleans, functions, and objects into reusable UI pieces.</p>
+</div>
+</div>
+</div>
+
+
+
+<div class="slide" data-slide="18"><h2>Passing props: strings vs. expressions</h2><p>The syntax you use to pass a prop depends on what kind of value you're passing.</p><h3>Rule of thumb when passing props</h3><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-16.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-16')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-16-preview" data-output-id="auto-code-16-output" data-runner-type="react" id="auto-code-16">// Strings → use quotes   |   Numbers, booleans, expressions → use { }
+
+function StudentCard({ name, major, gpa, isHonors }) {
+  return (
+    &lt;li&gt;
+      &lt;strong&gt;{name}&lt;/strong&gt; — {major}
+      {gpa !== undefined &amp;&amp; &lt;span&gt;  GPA: {gpa}&lt;/span&gt;}
+      {isHonors &amp;&amp; &lt;span&gt;  🏅 Honors&lt;/span&gt;}
+    &lt;/li&gt;
+  );
+}
+
+function App() {
+  const count = 2;
+  return (
+    &lt;ul&gt;
+      &lt;StudentCard name="Ava" major="IST" /&gt;
+      &lt;StudentCard name="Noah" major="CS" gpa={3.92} isHonors={true} /&gt;
+    &lt;/ul&gt;
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;App /&gt;);
+
+</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-16">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-16', 'auto-code-16-preview', 'auto-code-16-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-16-output')">Clear</button><div class="output-console" id="auto-code-16-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-16-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div><div class="info-box">
+<strong>Simple memory trick</strong>
+<p style="margin-top: 8px;">Use quotes for literal strings. Use <code>{...}</code> for numbers, booleans, variables, functions, and expressions.</p>
+</div></div>
+
+<div class="slide" data-slide="19"><h2>Props destructuring</h2><p>Instead of using the full props object everywhere, destructure the values you need right in the function signature.</p><h3 style="margin-top: 22px;">Props destructuring</h3><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-17.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-17')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-17-preview" data-output-id="auto-code-17-output" data-runner-type="react" id="auto-code-17">function StudentCard({ name, major }) {
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;{name}&lt;/h3&gt;
+      &lt;p&gt;{major}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+function App() {
+  return &lt;StudentCard name="Ava" major="IST" /&gt;;
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;App /&gt;);</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-17">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-17', 'auto-code-17-preview', 'auto-code-17-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-17-output')">Clear</button><div class="output-console" id="auto-code-17-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-17-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div><div class="tip-box"><strong style="color: var(--success);">Why destructuring is preferred</strong><p style="margin-top: 8px;">It keeps the function body clean. You reference name directly instead of props.name everywhere.</p></div></div>
+
+
+<div class="slide" data-slide="20"><h2>props.children</h2><p>When a component is used with content between its opening and closing tags, that content arrives as props.children.</p><h3 style="margin-top: 22px;">props.children</h3><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-18.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-18')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-18-preview" data-output-id="auto-code-18-output" data-runner-type="react" id="auto-code-18">function Panel({ title, children }) {
+  return (
+    &lt;section&gt;
+      &lt;h2&gt;{title}&lt;/h2&gt;
+      &lt;div&gt;{children}&lt;/div&gt;
+    &lt;/section&gt;
+  );
+}
+
+function App() {
+  return (
+    &lt;Panel title="Selected Student"&gt;
+      &lt;p&gt;Ava - IST&lt;/p&gt;
+    &lt;/Panel&gt;
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;App /&gt;);
+
+</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-18">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-18', 'auto-code-18-preview', 'auto-code-18-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-18-output')">Clear</button><div class="output-console" id="auto-code-18-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-18-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div><div class="info-box"><strong>Common use</strong><p style="margin-top: 8px;">Wrapper or layout components like Panel, Card, or Modal are the most common place to use children.</p></div></div>
+
+
+<div class="slide" data-slide="21">
+<h2>State: data that can change over time</h2>
+<p>Props come from the parent. <strong>State</strong> lives inside a component and changes over time. When state changes, React re-renders the component.</p>
+<div class="anatomy-bar">
+                const [<span class="hl-blue">state</span>, <span class="hl-green">setState</span>] = React.useState(<span class="hl-yellow">initialValue</span>);<br/>
+<span class="hl-gray">state = current value</span><br/>
+<span class="hl-gray">setState = function used to update it</span>
+</div>
+<div class="example-grid" style="margin-top: 18px;">
+<div class="example-card">
+<h3><code>useState()</code></h3>
+<p>The standard way to store changing data in a function component.</p>
+</div>
+<div class="example-card">
+<h3>Initial value</h3>
+<p>The value used the first time the component renders.</p>
+</div>
+<div class="example-card">
+<h3>Setter function</h3>
+<p>Call it to update the state and trigger a re-render.</p>
+</div>
+<div class="example-card">
+<h3>Main rule</h3>
+<p>Never mutate state directly. Always use the setter function.</p>
+</div>
+</div>
+<div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-19.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-19')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-19-preview" data-output-id="auto-code-19-output" data-runner-type="react" id="auto-code-19">function Counter() {
+  const [count, setCount] = React.useState(0);
+
+  return (
+    &lt;button onClick={() =&gt; setCount(count + 1)}&gt;
+      Count: {count}
+    &lt;/button&gt;
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;Counter /&gt;);
+
+</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-19">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-19', 'auto-code-19-preview', 'auto-code-19-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-19-output')">Clear</button><div class="output-console" id="auto-code-19-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-19-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div>
+</div>
+
+
+
+<div class="slide" data-slide="22">
+<h2>State in a more realistic student-page example</h2>
+<p>This is the same course example again, but now we can clearly see what belongs in state and why.</p>
+<div class="comp-tree">
+<span class="node">App</span><br/>
+                ├── search <span class="leaf">(state)</span><br/>
+                ├── selectedStudent <span class="leaf">(state)</span><br/>
+                ├── students <span class="leaf">(data)</span><br/>
+                └── filteredStudents <span class="leaf">(derived from data + state)</span>
+</div>
+<div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-20.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-20')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-20-preview" data-output-id="auto-code-20-output" data-runner-type="react" id="auto-code-20">const students = [
+  { id: 1, name: "Ava", major: "IST", gpa: 3.92 },
+  { id: 2, name: "Noah", major: "CS", gpa: 3.61 },
+  { id: 3, name: "Liam", major: "Data Science", gpa: 3.44 },
+  { id: 4, name: "Mia", major: "HCDD", gpa: 3.88 }
+];
+
+function StudentList({ students, onSelect }) {
+  return (
+    &lt;ul&gt;
+      {students.map((s) =&gt; (
+        &lt;li key={s.id}&gt;
+          &lt;button onClick={() =&gt; onSelect(s)}&gt;{s.name} ({s.major})&lt;/button&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}
+
+function StudentDetails({ student }) {
+  if (!student) return &lt;p&gt;Pick a student to see details.&lt;/p&gt;;
+  return (
+    &lt;p&gt;
+      &lt;strong&gt;{student.name}&lt;/strong&gt; — {student.major}, GPA {student.gpa}
+    &lt;/p&gt;
+  );
+}
+
+function App() {
+  const [search, setSearch] = React.useState("");
+  const [selectedStudent, setSelectedStudent] = React.useState(null);
+
+  const filteredStudents = students.filter((s) =&gt;
+    s.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    &lt;div&gt;
+      &lt;input
+        value={search}
+        onChange={(e) =&gt; setSearch(e.target.value)}
+        placeholder="Search students..."
+      /&gt;
+      &lt;StudentList students={filteredStudents} onSelect={setSelectedStudent} /&gt;
+      &lt;StudentDetails student={selectedStudent} /&gt;
+    &lt;/div&gt;
+  );
+}
+
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;App /&gt;);
+
+</textarea></div><div class="status-bar"><span class="line-info" data-editor="auto-code-20">Ln 1, Col 1</span><span class="language">Auto React / JSX</span></div><button class="run-button" onclick="runAutoPlayground('auto-code-20', 'auto-code-20-preview', 'auto-code-20-output', 'react')">▶ Run Example</button><button class="clear-button" onclick="clearOutput('auto-code-20-output')">Clear</button><div class="output-console" id="auto-code-20-output"><span class="output-label">💻 Console Output:</span></div></div><div class="preview-panel"><div class="label-row"><strong>Preview</strong><span>Edit the code, then run it in the sandbox</span></div><iframe class="preview-frame" id="auto-code-20-preview" sandbox="allow-scripts"></iframe><div class="tag-row"><div class="tag">Editable</div><div class="tag">Runnable</div><div class="tag">React</div></div></div></div></div>
+<div class="warning-box">
+<strong style="color: var(--error);">Important state rule</strong>
+<p style="margin-top: 8px;">Do not do something like <code>selectedStudent.name = "New Name"</code> and expect React to notice. Use state setters so React knows the value changed.</p>
+</div>
+</div>
+
+
+<div class="slide" data-slide="23">
+<h2>Browser demo: components + props + list rendering</h2>
+<p>You can run a small React example directly in the browser for learning. This one focuses only on the ideas we just covered: components, props, and <code>map()</code>.</p>
+<div class="warning-box">
+<strong style="color: var(--error);">Note</strong>
+<p style="margin-top: 10px;">This is for learning only. It loads React from a CDN and transpiles JSX in the browser. For real projects, we will use Vite.</p>
+</div>
+<div class="code-playground">
+<span class="playground-label">RUN: React + JSX directly in the browser</span>
+<div class="runner-grid">
+<div>
+<div class="ide-toolbar">
+<div class="file-tab">📄 hello-react.jsx</div>
+<div class="toolbar-actions">
+<button class="toolbar-btn" onclick="resetCode('hello-react')">Reset</button>
+</div>
+</div>
+<div class="editor-wrapper">
+<textarea class="code-editor" id="hello-react">function StudentCard({ student }) {
+  return (
+    &lt;li&gt;
+      {student.name} — {student.major}
+    &lt;/li&gt;
+  );
+}
+
+function App() {
+  const students = [
+    { id: 1, name: "Ava", major: "IST" },
+    { id: 2, name: "Noah", major: "CS" },
+    { id: 3, name: "Liam", major: "Data Science" }
+  ];
+
+  return (
+    &lt;div className="demo-shell"&gt;
+      &lt;div className="demo-card"&gt;
+        &lt;h2&gt;School DB: student list&lt;/h2&gt;
+        &lt;p&gt;One component can render many student rows.&lt;/p&gt;
+
+        &lt;ul className="demo-list"&gt;
+          {students.map((student) =&gt; (
+            &lt;StudentCard key={student.id} student={student} /&gt;
+          ))}
+        &lt;/ul&gt;
+
+        &lt;div className="demo-badge"&gt;
+          {students.length} students shown
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;App /&gt;);</textarea>
+</div>
+<div class="status-bar">
+<span class="line-info" data-editor="hello-react">Ln 1, Col 1</span>
+<span class="language">JSX / JavaScript</span>
+</div>
+<button class="run-button" onclick="runReactPlayground('hello-react', 'hello-react-preview', 'hello-react-output')">▶ Run React</button>
+<button class="clear-button" onclick="clearOutput('hello-react-output')">Clear</button>
+<div class="output-console" id="hello-react-output"><span class="output-label">💻 Console Output:</span></div>
+</div>
+<div class="preview-panel">
+<div class="label-row">
+<strong>Preview</strong>
+<span>Rendered inside an isolated iframe</span>
+</div>
+<iframe class="preview-frame" id="hello-react-preview" sandbox="allow-scripts"></iframe>
+<div class="tag-row">
+<div class="tag">Component</div>
+<div class="tag">Props</div>
+<div class="tag">.map()</div>
+<div class="tag">key</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="slide" data-slide="24">
+<h2>Browser demo: state + events + conditional rendering</h2>
+<p>This example ties the basics together in a more realistic screen: typing updates state, clicking updates state again, and JSX re-renders from that state.</p>
+<div class="anatomy-bar">
+                const [<span class="hl-blue">search</span>, <span class="hl-green">setSearch</span>] = React.useState(<span class="hl-yellow">""</span>);<br/>
+                const [<span class="hl-blue">selectedStudent</span>, <span class="hl-green">setSelectedStudent</span>] = React.useState(<span class="hl-yellow">null</span>);
+            </div>
+<div class="code-playground">
+<span class="playground-label">RUN: search + select in React</span>
+<div class="runner-grid">
+<div>
+<div class="ide-toolbar">
+<div class="file-tab">📄 student-directory.jsx</div>
+<div class="toolbar-actions">
+<button class="toolbar-btn" onclick="resetCode('react-counter')">Reset</button>
+</div>
+</div>
+<div class="editor-wrapper">
+<textarea class="code-editor" id="react-counter">function App() {
+  const students = [
+    { id: 1, name: "Ava", major: "IST" },
+    { id: 2, name: "Noah", major: "CS" },
+    { id: 3, name: "Liam", major: "Data Science" },
+    { id: 4, name: "Mia", major: "HCDD" }
+  ];
+
+  const [search, setSearch] = React.useState("");
+  const [selectedStudent, setSelectedStudent] = React.useState(null);
+
+  const filteredStudents = students.filter((student) =&gt;
+    student.name.toLowerCase().includes(search.toLowerCase()) ||
+    student.major.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    &lt;div className="demo-shell"&gt;
+      &lt;div className="demo-card"&gt;
+        &lt;h2&gt;Student directory&lt;/h2&gt;
+
+        &lt;input
+          value={search}
+          onChange={(e) =&gt; setSearch(e.target.value)}
+          placeholder="Search by name or major"
+          style={{ width: "100%", padding: "10px", marginBottom: "12px" }}
+        /&gt;
+
+        &lt;ul className="demo-list"&gt;
+          {filteredStudents.map((student) =&gt; (
+            &lt;li key={student.id}&gt;
+              &lt;button onClick={() =&gt; setSelectedStudent(student)}&gt;
+                {student.name} — {student.major}
+              &lt;/button&gt;
+            &lt;/li&gt;
+          ))}
+        &lt;/ul&gt;
+
+        &lt;div className="demo-badge"&gt;
+          {filteredStudents.length} result(s)
+        &lt;/div&gt;
+
+        &lt;p style={{ marginTop: "14px" }}&gt;
+          {selectedStudent
+            ? `Selected: ${selectedStudent.name} (${selectedStudent.major})`
+            : "Selected: none"}
+        &lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(&lt;App /&gt;);</textarea>
+</div>
+<div class="status-bar">
+<span class="line-info" data-editor="react-counter">Ln 1, Col 1</span>
+<span class="language">JSX / JavaScript</span>
+</div>
+<button class="run-button" onclick="runReactPlayground('react-counter', 'react-counter-preview', 'react-counter-output')">▶ Run React</button>
+<button class="clear-button" onclick="clearOutput('react-counter-output')">Clear</button>
+<div class="output-console" id="react-counter-output"><span class="output-label">💻 Console Output:</span></div>
+</div>
+<div class="preview-panel">
+<div class="label-row">
+<strong>Preview</strong>
+<span>Type in the box and click a student</span>
+</div>
+<iframe class="preview-frame" id="react-counter-preview" sandbox="allow-scripts"></iframe>
+<div class="tag-row">
+<div class="tag">State</div>
+<div class="tag">Event handling</div>
+<div class="tag">Conditional UI</div>
+<div class="tag">Filtering</div>
+</div>
+</div>
+</div>
+</div>
+<div class="tip-box">
+<strong style="color: var(--success);">What to notice</strong>
+<p style="margin-top: 10px;">Typing changes <code>search</code>. Clicking changes <code>selectedStudent</code>. We still never manually rebuild the DOM. React re-renders from state.</p>
+</div>
+</div><div class="slide" data-slide="25">
+<h2>Build a real React app with Vite</h2>
+<p>For class work and projects, we will not keep using the browser-only demo mode. We will create a real React project with <strong>Vite</strong>.</p>
+<div class="command-block" style="margin: 18px 0;">
+<span class="command-line"><strong>$</strong> npm create vite@latest school-frontend -- --template react</span>
+<span class="command-line"><strong>$</strong> cd school-frontend</span>
+<span class="command-line"><strong>$</strong> npm install</span>
+<span class="command-line"><strong>$</strong> npm run dev</span>
+</div>
+<div class="example-grid">
+<div class="example-card">
+<h3><code>school-frontend</code></h3>
+<p>The project folder name. Change it to any name you want.</p>
+</div>
+<div class="example-card">
+<h3><code>--template react</code></h3>
+<p>Creates a React + JavaScript starter project.</p>
+</div>
+<div class="example-card">
+<h3><code>npm install</code></h3>
+<p>Downloads the dependencies into <code>node_modules/</code>.</p>
+</div>
+<div class="example-card">
+<h3><code>npm run dev</code></h3>
+<p>Starts the dev server. Open the localhost URL Vite prints in the terminal.</p>
+</div>
+</div>
+<div class="tip-box" style="margin-top: 18px;">
+<strong style="color: var(--success);">How this fits our course project</strong>
+<p style="margin-top: 10px;">Earlier, the frontend could be a plain <code>index.html</code> plus a JavaScript file. In React, most UI logic moves into <code>App.jsx</code> and other components, and later those components can call the Express API you already built.</p>
+</div>
+</div><div class="slide" data-slide="26">
+<h2>HMR: why editing React feels fast</h2>
+<p>Vite gives us <strong>Hot Module Replacement</strong>. Save a file, and the browser updates almost immediately without a full reload.</p>
+<div class="flow-row">
+<div class="flow-step">
+<strong>1. Edit</strong>
+<p>Change something in <code>App.jsx</code> or another component.</p>
+</div>
+<div class="flow-step">
+<strong>2. Save</strong>
+<p>Vite notices the file changed.</p>
+</div>
+<div class="flow-step">
+<strong>3. Replace</strong>
+<p>Only the changed module is updated in the browser.</p>
+</div>
+<div class="flow-step">
+<strong>4. Continue</strong>
+<p>You keep testing without a slow full refresh cycle.</p>
+</div>
+</div>
+<div class="comparison-grid" style="margin-top: 16px;">
+<div class="warning-box" style="margin:0;">
+<strong style="color: var(--error);">Without HMR</strong>
+<p style="margin-top: 8px;">Edit, reload, navigate back, re-enter test values, and rebuild the same UI state again.</p>
+</div>
+<div class="tip-box" style="margin:0;">
+<strong style="color: var(--success);">With HMR</strong>
+<p style="margin-top: 8px;">Edit, save, see the result almost instantly. This makes learning and debugging much easier.</p>
+</div>
+</div>
+</div><div class="slide" data-slide="27"><h2>Understand the React project structure</h2><div class="tree-card">
+<pre>school-frontend/
+├── index.html         ← HTML shell loaded by the browser
+├── package.json       ← scripts + dependencies
+├── vite.config.js     ← Vite configuration
+└── src/
+    ├── main.jsx       ← starts React and mounts &lt;App /&gt;
+    └── App.jsx        ← your root component</pre>
+</div><div class="info-box" style="margin-top: 16px;">
+<strong>Flow to remember</strong>
+<p style="margin-top: 10px;"><code>index.html</code> loads → <code>main.jsx</code> runs → React renders <code>&lt;App /&gt;</code> into the page.</p>
+</div><h3 style="margin-top: 20px;">src/main.jsx</h3><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-21.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-21')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-21-preview" data-output-id="auto-code-21-output" data-runner-type="react" id="auto-code-21">// ── src/main.jsx (in a real Vite project) ─────────────
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'
+
+ReactDOM.createRoot(document.getElementById('root'))
+   .render(&lt;App /&gt;)
+
+
+</textarea></div>
+
+</div></div></div></div>
+
+
+<div class="slide" data-slide="28"><h2>src/App.jsx — your root component</h2><p>This is where your React UI lives. App.jsx exports a component that main.jsx renders into the page.</p><h3 style="margin-top: 20px;">src/App.jsx</h3><div class="code-playground inline-code-playground" data-runner-type="react"><span class="playground-label">RUN: editable example</span><div class="inline-runner-grid"><div><div class="ide-toolbar"><div class="file-tab">📄 example-22.jsx</div><div class="toolbar-actions"><button class="toolbar-btn" onclick="resetCode('auto-code-22')">Reset</button></div></div><div class="editor-wrapper"><textarea class="code-editor" data-iframe-id="auto-code-22-preview" data-output-id="auto-code-22-output" data-runner-type="react" id="auto-code-22">function App() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;School frontend&lt;/h1&gt;
+      &lt;p&gt;This is where our React UI begins.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App
+</textarea></div>
+
+</div></div></div><div class="tip-box"><strong style="color: var(--success);">Next step for the course project</strong><p style="margin-top: 8px;">Replace the placeholder content in App.jsx with your own components and connect them to your Express API.</p></div></div>
+
+
+<div class="slide" data-slide="29">
+<h2>Summary</h2>
+<div class="example-grid">
+<div class="example-card">
+<h3>Why React?</h3>
+<p>Because changing pages are easier to manage when the UI is described from data instead of manually patched in the DOM.</p>
+</div>
+<div class="example-card">
+<h3>What is JSX?</h3>
+<p>HTML-like syntax inside JavaScript, with JavaScript expressions placed inside <code>{ }</code>.</p>
+</div>
+<div class="example-card">
+<h3>What are components?</h3>
+<p>Reusable UI functions that return JSX.</p>
+</div>
+<div class="example-card">
+<h3>What are props?</h3>
+<p>Read-only inputs passed from parent to child.</p>
+</div>
+<div class="example-card">
+<h3>What is state?</h3>
+<p>Changing data inside a component that triggers re-rendering.</p>
+</div>
+</div>
+
+</div></div><!-- end presentation-container -->
+<div class="navigation">
+<button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+<button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script>
+        let currentSlide = 1;
+        const totalSlides = document.querySelectorAll('.slide').length;
+        const editors = {};
+        const originalCode = {};
+        const playgroundSessions = {};
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function initializeEditors() {
+            document.querySelectorAll('.code-editor').forEach(textarea => {
+                const id = textarea.id;
+                originalCode[id] = textarea.value;
+
+                const editor = CodeMirror.fromTextArea(textarea, {
+                    mode: 'javascript',
+                    theme: 'eclipse',
+                    lineNumbers: true,
+                    autoCloseBrackets: true,
+                    indentUnit: 2,
+                    tabSize: 2,
+                    lineWrapping: true,
+                    styleActiveLine: true,
+                    extraKeys: {
+                        'Tab': cm => cm.somethingSelected() ? cm.indentSelection('add') : cm.replaceSelection('  ', 'end'),
+                        'Ctrl-Enter': () => runShortcut(id),
+                        'Cmd-Enter': () => runShortcut(id),
+                        'Ctrl-/': 'toggleComment',
+                        'Cmd-/': 'toggleComment'
+                    }
+                });
+
+                editors[id] = editor;
+
+                editor.on('cursorActivity', () => {
+                    const cursor = editor.getCursor();
+                    const lineInfo = document.querySelector(`.line-info[data-editor="${id}"]`);
+                    if (lineInfo) lineInfo.textContent = `Ln ${cursor.line + 1}, Col ${cursor.ch + 1}`;
+                });
+            });
+        }
+
+        function refreshEditorsInActiveSlide() {
+            const active = document.querySelector('.slide.active');
+            if (!active) return;
+            active.querySelectorAll('textarea.code-editor').forEach(textarea => {
+                const editor = editors[textarea.id];
+                if (editor) editor.refresh();
+            });
+        }
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            if (n > totalSlides) currentSlide = totalSlides;
+            if (n < 1) currentSlide = 1;
+
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlide - 1].classList.add('active');
+
+            document.getElementById('currentSlide').textContent = currentSlide;
+            document.getElementById('prevBtn').disabled = currentSlide === 1;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(refreshEditorsInActiveSlide, 100);
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            showSlide(currentSlide);
+        }
+
+        document.addEventListener('keydown', event => {
+            if (document.activeElement?.closest?.('.CodeMirror')) return;
+            if (event.key === 'ArrowLeft') changeSlide(-1);
+            if (event.key === 'ArrowRight') changeSlide(1);
+        });
+
+        function runShortcut(id) {
+            const editorEl = document.getElementById(id);
+            if (editorEl?.dataset?.runnerType) {
+                runAutoPlayground(id, editorEl.dataset.iframeId, editorEl.dataset.outputId, editorEl.dataset.runnerType);
+                return;
+            }
+            if (id === 'hello-react') runReactPlayground('hello-react', 'hello-react-preview', 'hello-react-output');
+            if (id === 'react-counter') runReactPlayground('react-counter', 'react-counter-preview', 'react-counter-output');
+        }
+
+        function clearOutput(outputId) {
+            document.getElementById(outputId).innerHTML = '<span class="output-label">💻 Console Output:</span>';
+        }
+
+        function resetCode(editorId) {
+            editors[editorId]?.setValue(originalCode[editorId] || '');
+        }
+
+        function appendOutput(outputId, type, message) {
+            const output = document.getElementById(outputId);
+            const line = document.createElement('div');
+            line.className = type || '';
+            line.textContent = message;
+            output.appendChild(document.createElement('br'));
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function escapeForScript(code) {
+            return code.replace(/<\/script>/gi, '<\\/script>');
+        }
+
+
+        function runAutoPlayground(editorId, iframeId, outputId, type) {
+            if (type === 'react') {
+                runAutoReactSnippet(editorId, iframeId, outputId);
+            } else {
+                runJavaScriptSnippet(editorId, iframeId, outputId);
+            }
+        }
+
+        function buildSharedPreviewStyles() {
+            return `
+                body {
+                    margin: 0;
+                    font-family: Arial, sans-serif;
+                    background: linear-gradient(135deg, #f8fbfd 0%, #eef4f8 100%);
+                    color: #1f2937;
+                    min-height: 100vh;
+                }
+                .demo-shell {
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 24px;
+                }
+                .demo-card {
+                    background: white;
+                    width: min(100%, 520px);
+                    border-radius: 18px;
+                    padding: 24px;
+                    box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+                    border: 2px solid rgba(59, 125, 214, 0.16);
+                }
+                .demo-card h1, .demo-card h2, .demo-card h3 { color: #3B7DD6; margin-top: 0; }
+                .demo-card p { line-height: 1.6; }
+                .demo-list, ul { padding-left: 18px; }
+                li { margin: 8px 0; }
+                .demo-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+                button {
+                    border: none;
+                    background: #3B7DD6;
+                    color: white;
+                    padding: 10px 14px;
+                    border-radius: 999px;
+                    font-weight: 700;
+                    cursor: pointer;
+                }
+                button:nth-child(2) { background: #5A6C7D; }
+                .demo-badge {
+                    display: inline-block;
+                    margin-top: 10px;
+                    background: rgba(5,150,105,0.12);
+                    color: #065f46;
+                    border: 1px solid rgba(5,150,105,0.22);
+                    border-radius: 999px;
+                    padding: 8px 12px;
+                    font-weight: 700;
+                }
+                input, select {
+                    border: 1px solid rgba(59, 125, 214, 0.28);
+                    border-radius: 10px;
+                    padding: 10px 12px;
+                    font-size: 14px;
+                }
+                #app, #root { margin-top: 12px; }
+                #selectedEl {
+                    margin-top: 12px;
+                    padding: 10px 12px;
+                    border-radius: 10px;
+                    background: rgba(59,125,214,0.07);
+                }
+                pre {
+                    white-space: pre-wrap;
+                    word-break: break-word;
+                }
+            `;
+        }
+
+        function buildAutoReactSource(userCode) {
+            const cleaned = userCode
+                .replace(/^\s*import\s+.*$/gm, '')
+                .replace(/^\s*export\s+default\s+/gm, '');
+
+            const trimmed = cleaned.trim();
+
+            const declaresTopLevelName = (name) => {
+                const declarationPattern = new RegExp(`(^|\\n)\\s*(?:const|let|var|function|class)\\s+${name}\\b`);
+                return declarationPattern.test(cleaned);
+            };
+
+            const injectedNames = [];
+            if (!declaresTopLevelName('students')) injectedNames.push('var students = __sample.students;');
+            if (!declaresTopLevelName('student')) injectedNames.push('var student = __sample.student;');
+            if (!declaresTopLevelName('isHonors')) injectedNames.push('var isHonors = __sample.isHonors;');
+            if (!declaresTopLevelName('isLoggedIn')) injectedNames.push('var isLoggedIn = __sample.isLoggedIn;');
+            if (!declaresTopLevelName('handleSelect')) injectedNames.push('var handleSelect = __sample.handleSelect;');
+
+            const prelude = `
+                var __sample = {
+                  students: [
+                    { id: 1, _id: '1', name: 'Ava', major: 'IST', gpa: 3.92 },
+                    { id: 2, _id: '2', name: 'Noah', major: 'CS', gpa: 3.61 },
+                    { id: 3, _id: '3', name: 'Liam', major: 'Data Science', gpa: 3.44 },
+                    { id: 4, _id: '4', name: 'Mia', major: 'HCDD', gpa: 3.88 }
+                  ],
+                  student: { id: 1, _id: '1', name: 'Ava', major: 'IST', gpa: 3.92 },
+                  isHonors: true,
+                  isLoggedIn: true,
+                  handleSelect: (...args) => console.log('handleSelect:', ...args)
+                };
+
+                ${injectedNames.join('\n                ')}
+
+                function __DefaultApp() {
+                  return (
+                    <div className="demo-shell">
+                      <div className="demo-card">
+                        <h2>Snippet ready</h2>
+                        <p>Add a component or JSX fragment, then run it here.</p>
+                      </div>
+                    </div>
+                  );
+                }
+            `;
+
+            if (!trimmed) {
+                return `${prelude}
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<__DefaultApp />);`;
+            }
+
+            const isFragmentOnly = /^\s*</.test(trimmed);
+            if (isFragmentOnly) {
+                return `${prelude}
+function __FragmentApp() {
+  const student = __sample.student;
+  const students = __sample.students;
+  const isHonors = __sample.isHonors;
+  const isLoggedIn = __sample.isLoggedIn;
+  const handleSelect = __sample.handleSelect;
+
+  return (
+    <div className="demo-shell">
+      <div className="demo-card">
+        <>
+${trimmed}
+        </>
+      </div>
+    </div>
+  );
+}
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<__FragmentApp />);`;
+            }
+
+            const hasRootRender = /ReactDOM\.createRoot|root\.render\s*\(/.test(cleaned);
+            if (hasRootRender) {
+                return `${prelude}\n${cleaned}`;
+            }
+
+            let mountExpr = '<__DefaultApp />';
+            if (/function\s+StudentDirectory\s*\(/.test(cleaned)) {
+                mountExpr = '<StudentDirectory students={__sample.students} />';
+            } else if (/function\s+StudentList\s*\(/.test(cleaned)) {
+                mountExpr = '<StudentList students={__sample.students} onSelect={__sample.handleSelect} />';
+            } else if (/function\s+StudentCard\s*\(/.test(cleaned)) {
+                mountExpr = '<StudentCard name="Ava" major="IST" gpa={3.92} isHonors={true} onSelect={__sample.handleSelect} count={__sample.students.length} />';
+            } else if (/function\s+Counter\s*\(/.test(cleaned)) {
+                mountExpr = '<Counter />';
+            } else if (/function\s+Button\s*\(/.test(cleaned)) {
+                mountExpr = '<Button />';
+            } else if (/function\s+Panel\s*\(/.test(cleaned)) {
+                mountExpr = '<Panel title="Selected Student"><p>Ava - IST</p></Panel>';
+            } else {
+                const match = cleaned.match(/function\s+([A-Z][A-Za-z0-9_]*)\s*\(/);
+                if (match) mountExpr = `<${match[1]} />`;
+            }
+
+            return `${prelude}
+${cleaned}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(${mountExpr});`;
+        }
+
+        function runAutoReactSnippet(editorId, iframeId, outputId) {
+            clearOutput(outputId);
+
+            if (!window.Babel) {
+                appendOutput(outputId, 'error', 'Babel failed to load. Internet access is required for browser mode.');
+                return;
+            }
+
+            const iframe = document.getElementById(iframeId);
+            const code = editors[editorId] ? editors[editorId].getValue() : document.getElementById(editorId).value;
+            const sessionId = `${editorId}-${Date.now()}`;
+            playgroundSessions[sessionId] = outputId;
+            iframe.dataset.sessionId = sessionId;
+
+            appendOutput(outputId, 'info', 'Transpiling JSX and running the snippet...');
+
+            let transformed;
+            try {
+                transformed = Babel.transform(buildAutoReactSource(code), { presets: ['react'] }).code;
+            } catch (error) {
+                appendOutput(outputId, 'error', `Babel error: ${error.message}`);
+                return;
+            }
+
+            const srcdoc = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>${buildSharedPreviewStyles()}</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  const sessionId = ${JSON.stringify(sessionId)};
+  function send(type, payload) {
+    parent.postMessage({ source: 'react-playground', sessionId, type, payload }, '*');
+  }
+  const safe = (value) => {
+    if (typeof value === 'string') return value;
+    try { return JSON.stringify(value); } catch { return String(value); }
+  };
+  ['log','warn','error'].forEach((level) => {
+    const original = console[level];
+    console[level] = (...args) => {
+      send(level, args.map(safe).join(' '));
+      original.apply(console, args);
+    };
+  });
+  window.onerror = function(message, source, lineno, colno) {
+    send('error', message + ' (' + lineno + ':' + colno + ')');
+  };
+  window.addEventListener('unhandledrejection', event => {
+    const reason = event.reason && event.reason.message ? event.reason.message : String(event.reason);
+    send('error', 'Unhandled promise rejection: ' + reason);
+  });
+<\/script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+<script>
+  try {
+    (() => {
+${escapeForScript(transformed)}
+})();
+    send('ready', 'Rendered successfully');
+  } catch (error) {
+    send('error', error.message);
+  }
+<\/script>
+</body>
+</html>`;
+
+            iframe.srcdoc = srcdoc;
+        }
+
+        function runJavaScriptSnippet(editorId, iframeId, outputId) {
+            clearOutput(outputId);
+
+            const iframe = document.getElementById(iframeId);
+            const code = editors[editorId] ? editors[editorId].getValue() : document.getElementById(editorId).value;
+            const sessionId = `${editorId}-${Date.now()}`;
+            playgroundSessions[sessionId] = outputId;
+            iframe.dataset.sessionId = sessionId;
+
+            appendOutput(outputId, 'info', 'Running JavaScript in the browser sandbox...');
+
+            const srcdoc = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { margin: 0; font-family: Arial, sans-serif; background: #f8fbfd; color: #1f2937; padding: 20px; }
+  input { border: 1px solid rgba(59,125,214,0.28); border-radius: 8px; padding: 8px 12px; font-size: 14px; display: block; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+  ul { padding-left: 20px; }
+  li { margin: 6px 0; cursor: pointer; }
+  div { margin-top: 8px; }
+</style>
+</head>
+<body>
+<script>
+  const sessionId = ${JSON.stringify(sessionId)};
+  function send(type, payload) {
+    parent.postMessage({ source: 'react-playground', sessionId, type, payload }, '*');
+  }
+  const safe = (value) => {
+    if (typeof value === 'string') return value;
+    try { return JSON.stringify(value); } catch { return String(value); }
+  };
+  ['log','warn','error'].forEach((level) => {
+    const original = console[level];
+    console[level] = (...args) => {
+      send(level, args.map(safe).join(' '));
+      original.apply(console, args);
+    };
+  });
+  window.onerror = function(message, source, lineno, colno) {
+    send('error', message + ' (' + lineno + ':' + colno + ')');
+  };
+  try {
+    ${escapeForScript(code)}
+    send('ready', 'JavaScript ran successfully');
+  } catch (error) {
+    send('error', error.message);
+  }
+<\/script>
+</body>
+</html>`;
+
+            iframe.srcdoc = srcdoc;
+        }
+
+        function runReactPlayground(editorId, iframeId, outputId) {
+            clearOutput(outputId);
+
+            if (!window.Babel) {
+                appendOutput(outputId, 'error', 'Babel failed to load. Internet access is required for browser mode.');
+                return;
+            }
+
+            const iframe = document.getElementById(iframeId);
+            const code = editors[editorId] ? editors[editorId].getValue() : document.getElementById(editorId).value;
+            const sessionId = `${editorId}-${Date.now()}`;
+            playgroundSessions[sessionId] = outputId;
+            iframe.dataset.sessionId = sessionId;
+
+            appendOutput(outputId, 'info', 'Transpiling JSX and loading React...');
+
+            let transformed;
+            try {
+                transformed = Babel.transform(code, { presets: ['react'] }).code;
+            } catch (error) {
+                appendOutput(outputId, 'error', `Babel error: ${error.message}`);
+                return;
+            }
+
+            const previewStyles = `
+                body {
+                    margin: 0;
+                    font-family: Arial, sans-serif;
+                    background: linear-gradient(135deg, #f8fbfd 0%, #eef4f8 100%);
+                    color: #1f2937;
+                    min-height: 100vh;
+                }
+                .demo-shell {
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 24px;
+                }
+                .demo-card {
+                    background: white;
+                    width: min(100%, 420px);
+                    border-radius: 18px;
+                    padding: 24px;
+                    box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+                    border: 2px solid rgba(59, 125, 214, 0.16);
+                }
+                .demo-card h2 { color: #3B7DD6; margin: 0 0 10px; }
+                .demo-card p { line-height: 1.6; }
+                .demo-list { padding-left: 18px; }
+                .demo-list li { margin: 8px 0; }
+                .demo-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+                button {
+                    border: none;
+                    background: #3B7DD6;
+                    color: white;
+                    padding: 10px 14px;
+                    border-radius: 999px;
+                    font-weight: 700;
+                    cursor: pointer;
+                }
+                button:nth-child(2) { background: #5A6C7D; }
+                .demo-badge {
+                    display: inline-block;
+                    margin-top: 10px;
+                    background: rgba(5,150,105,0.12);
+                    color: #065f46;
+                    border: 1px solid rgba(5,150,105,0.22);
+                    border-radius: 999px;
+                    padding: 8px 12px;
+                    font-weight: 700;
+                }
+            `;
+
+            const srcdoc = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>${previewStyles}</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  const sessionId = ${JSON.stringify(sessionId)};
+  function send(type, payload) {
+    parent.postMessage({ source: 'react-playground', sessionId, type, payload }, '*');
+  }
+  const safe = (value) => {
+    if (typeof value === 'string') return value;
+    try { return JSON.stringify(value); } catch { return String(value); }
+  };
+  ['log','warn','error'].forEach((level) => {
+    const original = console[level];
+    console[level] = (...args) => {
+      send(level, args.map(safe).join(' '));
+      original.apply(console, args);
+    };
+  });
+  window.onerror = function(message, source, lineno, colno) {
+    send('error', message + ' (' + lineno + ':' + colno + ')');
+  };
+  window.addEventListener('unhandledrejection', event => {
+    const reason = event.reason && event.reason.message ? event.reason.message : String(event.reason);
+    send('error', 'Unhandled promise rejection: ' + reason);
+  });
+<\/script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+<script>
+  try {
+    (() => {
+${escapeForScript(transformed)}
+})();
+    send('ready', 'Rendered successfully');
+  } catch (error) {
+    send('error', error.message);
+  }
+<\/script>
+</body>
+</html>`;
+
+            iframe.srcdoc = srcdoc;
+        }
+
+        window.addEventListener('message', event => {
+            const data = event.data;
+            if (!data || data.source !== 'react-playground') return;
+            const outputId = playgroundSessions[data.sessionId];
+            if (!outputId) return;
+            if (data.type === 'ready') appendOutput(outputId, 'info', data.payload);
+            else if (data.type === 'warn') appendOutput(outputId, 'warn', data.payload);
+            else if (data.type === 'error') appendOutput(outputId, 'error', data.payload);
+            else appendOutput(outputId, '', data.payload);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeEditors();
+            showSlide(currentSlide);
+        });
+    </script>
+</body>
+</html>

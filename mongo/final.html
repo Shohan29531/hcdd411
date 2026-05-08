@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HCDD 411 - Connecting Everything</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet"/>
+<style>
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --primary: #3B7DD6; --secondary: #5A6C7D; --accent: #D4940C;
+    --code-bg: #F8F9FA; --success: #059669; --error: #DC2626;
+    --bg-gradient-start: #F0F4F8; --bg-gradient-end: #E1E8ED;
+    --slide-bg: rgba(255,255,255,0.95); --border-color: rgba(59,125,214,0.30);
+    --text-primary: #1F2937; --text-secondary: #6B7280;
+  }
+  body { font-family:'Outfit',sans-serif; background:linear-gradient(135deg,var(--bg-gradient-start) 0%,var(--bg-gradient-end) 100%); color:var(--text-primary); min-height:100vh; padding:140px 0 120px 0; }
+  .presentation-container { width:100%; min-height:100vh; }
+  .slide { width:90%; max-width:1220px; min-height:520px; background:var(--slide-bg); backdrop-filter:blur(10px); border-radius:30px; padding:56px 60px 52px 60px; margin:0 auto; box-shadow:0 20px 60px rgba(0,0,0,0.1); opacity:0; transform:translateX(100px); transition:all 0.45s ease; display:none; border:2px solid var(--border-color); }
+  .slide.active { opacity:1; transform:translateX(0); display:block; }
+  h1 { font-weight:900; font-size:4em; color:var(--primary); margin-bottom:14px; text-transform:uppercase; letter-spacing:-2px; line-height:1.08; }
+  h2 { font-weight:700; font-size:2.45em; color:var(--accent); margin-bottom:24px; letter-spacing:-1px; line-height:1.12; }
+  h3 { font-weight:600; font-size:1.33em; color:var(--primary); margin:0 0 12px 0; line-height:1.25; }
+  p { font-size:1.08em; line-height:1.62; }
+  ul { margin:16px 0 0 0; padding-left:24px; }
+  li { margin:9px 0; font-size:1.06em; line-height:1.55; }
+  code { font-family:'Space Mono',monospace; background:rgba(59,125,214,0.12); padding:2px 7px; border-radius:5px; color:var(--primary); font-size:0.95em; }
+  .info-box,.tip-box,.warning-box { padding:18px 20px; margin:18px 0 0 0; border-radius:12px; }
+  .info-box { background:rgba(212,148,12,0.10); border-left:4px solid var(--accent); }
+  .tip-box  { background:rgba(5,150,105,0.10);  border-left:4px solid var(--success); }
+  .warning-box { background:rgba(220,38,38,0.10); border-left:4px solid var(--error); }
+  .example-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:18px; margin-top:18px; }
+  .comparison-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin-top:18px; align-items:start; }
+  .comparison-grid.three-col { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .comparison-grid.code-stack { grid-template-columns:1fr; }
+  .example-card { background:rgba(255,255,255,0.74); border:2px solid var(--border-color); border-radius:15px; padding:18px 18px 16px 18px; min-width:0; }
+  .compact-card p,.compact-card li { font-size:1em; }
+  .ide-toolbar { display:flex; align-items:center; gap:10px; padding:10px 15px; background:rgba(0,0,0,0.05); border-radius:10px 10px 0 0; margin-top:14px; border-bottom:1px solid var(--border-color); }
+  .file-tab { display:inline-flex; align-items:center; gap:8px; padding:6px 12px; background:var(--primary); color:white; border-radius:6px; font-family:'Space Mono',monospace; font-size:0.8em; font-weight:600; }
+  .toolbar-actions { margin-left:auto; display:flex; gap:8px; }
+  .toolbar-btn { background:rgba(0,0,0,0.05); border:none; color:var(--text-secondary); padding:6px 10px; border-radius:5px; cursor:pointer; font-size:0.85em; transition:all 0.2s ease; font-family:'Outfit',sans-serif; font-weight:700; }
+  .toolbar-btn:hover { background:rgba(0,0,0,0.10); color:var(--text-primary); }
+  .static-code { border:2px solid var(--border-color); border-top:none; border-radius:0 0 12px 12px; overflow:auto; background:linear-gradient(90deg,rgba(59,125,214,0.08) 0 58px,#ffffff 58px 100%); max-height:460px; }
+  .static-code ol { margin:0; padding:16px 18px 16px 58px; list-style:decimal; list-style-position:outside; font-family:'Space Mono',monospace; font-size:0.92em; line-height:1.65; color:#111827; }
+  .static-code li { margin:0; padding:0 12px 0 16px; white-space:pre; border-left:1px solid rgba(59,125,214,0.25); font-size:1em; }
+  .static-code ol li::marker { color:var(--text-secondary); font-weight:700; font-family:'Space Mono',monospace; }
+  .copy-source { display:none; }
+  .content-table { width:100%; border-collapse:separate; border-spacing:0; margin-top:18px; overflow:hidden; border:2px solid var(--border-color); border-radius:14px; background:rgba(255,255,255,0.82); }
+  .content-table th,.content-table td { padding:14px 16px; text-align:left; vertical-align:middle; border-bottom:1px solid rgba(59,125,214,0.18); font-size:1em; line-height:1.45; }
+  .content-table th { background:rgba(59,125,214,0.12); color:var(--primary); font-weight:800; }
+  .content-table tr:last-child td { border-bottom:none; }
+  .navigation { position:fixed; bottom:36px; left:50%; transform:translateX(-50%); display:flex; gap:18px; z-index:1000; }
+  .nav-button { background:var(--primary); color:white; border:none; padding:14px 34px; border-radius:50px; font-family:'Outfit',sans-serif; font-weight:700; font-size:1em; cursor:pointer; transition:all 0.2s ease; text-transform:uppercase; letter-spacing:0.9px; box-shadow:0 4px 15px rgba(0,0,0,0.15); }
+  .nav-button:hover { background:var(--secondary); transform:translateY(-2px); }
+  .nav-button:disabled { opacity:0.35; cursor:not-allowed; transform:none; }
+  .slide-indicator { position:fixed; top:40px; right:40px; background:var(--primary); padding:15px 24px; border-radius:50px; font-family:'Space Mono',monospace; font-weight:700; font-size:1em; z-index:1000; color:white; box-shadow:0 4px 15px rgba(0,0,0,0.15); }
+  .penn-state-badge { position:fixed; top:40px; left:40px; font-weight:900; font-size:1.2em; color:var(--primary); z-index:1000; text-transform:uppercase; letter-spacing:2px; }
+  .toast { position:fixed; top:92px; right:40px; background:rgba(5,150,105,0.94); color:white; padding:10px 16px; border-radius:10px; font-weight:700; opacity:0; transform:translateY(-6px); transition:all 0.2s ease; pointer-events:none; z-index:1100; }
+  .toast.show { opacity:1; transform:translateY(0); }
+  .run-box { background:#0d1117; border-radius:12px; margin:12px 0 0 0; border:2px solid rgba(59,125,214,0.22); overflow:hidden; width:100%; }
+  .run-box-header { background:linear-gradient(90deg,#161b22,#0d1117); padding:7px 16px; font-family:'Space Mono',monospace; font-size:0.79em; color:#4b6a9b; font-weight:700; letter-spacing:0.8px; border-bottom:1px solid rgba(59,125,214,0.12); }
+  .run-box-body { padding:12px 18px 14px 18px; overflow-x:auto; }
+  .run-line { font-family:'Space Mono',monospace; font-size:0.85em; color:#c9d1d9; line-height:1.65; white-space:pre; margin:0; display:block; width:max-content; min-width:100%; }
+  .run-comment { color:#484f58; }
+  .run-prompt  { color:#3fb950; font-weight:700; }
+  .run-output  { color:#79c0ff; }
+  .run-note    { color:#d29922; }
+  .run-error   { color:#ff7b72; }
+  .where-badge { display:inline-block; margin:0 0 12px 0; padding:6px 12px; border-radius:999px; font-family:'Space Mono',monospace; font-size:0.8em; font-weight:700; letter-spacing:0.3px; background:rgba(59,125,214,0.12); color:var(--primary); border:1px solid rgba(59,125,214,0.28); }
+  .where-badge.file { background:rgba(212,148,12,0.12); color:#7C4A00; border-color:rgba(212,148,12,0.28); }
+  .where-badge.warn { background:rgba(220,38,38,0.10); color:#991B1B; border-color:rgba(220,38,38,0.22); }
+  .where-badge.ok   { background:rgba(5,150,105,0.12); color:#065F46; border-color:rgba(5,150,105,0.28); }
+  .flow-row { display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:20px; }
+  .flow-box { background:rgba(59,125,214,0.12); border:2px solid var(--border-color); color:var(--text-primary); padding:14px 18px; border-radius:14px; font-weight:700; text-align:center; }
+  .flow-arrow { font-size:1.6em; color:var(--primary); font-weight:900; }
+  .step-list { margin-top:14px; padding-left:20px; }
+  .step-list li { margin:10px 0; line-height:1.55; }
+  .big-list li { font-size:1.08em; }
+  .tight li { margin:6px 0; }
+  .micro { font-size:0.92em !important; }
+  .mini-table td,.mini-table th { padding:10px 12px; font-size:0.96em; }
+  @media (max-width:980px) {
+    body { padding-top:120px; }
+    .slide { width:94%; padding:48px 28px 42px 28px; }
+    h1 { font-size:3em; } h2 { font-size:2.1em; }
+    .comparison-grid,.comparison-grid.three-col { grid-template-columns:1fr; }
+    .penn-state-badge { left:20px; top:20px; }
+    .slide-indicator { right:20px; top:20px; }
+    .navigation { bottom:20px; }
+  }
+
+</style>
+</head>
+<body>
+<div class="penn-state-badge">HCDD 411</div>
+<div class="slide-indicator"><span id="currentSlide">1</span> / <span id="totalSlides">?</span></div>
+<div class="toast" id="toast">Code copied</div>
+
+<div class="presentation-container">
+<!-- slide 1 -->
+<div class="slide active" data-slide="1">
+  <h1>Connecting Everything</h1>
+  <h2>Md Touhidul Islam</h2>
+  
+
+</div><!-- slide 2 -->
+<div class="slide" data-slide="2">
+  
+  <h2>Where the Frontend Fits</h2>
+  
+  
+  <div class="flow-row">
+    <div class="flow-box">Browser UI<br><span class="micro">public/index.html</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Express Routes<br><span class="micro">server.js</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Mongoose Model<br><span class="micro">Student</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">MongoDB<br><span class="micro">students collection</span></div>
+  </div>
+  <div class="comparison-grid" style="margin-top:22px;">
+    <div class="example-card">
+      <h3>What stays the same</h3>
+      <ul>
+        <li>The same database connection</li>
+        <li>The same <code>Student</code> schema</li>
+        <li>The same API idea: <code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code></li>
+      </ul>
+    </div>
+    <div class="example-card">
+      <h3>What changes</h3>
+      <ul>
+        <li>No more manual <code>curl</code> testing for normal CRUD demos</li>
+        <li>The server also serves a frontend page</li>
+        <li>The frontend uses <code>fetch()</code> to call your routes</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- slide 3 -->
+<div class="slide" data-slide="3">
+  
+  <h2>Updated Project Structure</h2>
+  
+  
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>Folder layout</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ YOUR PROJECT — final layout</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-output">mongoose-demo/</span></div>
+          <div class="run-line"><span class="run-output">├── config/</span></div>
+          <div class="run-line"><span class="run-output">│   └── database.js</span></div>
+          <div class="run-line"><span class="run-output">├── models/</span></div>
+          <div class="run-line"><span class="run-output">│   └── students.model.js</span></div>
+          <div class="run-line"><span class="run-output">├── public/</span></div>
+          <div class="run-line"><span class="run-output">│   ├── index.html       ← page structure + CSS</span></div>
+          <div class="run-line"><span class="run-output">│   └── app.js           ← frontend logic</span></div>
+          <div class="run-line"><span class="run-output">├── package.json</span></div>
+          <div class="run-line"><span class="run-output">└── server.js</span></div>
+        </div>
+      </div>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ TERMINAL</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> mkdir public</div>
+          <div class="run-line"><span class="run-prompt">$</span> touch public/index.html public/app.js</div>
+        </div>
+      </div>
+    </div>
+    <div class="example-card">
+      <h3>Why this version is cleaner</h3>
+      <ul>
+        <li><code>public/index.html</code> holds structure and styling only</li>
+        <li><code>public/app.js</code> holds all browser logic and <code>fetch()</code> calls</li>
+        <li>The UI uses dropdowns for view, update, and delete</li>
+      </ul>
+      <div class="tip-box micro" style="margin-top:12px;">
+        This keeps the frontend closer to how real projects are organized: HTML for layout, JavaScript for behavior.
+      </div>
+    </div>
+  </div>
+
+</div><!-- slide 4 -->
+<div class="slide" data-slide="4">
+  
+  <h2>server.js — The Updated Backend</h2>
+  
+  
+  <div class="where-badge file">File: server.js</div>
+  <div class="comparison-grid code-stack">
+    <div class="example-card">
+      <h3>Copy this entire file</h3>
+      
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 server.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-server-full">Copy</button></div>
+      </div>
+      <div class="static-code">
+        <ol>
+          <li>const path = require(&quot;path&quot;);</li>
+<li>const express   = require(&quot;express&quot;);</li>
+<li>const connectDB = require(&quot;./config/database&quot;);</li>
+<li>const Student   = require(&quot;./models/students.model&quot;);</li>
+<li></li>
+<li>const app = express();</li>
+<li></li>
+<li>app.use(express.json());</li>
+<li>app.use(express.static(path.join(__dirname, &quot;public&quot;)));</li>
+<li></li>
+<li>// ── GET /students ── return all students ──────────────────────</li>
+<li>app.get(&quot;/students&quot;, async (req, res) =&gt; {</li>
+<li>  try {</li>
+<li>    const students = await Student.find().sort({ name: 1 });</li>
+<li>    res.json(students);</li>
+<li>  } catch (err) {</li>
+<li>    res.status(500).json({ error: err.message });</li>
+<li>  }</li>
+<li>});</li>
+<li></li>
+<li>// ── GET /students/:id ── return one student by ID ─────────────</li>
+<li>app.get(&quot;/students/:id&quot;, async (req, res) =&gt; {</li>
+<li>  try {</li>
+<li>    const student = await Student.findById(req.params.id);</li>
+<li>    if (!student) return res.status(404).json({ error: &quot;Not found&quot; });</li>
+<li>    res.json(student);</li>
+<li>  } catch (err) {</li>
+<li>    res.status(400).json({ error: err.message });</li>
+<li>  }</li>
+<li>});</li>
+<li></li>
+<li>// ── POST /students ── create a new student ────────────────────</li>
+<li>app.post(&quot;/students&quot;, async (req, res) =&gt; {</li>
+<li>  try {</li>
+<li>    const student = await Student.create(req.body);</li>
+<li>    res.status(201).json(student);</li>
+<li>  } catch (err) {</li>
+<li>    res.status(400).json({ error: err.message });</li>
+<li>  }</li>
+<li>});</li>
+<li></li>
+<li>// ── PUT /students/:id ── update a student by ID ───────────────</li>
+<li>app.put(&quot;/students/:id&quot;, async (req, res) =&gt; {</li>
+<li>  try {</li>
+<li>    const student = await Student.findByIdAndUpdate(</li>
+<li>      req.params.id,</li>
+<li>      { $set: req.body },</li>
+<li>      { new: true, runValidators: true }</li>
+<li>    );</li>
+<li></li>
+<li>    if (!student) return res.status(404).json({ error: &quot;Not found&quot; });</li>
+<li>    res.json(student);</li>
+<li>  } catch (err) {</li>
+<li>    res.status(400).json({ error: err.message });</li>
+<li>  }</li>
+<li>});</li>
+<li></li>
+<li>// ── DELETE /students/:id ── delete a student by ID ───────────</li>
+<li>app.delete(&quot;/students/:id&quot;, async (req, res) =&gt; {</li>
+<li>  try {</li>
+<li>    const student = await Student.findByIdAndDelete(req.params.id);</li>
+<li>    if (!student) return res.status(404).json({ error: &quot;Not found&quot; });</li>
+<li>    res.json({ message: &quot;Deleted successfully&quot;, student });</li>
+<li>  } catch (err) {</li>
+<li>    res.status(400).json({ error: err.message });</li>
+<li>  }</li>
+<li>});</li>
+<li></li>
+<li>async function startServer() {</li>
+<li>  await connectDB();</li>
+<li>  app.listen(3000, () =&gt; {</li>
+<li>    console.log(&quot;Server running on http://localhost:3000&quot;);</li>
+<li>  });</li>
+<li>}</li>
+<li></li>
+<li>startServer();</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-server-full">const path = require(&quot;path&quot;);
+const express   = require(&quot;express&quot;);
+const connectDB = require(&quot;./config/database&quot;);
+const Student   = require(&quot;./models/students.model&quot;);
+
+const app = express();
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, &quot;public&quot;)));
+
+// ── GET /students ── return all students ──────────────────────
+app.get(&quot;/students&quot;, async (req, res) =&gt; {
+  try {
+    const students = await Student.find().sort({ name: 1 });
+    res.json(students);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET /students/:id ── return one student by ID ─────────────
+app.get(&quot;/students/:id&quot;, async (req, res) =&gt; {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).json({ error: &quot;Not found&quot; });
+    res.json(student);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── POST /students ── create a new student ────────────────────
+app.post(&quot;/students&quot;, async (req, res) =&gt; {
+  try {
+    const student = await Student.create(req.body);
+    res.status(201).json(student);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── PUT /students/:id ── update a student by ID ───────────────
+app.put(&quot;/students/:id&quot;, async (req, res) =&gt; {
+  try {
+    const student = await Student.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true, runValidators: true }
+    );
+
+    if (!student) return res.status(404).json({ error: &quot;Not found&quot; });
+    res.json(student);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── DELETE /students/:id ── delete a student by ID ───────────
+app.delete(&quot;/students/:id&quot;, async (req, res) =&gt; {
+  try {
+    const student = await Student.findByIdAndDelete(req.params.id);
+    if (!student) return res.status(404).json({ error: &quot;Not found&quot; });
+    res.json({ message: &quot;Deleted successfully&quot;, student });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+async function startServer() {
+  await connectDB();
+  app.listen(3000, () =&gt; {
+    console.log(&quot;Server running on http://localhost:3000&quot;);
+  });
+}
+
+startServer();
+</textarea>
+    
+    </div>
+  </div>
+  <div class="comparison-grid" style="margin-top:16px;">
+    <div class="example-card compact-card">
+      <h3>New pieces</h3>
+      <ul class="tight">
+        <li><code>app.use(express.static(...))</code> serves the frontend</li>
+        <li><code>GET /students/:id</code> supports the dropdown-based view/update/delete UI</li>
+        <li><code>runValidators: true</code> keeps update validation strict</li>
+      </ul>
+    </div>
+    <div class="example-card compact-card">
+      <h3>What did not change</h3>
+      <ul class="tight">
+        <li>The same DB connection flow</li>
+        <li>The same Student model</li>
+        <li>The same REST route pattern students already know</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- slide 5 -->
+<div class="slide" data-slide="5">
+  
+  <h2>Frontend Files — index.html + app.js</h2>
+  
+  
+  <div class="where-badge file">Files: public/index.html and public/app.js</div>
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>Copy this HTML file</h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 public/index.html</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-index-full">Copy</button></div>
+      </div>
+      <div class="static-code">
+<ol>
+          <li>&lt;!DOCTYPE html&gt;</li>
+          <li>&lt;html lang=&quot;en&quot;&gt;</li>
+          <li>&lt;head&gt;</li>
+          <li>  &lt;meta charset=&quot;UTF-8&quot; /&gt;</li>
+          <li>  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;</li>
+          <li>  &lt;title&gt;Student Manager&lt;/title&gt;</li>
+          <li>  &lt;style&gt;</li>
+          <li>    * { box-sizing: border-box; }</li>
+          <li>    body {</li>
+          <li>      margin: 0;</li>
+          <li>      font-family: Arial, sans-serif;</li>
+          <li>      background: #f5f7fb;</li>
+          <li>      color: #1f2937;</li>
+          <li>    }</li>
+          <li>    .container {</li>
+          <li>      max-width: 1200px;</li>
+          <li>      margin: 0 auto;</li>
+          <li>      padding: 24px;</li>
+          <li>    }</li>
+          <li>    h1 { margin-bottom: 8px; }</li>
+          <li>    .subtitle { color: #6b7280; margin-bottom: 20px; }</li>
+          <li>    .message {</li>
+          <li>      display: none;</li>
+          <li>      padding: 12px 14px;</li>
+          <li>      border-radius: 10px;</li>
+          <li>      margin-bottom: 18px;</li>
+          <li>      font-weight: 700;</li>
+          <li>    }</li>
+          <li>    .message.success {</li>
+          <li>      display: block;</li>
+          <li>      background: #ecfdf5;</li>
+          <li>      color: #065f46;</li>
+          <li>      border: 1px solid #a7f3d0;</li>
+          <li>    }</li>
+          <li>    .message.error {</li>
+          <li>      display: block;</li>
+          <li>      background: #fef2f2;</li>
+          <li>      color: #991b1b;</li>
+          <li>      border: 1px solid #fecaca;</li>
+          <li>    }</li>
+          <li>    .layout {</li>
+          <li>      display: grid;</li>
+          <li>      grid-template-columns: 1.3fr 1fr;</li>
+          <li>      gap: 18px;</li>
+          <li>    }</li>
+          <li>    .stack {</li>
+          <li>      display: grid;</li>
+          <li>      gap: 18px;</li>
+          <li>    }</li>
+          <li>    .card {</li>
+          <li>      background: white;</li>
+          <li>      border: 1px solid #dbe3ef;</li>
+          <li>      border-radius: 16px;</li>
+          <li>      padding: 18px;</li>
+          <li>      box-shadow: 0 10px 30px rgba(0,0,0,0.06);</li>
+          <li>    }</li>
+          <li>    .card-header {</li>
+          <li>      display: flex;</li>
+          <li>      justify-content: space-between;</li>
+          <li>      align-items: center;</li>
+          <li>      gap: 12px;</li>
+          <li>      margin-bottom: 14px;</li>
+          <li>    }</li>
+          <li>    h2 {</li>
+          <li>      margin: 0;</li>
+          <li>      font-size: 1.2rem;</li>
+          <li>    }</li>
+          <li>    form {</li>
+          <li>      display: grid;</li>
+          <li>      gap: 10px;</li>
+          <li>    }</li>
+          <li>    label {</li>
+          <li>      font-size: 0.95rem;</li>
+          <li>      font-weight: 700;</li>
+          <li>    }</li>
+          <li>    input, select {</li>
+          <li>      width: 100%;</li>
+          <li>      padding: 10px 12px;</li>
+          <li>      border: 1px solid #cbd5e1;</li>
+          <li>      border-radius: 10px;</li>
+          <li>      font-size: 0.95rem;</li>
+          <li>      background: white;</li>
+          <li>    }</li>
+          <li>    button {</li>
+          <li>      border: none;</li>
+          <li>      background: #2563eb;</li>
+          <li>      color: white;</li>
+          <li>      padding: 10px 14px;</li>
+          <li>      border-radius: 10px;</li>
+          <li>      font-weight: 700;</li>
+          <li>      cursor: pointer;</li>
+          <li>    }</li>
+          <li>    button.secondary {</li>
+          <li>      background: #475569;</li>
+          <li>    }</li>
+          <li>    button.danger {</li>
+          <li>      background: #dc2626;</li>
+          <li>    }</li>
+          <li>    table {</li>
+          <li>      width: 100%;</li>
+          <li>      border-collapse: collapse;</li>
+          <li>    }</li>
+          <li>    th, td {</li>
+          <li>      text-align: left;</li>
+          <li>      padding: 10px 8px;</li>
+          <li>      border-bottom: 1px solid #e5e7eb;</li>
+          <li>      vertical-align: top;</li>
+          <li>      font-size: 0.92rem;</li>
+          <li>    }</li>
+          <li>    th {</li>
+          <li>      color: #334155;</li>
+          <li>      background: #f8fafc;</li>
+          <li>    }</li>
+          <li>    .detail-box {</li>
+          <li>      background: #0f172a;</li>
+          <li>      color: #e2e8f0;</li>
+          <li>      border-radius: 12px;</li>
+          <li>      padding: 12px;</li>
+          <li>      margin-top: 12px;</li>
+          <li>      line-height: 1.7;</li>
+          <li>    }</li>
+          <li>    .muted {</li>
+          <li>      color: #64748b;</li>
+          <li>      font-size: 0.92rem;</li>
+          <li>    }</li>
+          <li>    @media (max-width: 980px) {</li>
+          <li>      .layout { grid-template-columns: 1fr; }</li>
+          <li>    }</li>
+          <li>  &lt;/style&gt;</li>
+          <li>&lt;/head&gt;</li>
+          <li>&lt;body&gt;</li>
+          <li>  &lt;div class=&quot;container&quot;&gt;</li>
+          <li>    &lt;h1&gt;Student Manager&lt;/h1&gt;</li>
+          <li>    &lt;p class=&quot;subtitle&quot;&gt;Frontend → Express → Mongoose → MongoDB&lt;/p&gt;</li>
+          <li></li>
+          <li>    &lt;div id=&quot;message&quot; class=&quot;message&quot;&gt;&lt;/div&gt;</li>
+          <li></li>
+          <li>    &lt;div class=&quot;layout&quot;&gt;</li>
+          <li>      &lt;section class=&quot;card&quot;&gt;</li>
+          <li>        &lt;div class=&quot;card-header&quot;&gt;</li>
+          <li>          &lt;h2&gt;All Students&lt;/h2&gt;</li>
+          <li>          &lt;button id=&quot;refreshBtn&quot; class=&quot;secondary&quot; type=&quot;button&quot;&gt;Refresh&lt;/button&gt;</li>
+          <li>        &lt;/div&gt;</li>
+          <li>        &lt;table&gt;</li>
+          <li>          &lt;thead&gt;</li>
+          <li>            &lt;tr&gt;</li>
+          <li>              &lt;th&gt;Name&lt;/th&gt;</li>
+          <li>              &lt;th&gt;Age&lt;/th&gt;</li>
+          <li>              &lt;th&gt;Major&lt;/th&gt;</li>
+          <li>            &lt;/tr&gt;</li>
+          <li>          &lt;/thead&gt;</li>
+          <li>          &lt;tbody id=&quot;studentsBody&quot;&gt;</li>
+          <li>            &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;Loading...&lt;/td&gt;&lt;/tr&gt;</li>
+          <li>          &lt;/tbody&gt;</li>
+          <li>        &lt;/table&gt;</li>
+          <li>      &lt;/section&gt;</li>
+          <li></li>
+          <li>      &lt;div class=&quot;stack&quot;&gt;</li>
+          <li>        &lt;section class=&quot;card&quot;&gt;</li>
+          <li>          &lt;h2&gt;Add Student&lt;/h2&gt;</li>
+          <li>          &lt;form id=&quot;addForm&quot;&gt;</li>
+          <li>            &lt;div&gt;</li>
+          <li>              &lt;label for=&quot;addName&quot;&gt;Name&lt;/label&gt;</li>
+          <li>              &lt;input id=&quot;addName&quot; required /&gt;</li>
+          <li>            &lt;/div&gt;</li>
+          <li>            &lt;div&gt;</li>
+          <li>              &lt;label for=&quot;addAge&quot;&gt;Age&lt;/label&gt;</li>
+          <li>              &lt;input id=&quot;addAge&quot; type=&quot;number&quot; min=&quot;0&quot; required /&gt;</li>
+          <li>            &lt;/div&gt;</li>
+          <li>            &lt;div&gt;</li>
+          <li>              &lt;label for=&quot;addMajor&quot;&gt;Major&lt;/label&gt;</li>
+          <li>              &lt;input id=&quot;addMajor&quot; /&gt;</li>
+          <li>            &lt;/div&gt;</li>
+          <li>            &lt;button type=&quot;submit&quot;&gt;Add Student&lt;/button&gt;</li>
+          <li>          &lt;/form&gt;</li>
+          <li>        &lt;/section&gt;</li>
+          <li></li>
+          <li>        &lt;section class=&quot;card&quot;&gt;</li>
+          <li>          &lt;h2&gt;View One Student&lt;/h2&gt;</li>
+          <li>          &lt;form id=&quot;getForm&quot;&gt;</li>
+          <li>            &lt;div&gt;</li>
+          <li>              &lt;label for=&quot;getStudentSelect&quot;&gt;Choose a student&lt;/label&gt;</li>
+          <li>              &lt;select id=&quot;getStudentSelect&quot; required&gt;</li>
+          <li>                &lt;option value=&quot;&quot;&gt;Select a student&lt;/option&gt;</li>
+          <li>              &lt;/select&gt;</li>
+          <li>            &lt;/div&gt;</li>
+          <li>            &lt;button type=&quot;submit&quot;&gt;Show Student&lt;/button&gt;</li>
+          <li>          &lt;/form&gt;</li>
+          <li>          &lt;div id=&quot;singleStudentBox&quot; class=&quot;detail-box&quot;&gt;No student loaded yet.&lt;/div&gt;</li>
+          <li>        &lt;/section&gt;</li>
+          <li></li>
+          <li>        &lt;section class=&quot;card&quot;&gt;</li>
+          <li>          &lt;h2&gt;Update Student&lt;/h2&gt;</li>
+          <li>          &lt;p class=&quot;muted&quot;&gt;Pick a student from the dropdown, then change only the fields you want.&lt;/p&gt;</li>
+          <li>          &lt;form id=&quot;updateForm&quot;&gt;</li>
+          <li>            &lt;div&gt;</li>
+          <li>              &lt;label for=&quot;updateStudentSelect&quot;&gt;Choose a student&lt;/label&gt;</li>
+          <li>              &lt;select id=&quot;updateStudentSelect&quot; required&gt;</li>
+          <li>                &lt;option value=&quot;&quot;&gt;Select a student&lt;/option&gt;</li>
+          <li>              &lt;/select&gt;</li>
+          <li>            &lt;/div&gt;</li>
+          <li>            &lt;div&gt;</li>
+          <li>              &lt;label for=&quot;updateName&quot;&gt;New Name&lt;/label&gt;</li>
+          <li>              &lt;input id=&quot;updateName&quot; /&gt;</li>
+          <li>            &lt;/div&gt;</li>
+          <li>            &lt;div&gt;</li>
+          <li>              &lt;label for=&quot;updateAge&quot;&gt;New Age&lt;/label&gt;</li>
+          <li>              &lt;input id=&quot;updateAge&quot; type=&quot;number&quot; min=&quot;0&quot; /&gt;</li>
+          <li>            &lt;/div&gt;</li>
+          <li>            &lt;div&gt;</li>
+          <li>              &lt;label for=&quot;updateMajor&quot;&gt;New Major&lt;/label&gt;</li>
+          <li>              &lt;input id=&quot;updateMajor&quot; /&gt;</li>
+          <li>            &lt;/div&gt;</li>
+          <li>            &lt;button type=&quot;submit&quot;&gt;Update Student&lt;/button&gt;</li>
+          <li>          &lt;/form&gt;</li>
+          <li>        &lt;/section&gt;</li>
+          <li></li>
+          <li>        &lt;section class=&quot;card&quot;&gt;</li>
+          <li>          &lt;h2&gt;Delete Student&lt;/h2&gt;</li>
+          <li>          &lt;form id=&quot;deleteForm&quot;&gt;</li>
+          <li>            &lt;div&gt;</li>
+          <li>              &lt;label for=&quot;deleteStudentSelect&quot;&gt;Choose a student&lt;/label&gt;</li>
+          <li>              &lt;select id=&quot;deleteStudentSelect&quot; required&gt;</li>
+          <li>                &lt;option value=&quot;&quot;&gt;Select a student&lt;/option&gt;</li>
+          <li>              &lt;/select&gt;</li>
+          <li>            &lt;/div&gt;</li>
+          <li>            &lt;button type=&quot;submit&quot; class=&quot;danger&quot;&gt;Delete Student&lt;/button&gt;</li>
+          <li>          &lt;/form&gt;</li>
+          <li>        &lt;/section&gt;</li>
+          <li>      &lt;/div&gt;</li>
+          <li>    &lt;/div&gt;</li>
+          <li>  &lt;/div&gt;</li>
+          <li></li>
+          <li>  &lt;script src=&quot;./app.js&quot;&gt;&lt;/script&gt;</li>
+          <li>&lt;/body&gt;</li>
+          <li>&lt;/html&gt;</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-index-full">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot; /&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+  &lt;title&gt;Student Manager&lt;/title&gt;
+  &lt;style&gt;
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1 { margin-bottom: 8px; }
+    .subtitle { color: #6b7280; margin-bottom: 20px; }
+    .message {
+      display: none;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 18px;
+      font-weight: 700;
+    }
+    .message.success {
+      display: block;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .message.error {
+      display: block;
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 18px;
+    }
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+    .card {
+      background: white;
+      border: 1px solid #dbe3ef;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    h2 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+    form {
+      display: grid;
+      gap: 10px;
+    }
+    label {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      background: white;
+    }
+    button {
+      border: none;
+      background: #2563eb;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #475569;
+    }
+    button.danger {
+      background: #dc2626;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: top;
+      font-size: 0.92rem;
+    }
+    th {
+      color: #334155;
+      background: #f8fafc;
+    }
+    .detail-box {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 12px;
+      line-height: 1.7;
+    }
+    .muted {
+      color: #64748b;
+      font-size: 0.92rem;
+    }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;h1&gt;Student Manager&lt;/h1&gt;
+    &lt;p class=&quot;subtitle&quot;&gt;Frontend → Express → Mongoose → MongoDB&lt;/p&gt;
+
+    &lt;div id=&quot;message&quot; class=&quot;message&quot;&gt;&lt;/div&gt;
+
+    &lt;div class=&quot;layout&quot;&gt;
+      &lt;section class=&quot;card&quot;&gt;
+        &lt;div class=&quot;card-header&quot;&gt;
+          &lt;h2&gt;All Students&lt;/h2&gt;
+          &lt;button id=&quot;refreshBtn&quot; class=&quot;secondary&quot; type=&quot;button&quot;&gt;Refresh&lt;/button&gt;
+        &lt;/div&gt;
+        &lt;table&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th&gt;Name&lt;/th&gt;
+              &lt;th&gt;Age&lt;/th&gt;
+              &lt;th&gt;Major&lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody id=&quot;studentsBody&quot;&gt;
+            &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;Loading...&lt;/td&gt;&lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/section&gt;
+
+      &lt;div class=&quot;stack&quot;&gt;
+        &lt;section class=&quot;card&quot;&gt;
+          &lt;h2&gt;Add Student&lt;/h2&gt;
+          &lt;form id=&quot;addForm&quot;&gt;
+            &lt;div&gt;
+              &lt;label for=&quot;addName&quot;&gt;Name&lt;/label&gt;
+              &lt;input id=&quot;addName&quot; required /&gt;
+            &lt;/div&gt;
+            &lt;div&gt;
+              &lt;label for=&quot;addAge&quot;&gt;Age&lt;/label&gt;
+              &lt;input id=&quot;addAge&quot; type=&quot;number&quot; min=&quot;0&quot; required /&gt;
+            &lt;/div&gt;
+            &lt;div&gt;
+              &lt;label for=&quot;addMajor&quot;&gt;Major&lt;/label&gt;
+              &lt;input id=&quot;addMajor&quot; /&gt;
+            &lt;/div&gt;
+            &lt;button type=&quot;submit&quot;&gt;Add Student&lt;/button&gt;
+          &lt;/form&gt;
+        &lt;/section&gt;
+
+        &lt;section class=&quot;card&quot;&gt;
+          &lt;h2&gt;View One Student&lt;/h2&gt;
+          &lt;form id=&quot;getForm&quot;&gt;
+            &lt;div&gt;
+              &lt;label for=&quot;getStudentSelect&quot;&gt;Choose a student&lt;/label&gt;
+              &lt;select id=&quot;getStudentSelect&quot; required&gt;
+                &lt;option value=&quot;&quot;&gt;Select a student&lt;/option&gt;
+              &lt;/select&gt;
+            &lt;/div&gt;
+            &lt;button type=&quot;submit&quot;&gt;Show Student&lt;/button&gt;
+          &lt;/form&gt;
+          &lt;div id=&quot;singleStudentBox&quot; class=&quot;detail-box&quot;&gt;No student loaded yet.&lt;/div&gt;
+        &lt;/section&gt;
+
+        &lt;section class=&quot;card&quot;&gt;
+          &lt;h2&gt;Update Student&lt;/h2&gt;
+          &lt;p class=&quot;muted&quot;&gt;Pick a student from the dropdown, then change only the fields you want.&lt;/p&gt;
+          &lt;form id=&quot;updateForm&quot;&gt;
+            &lt;div&gt;
+              &lt;label for=&quot;updateStudentSelect&quot;&gt;Choose a student&lt;/label&gt;
+              &lt;select id=&quot;updateStudentSelect&quot; required&gt;
+                &lt;option value=&quot;&quot;&gt;Select a student&lt;/option&gt;
+              &lt;/select&gt;
+            &lt;/div&gt;
+            &lt;div&gt;
+              &lt;label for=&quot;updateName&quot;&gt;New Name&lt;/label&gt;
+              &lt;input id=&quot;updateName&quot; /&gt;
+            &lt;/div&gt;
+            &lt;div&gt;
+              &lt;label for=&quot;updateAge&quot;&gt;New Age&lt;/label&gt;
+              &lt;input id=&quot;updateAge&quot; type=&quot;number&quot; min=&quot;0&quot; /&gt;
+            &lt;/div&gt;
+            &lt;div&gt;
+              &lt;label for=&quot;updateMajor&quot;&gt;New Major&lt;/label&gt;
+              &lt;input id=&quot;updateMajor&quot; /&gt;
+            &lt;/div&gt;
+            &lt;button type=&quot;submit&quot;&gt;Update Student&lt;/button&gt;
+          &lt;/form&gt;
+        &lt;/section&gt;
+
+        &lt;section class=&quot;card&quot;&gt;
+          &lt;h2&gt;Delete Student&lt;/h2&gt;
+          &lt;form id=&quot;deleteForm&quot;&gt;
+            &lt;div&gt;
+              &lt;label for=&quot;deleteStudentSelect&quot;&gt;Choose a student&lt;/label&gt;
+              &lt;select id=&quot;deleteStudentSelect&quot; required&gt;
+                &lt;option value=&quot;&quot;&gt;Select a student&lt;/option&gt;
+              &lt;/select&gt;
+            &lt;/div&gt;
+            &lt;button type=&quot;submit&quot; class=&quot;danger&quot;&gt;Delete Student&lt;/button&gt;
+          &lt;/form&gt;
+        &lt;/section&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;script src=&quot;./app.js&quot;&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</textarea>
+    </div>
+    <div class="example-card">
+      <h3>Copy this JavaScript file</h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 public/app.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-app-full">Copy</button></div>
+      </div>
+      <div class="static-code">
+<ol>
+          <li>const studentsBody = document.getElementById(&quot;studentsBody&quot;);</li>
+          <li>const messageBox = document.getElementById(&quot;message&quot;);</li>
+          <li>const singleStudentBox = document.getElementById(&quot;singleStudentBox&quot;);</li>
+          <li>const refreshBtn = document.getElementById(&quot;refreshBtn&quot;);</li>
+          <li></li>
+          <li>const addForm = document.getElementById(&quot;addForm&quot;);</li>
+          <li>const getForm = document.getElementById(&quot;getForm&quot;);</li>
+          <li>const updateForm = document.getElementById(&quot;updateForm&quot;);</li>
+          <li>const deleteForm = document.getElementById(&quot;deleteForm&quot;);</li>
+          <li></li>
+          <li>const getStudentSelect = document.getElementById(&quot;getStudentSelect&quot;);</li>
+          <li>const updateStudentSelect = document.getElementById(&quot;updateStudentSelect&quot;);</li>
+          <li>const deleteStudentSelect = document.getElementById(&quot;deleteStudentSelect&quot;);</li>
+          <li></li>
+          <li>const updateName = document.getElementById(&quot;updateName&quot;);</li>
+          <li>const updateAge = document.getElementById(&quot;updateAge&quot;);</li>
+          <li>const updateMajor = document.getElementById(&quot;updateMajor&quot;);</li>
+          <li></li>
+          <li>let studentsCache = [];</li>
+          <li></li>
+          <li>function showMessage(text, type = &quot;success&quot;) {</li>
+          <li>  messageBox.textContent = text;</li>
+          <li>  messageBox.className = `message ${type}`;</li>
+          <li>}</li>
+          <li></li>
+          <li>async function fetchJSON(url, options = {}) {</li>
+          <li>  const response = await fetch(url, {</li>
+          <li>    headers: { &quot;Content-Type&quot;: &quot;application/json&quot; },</li>
+          <li>    ...options</li>
+          <li>  });</li>
+          <li></li>
+          <li>  const data = await response.json().catch(() =&gt; ({}));</li>
+          <li></li>
+          <li>  if (!response.ok) {</li>
+          <li>    throw new Error(data.error || &quot;Request failed&quot;);</li>
+          <li>  }</li>
+          <li></li>
+          <li>  return data;</li>
+          <li>}</li>
+          <li></li>
+          <li>function studentLabel(student) {</li>
+          <li>  return `${student.name} — Age ${student.age} — ${student.major || &quot;Undeclared&quot;}`;</li>
+          <li>}</li>
+          <li></li>
+          <li>function renderStudents(students) {</li>
+          <li>  if (students.length === 0) {</li>
+          <li>    studentsBody.innerHTML = `&lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;No students in the database yet.&lt;/td&gt;&lt;/tr&gt;`;</li>
+          <li>    return;</li>
+          <li>  }</li>
+          <li></li>
+          <li>  studentsBody.innerHTML = students.map(student =&gt; `</li>
+          <li>    &lt;tr&gt;</li>
+          <li>      &lt;td&gt;${student.name}&lt;/td&gt;</li>
+          <li>      &lt;td&gt;${student.age}&lt;/td&gt;</li>
+          <li>      &lt;td&gt;${student.major || &quot;Undeclared&quot;}&lt;/td&gt;</li>
+          <li>    &lt;/tr&gt;</li>
+          <li>  `).join(&quot;&quot;);</li>
+          <li>}</li>
+          <li></li>
+          <li>function setSelectOptions(selectElement, students, placeholder) {</li>
+          <li>  const currentValue = selectElement.value;</li>
+          <li></li>
+          <li>  selectElement.innerHTML = [</li>
+          <li>    `&lt;option value=&quot;&quot;&gt;${placeholder}&lt;/option&gt;`,</li>
+          <li>    ...students.map(student =&gt; `</li>
+          <li>      &lt;option value=&quot;${student._id}&quot;&gt;${studentLabel(student)}&lt;/option&gt;</li>
+          <li>    `)</li>
+          <li>  ].join(&quot;&quot;);</li>
+          <li></li>
+          <li>  if (students.some(student =&gt; student._id === currentValue)) {</li>
+          <li>    selectElement.value = currentValue;</li>
+          <li>  }</li>
+          <li>}</li>
+          <li></li>
+          <li>function populateStudentSelects(students) {</li>
+          <li>  setSelectOptions(getStudentSelect, students, &quot;Select a student&quot;);</li>
+          <li>  setSelectOptions(updateStudentSelect, students, &quot;Select a student&quot;);</li>
+          <li>  setSelectOptions(deleteStudentSelect, students, &quot;Select a student&quot;);</li>
+          <li>}</li>
+          <li></li>
+          <li>function renderSingleStudent(student) {</li>
+          <li>  singleStudentBox.innerHTML = `</li>
+          <li>    &lt;strong&gt;${student.name}&lt;/strong&gt;&lt;br&gt;</li>
+          <li>    Age: ${student.age}&lt;br&gt;</li>
+          <li>    Major: ${student.major || &quot;Undeclared&quot;}</li>
+          <li>  `;</li>
+          <li>}</li>
+          <li></li>
+          <li>function fillUpdateForm(student) {</li>
+          <li>  updateName.value = student.name;</li>
+          <li>  updateAge.value = student.age;</li>
+          <li>  updateMajor.value = student.major || &quot;&quot;;</li>
+          <li>}</li>
+          <li></li>
+          <li>async function loadStudents() {</li>
+          <li>  try {</li>
+          <li>    const students = await fetchJSON(&quot;/students&quot;);</li>
+          <li>    studentsCache = students;</li>
+          <li>    renderStudents(students);</li>
+          <li>    populateStudentSelects(students);</li>
+          <li>  } catch (error) {</li>
+          <li>    showMessage(error.message, &quot;error&quot;);</li>
+          <li>  }</li>
+          <li>}</li>
+          <li></li>
+          <li>refreshBtn.addEventListener(&quot;click&quot;, loadStudents);</li>
+          <li></li>
+          <li>addForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {</li>
+          <li>  event.preventDefault();</li>
+          <li></li>
+          <li>  const payload = {</li>
+          <li>    name: document.getElementById(&quot;addName&quot;).value.trim(),</li>
+          <li>    age: Number(document.getElementById(&quot;addAge&quot;).value),</li>
+          <li>    major: document.getElementById(&quot;addMajor&quot;).value.trim()</li>
+          <li>  };</li>
+          <li></li>
+          <li>  if (!payload.major) delete payload.major;</li>
+          <li></li>
+          <li>  try {</li>
+          <li>    const student = await fetchJSON(&quot;/students&quot;, {</li>
+          <li>      method: &quot;POST&quot;,</li>
+          <li>      body: JSON.stringify(payload)</li>
+          <li>    });</li>
+          <li></li>
+          <li>    addForm.reset();</li>
+          <li>    renderSingleStudent(student);</li>
+          <li>    showMessage(&quot;Student added successfully.&quot;);</li>
+          <li>    await loadStudents();</li>
+          <li>    getStudentSelect.value = student._id;</li>
+          <li>    updateStudentSelect.value = student._id;</li>
+          <li>    deleteStudentSelect.value = student._id;</li>
+          <li>    fillUpdateForm(student);</li>
+          <li>  } catch (error) {</li>
+          <li>    showMessage(error.message, &quot;error&quot;);</li>
+          <li>  }</li>
+          <li>});</li>
+          <li></li>
+          <li>getForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {</li>
+          <li>  event.preventDefault();</li>
+          <li></li>
+          <li>  const id = getStudentSelect.value;</li>
+          <li>  if (!id) {</li>
+          <li>    showMessage(&quot;Choose a student first.&quot;, &quot;error&quot;);</li>
+          <li>    return;</li>
+          <li>  }</li>
+          <li></li>
+          <li>  try {</li>
+          <li>    const student = await fetchJSON(`/students/${id}`);</li>
+          <li>    renderSingleStudent(student);</li>
+          <li>    showMessage(&quot;Student loaded.&quot;);</li>
+          <li>  } catch (error) {</li>
+          <li>    singleStudentBox.textContent = &quot;No student loaded yet.&quot;;</li>
+          <li>    showMessage(error.message, &quot;error&quot;);</li>
+          <li>  }</li>
+          <li>});</li>
+          <li></li>
+          <li>updateStudentSelect.addEventListener(&quot;change&quot;, () =&gt; {</li>
+          <li>  const id = updateStudentSelect.value;</li>
+          <li>  const student = studentsCache.find(item =&gt; item._id === id);</li>
+          <li></li>
+          <li>  if (!student) {</li>
+          <li>    updateName.value = &quot;&quot;;</li>
+          <li>    updateAge.value = &quot;&quot;;</li>
+          <li>    updateMajor.value = &quot;&quot;;</li>
+          <li>    return;</li>
+          <li>  }</li>
+          <li></li>
+          <li>  fillUpdateForm(student);</li>
+          <li>  showMessage(&quot;Current values loaded into the update form.&quot;);</li>
+          <li>});</li>
+          <li></li>
+          <li>updateForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {</li>
+          <li>  event.preventDefault();</li>
+          <li></li>
+          <li>  const id = updateStudentSelect.value;</li>
+          <li>  if (!id) {</li>
+          <li>    showMessage(&quot;Choose a student first.&quot;, &quot;error&quot;);</li>
+          <li>    return;</li>
+          <li>  }</li>
+          <li></li>
+          <li>  const payload = {};</li>
+          <li>  const name = updateName.value.trim();</li>
+          <li>  const age = updateAge.value;</li>
+          <li>  const major = updateMajor.value.trim();</li>
+          <li></li>
+          <li>  if (name) payload.name = name;</li>
+          <li>  if (age !== &quot;&quot;) payload.age = Number(age);</li>
+          <li>  if (major) payload.major = major;</li>
+          <li></li>
+          <li>  if (Object.keys(payload).length === 0) {</li>
+          <li>    showMessage(&quot;Enter at least one field to update.&quot;, &quot;error&quot;);</li>
+          <li>    return;</li>
+          <li>  }</li>
+          <li></li>
+          <li>  try {</li>
+          <li>    const updated = await fetchJSON(`/students/${id}`, {</li>
+          <li>      method: &quot;PUT&quot;,</li>
+          <li>      body: JSON.stringify(payload)</li>
+          <li>    });</li>
+          <li></li>
+          <li>    renderSingleStudent(updated);</li>
+          <li>    showMessage(&quot;Student updated successfully.&quot;);</li>
+          <li>    await loadStudents();</li>
+          <li>    updateStudentSelect.value = updated._id;</li>
+          <li>    getStudentSelect.value = updated._id;</li>
+          <li>    deleteStudentSelect.value = updated._id;</li>
+          <li>    fillUpdateForm(updated);</li>
+          <li>  } catch (error) {</li>
+          <li>    showMessage(error.message, &quot;error&quot;);</li>
+          <li>  }</li>
+          <li>});</li>
+          <li></li>
+          <li>deleteForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {</li>
+          <li>  event.preventDefault();</li>
+          <li></li>
+          <li>  const id = deleteStudentSelect.value;</li>
+          <li>  if (!id) {</li>
+          <li>    showMessage(&quot;Choose a student first.&quot;, &quot;error&quot;);</li>
+          <li>    return;</li>
+          <li>  }</li>
+          <li></li>
+          <li>  try {</li>
+          <li>    await fetchJSON(`/students/${id}`, {</li>
+          <li>      method: &quot;DELETE&quot;</li>
+          <li>    });</li>
+          <li></li>
+          <li>    deleteForm.reset();</li>
+          <li>    getForm.reset();</li>
+          <li>    updateForm.reset();</li>
+          <li>    singleStudentBox.textContent = &quot;No student loaded yet.&quot;;</li>
+          <li>    showMessage(&quot;Student deleted successfully.&quot;);</li>
+          <li>    await loadStudents();</li>
+          <li>  } catch (error) {</li>
+          <li>    showMessage(error.message, &quot;error&quot;);</li>
+          <li>  }</li>
+          <li>});</li>
+          <li></li>
+          <li>loadStudents();</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-app-full">const studentsBody = document.getElementById(&quot;studentsBody&quot;);
+const messageBox = document.getElementById(&quot;message&quot;);
+const singleStudentBox = document.getElementById(&quot;singleStudentBox&quot;);
+const refreshBtn = document.getElementById(&quot;refreshBtn&quot;);
+
+const addForm = document.getElementById(&quot;addForm&quot;);
+const getForm = document.getElementById(&quot;getForm&quot;);
+const updateForm = document.getElementById(&quot;updateForm&quot;);
+const deleteForm = document.getElementById(&quot;deleteForm&quot;);
+
+const getStudentSelect = document.getElementById(&quot;getStudentSelect&quot;);
+const updateStudentSelect = document.getElementById(&quot;updateStudentSelect&quot;);
+const deleteStudentSelect = document.getElementById(&quot;deleteStudentSelect&quot;);
+
+const updateName = document.getElementById(&quot;updateName&quot;);
+const updateAge = document.getElementById(&quot;updateAge&quot;);
+const updateMajor = document.getElementById(&quot;updateMajor&quot;);
+
+let studentsCache = [];
+
+function showMessage(text, type = &quot;success&quot;) {
+  messageBox.textContent = text;
+  messageBox.className = `message ${type}`;
+}
+
+async function fetchJSON(url, options = {}) {
+  const response = await fetch(url, {
+    headers: { &quot;Content-Type&quot;: &quot;application/json&quot; },
+    ...options
+  });
+
+  const data = await response.json().catch(() =&gt; ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || &quot;Request failed&quot;);
+  }
+
+  return data;
+}
+
+function studentLabel(student) {
+  return `${student.name} — Age ${student.age} — ${student.major || &quot;Undeclared&quot;}`;
+}
+
+function renderStudents(students) {
+  if (students.length === 0) {
+    studentsBody.innerHTML = `&lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;No students in the database yet.&lt;/td&gt;&lt;/tr&gt;`;
+    return;
+  }
+
+  studentsBody.innerHTML = students.map(student =&gt; `
+    &lt;tr&gt;
+      &lt;td&gt;${student.name}&lt;/td&gt;
+      &lt;td&gt;${student.age}&lt;/td&gt;
+      &lt;td&gt;${student.major || &quot;Undeclared&quot;}&lt;/td&gt;
+    &lt;/tr&gt;
+  `).join(&quot;&quot;);
+}
+
+function setSelectOptions(selectElement, students, placeholder) {
+  const currentValue = selectElement.value;
+
+  selectElement.innerHTML = [
+    `&lt;option value=&quot;&quot;&gt;${placeholder}&lt;/option&gt;`,
+    ...students.map(student =&gt; `
+      &lt;option value=&quot;${student._id}&quot;&gt;${studentLabel(student)}&lt;/option&gt;
+    `)
+  ].join(&quot;&quot;);
+
+  if (students.some(student =&gt; student._id === currentValue)) {
+    selectElement.value = currentValue;
+  }
+}
+
+function populateStudentSelects(students) {
+  setSelectOptions(getStudentSelect, students, &quot;Select a student&quot;);
+  setSelectOptions(updateStudentSelect, students, &quot;Select a student&quot;);
+  setSelectOptions(deleteStudentSelect, students, &quot;Select a student&quot;);
+}
+
+function renderSingleStudent(student) {
+  singleStudentBox.innerHTML = `
+    &lt;strong&gt;${student.name}&lt;/strong&gt;&lt;br&gt;
+    Age: ${student.age}&lt;br&gt;
+    Major: ${student.major || &quot;Undeclared&quot;}
+  `;
+}
+
+function fillUpdateForm(student) {
+  updateName.value = student.name;
+  updateAge.value = student.age;
+  updateMajor.value = student.major || &quot;&quot;;
+}
+
+async function loadStudents() {
+  try {
+    const students = await fetchJSON(&quot;/students&quot;);
+    studentsCache = students;
+    renderStudents(students);
+    populateStudentSelects(students);
+  } catch (error) {
+    showMessage(error.message, &quot;error&quot;);
+  }
+}
+
+refreshBtn.addEventListener(&quot;click&quot;, loadStudents);
+
+addForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {
+  event.preventDefault();
+
+  const payload = {
+    name: document.getElementById(&quot;addName&quot;).value.trim(),
+    age: Number(document.getElementById(&quot;addAge&quot;).value),
+    major: document.getElementById(&quot;addMajor&quot;).value.trim()
+  };
+
+  if (!payload.major) delete payload.major;
+
+  try {
+    const student = await fetchJSON(&quot;/students&quot;, {
+      method: &quot;POST&quot;,
+      body: JSON.stringify(payload)
+    });
+
+    addForm.reset();
+    renderSingleStudent(student);
+    showMessage(&quot;Student added successfully.&quot;);
+    await loadStudents();
+    getStudentSelect.value = student._id;
+    updateStudentSelect.value = student._id;
+    deleteStudentSelect.value = student._id;
+    fillUpdateForm(student);
+  } catch (error) {
+    showMessage(error.message, &quot;error&quot;);
+  }
+});
+
+getForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {
+  event.preventDefault();
+
+  const id = getStudentSelect.value;
+  if (!id) {
+    showMessage(&quot;Choose a student first.&quot;, &quot;error&quot;);
+    return;
+  }
+
+  try {
+    const student = await fetchJSON(`/students/${id}`);
+    renderSingleStudent(student);
+    showMessage(&quot;Student loaded.&quot;);
+  } catch (error) {
+    singleStudentBox.textContent = &quot;No student loaded yet.&quot;;
+    showMessage(error.message, &quot;error&quot;);
+  }
+});
+
+updateStudentSelect.addEventListener(&quot;change&quot;, () =&gt; {
+  const id = updateStudentSelect.value;
+  const student = studentsCache.find(item =&gt; item._id === id);
+
+  if (!student) {
+    updateName.value = &quot;&quot;;
+    updateAge.value = &quot;&quot;;
+    updateMajor.value = &quot;&quot;;
+    return;
+  }
+
+  fillUpdateForm(student);
+  showMessage(&quot;Current values loaded into the update form.&quot;);
+});
+
+updateForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {
+  event.preventDefault();
+
+  const id = updateStudentSelect.value;
+  if (!id) {
+    showMessage(&quot;Choose a student first.&quot;, &quot;error&quot;);
+    return;
+  }
+
+  const payload = {};
+  const name = updateName.value.trim();
+  const age = updateAge.value;
+  const major = updateMajor.value.trim();
+
+  if (name) payload.name = name;
+  if (age !== &quot;&quot;) payload.age = Number(age);
+  if (major) payload.major = major;
+
+  if (Object.keys(payload).length === 0) {
+    showMessage(&quot;Enter at least one field to update.&quot;, &quot;error&quot;);
+    return;
+  }
+
+  try {
+    const updated = await fetchJSON(`/students/${id}`, {
+      method: &quot;PUT&quot;,
+      body: JSON.stringify(payload)
+    });
+
+    renderSingleStudent(updated);
+    showMessage(&quot;Student updated successfully.&quot;);
+    await loadStudents();
+    updateStudentSelect.value = updated._id;
+    getStudentSelect.value = updated._id;
+    deleteStudentSelect.value = updated._id;
+    fillUpdateForm(updated);
+  } catch (error) {
+    showMessage(error.message, &quot;error&quot;);
+  }
+});
+
+deleteForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {
+  event.preventDefault();
+
+  const id = deleteStudentSelect.value;
+  if (!id) {
+    showMessage(&quot;Choose a student first.&quot;, &quot;error&quot;);
+    return;
+  }
+
+  try {
+    await fetchJSON(`/students/${id}`, {
+      method: &quot;DELETE&quot;
+    });
+
+    deleteForm.reset();
+    getForm.reset();
+    updateForm.reset();
+    singleStudentBox.textContent = &quot;No student loaded yet.&quot;;
+    showMessage(&quot;Student deleted successfully.&quot;);
+    await loadStudents();
+  } catch (error) {
+    showMessage(error.message, &quot;error&quot;);
+  }
+});
+
+loadStudents();</textarea>
+    </div>
+  </div>
+
+</div><!-- slide 6 -->
+<div class="slide" data-slide="6">
+  
+  <h2>Step 1 — Build the HTML Shell</h2>
+  
+  
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>Main idea</h3>
+      <p>The left side shows <strong>all students</strong>. The right side stacks the four controls:</p>
+      <ul>
+        <li>Add Student</li>
+        <li>View One Student from a dropdown</li>
+        <li>Update Student from a dropdown</li>
+        <li>Delete Student from a dropdown</li>
+      </ul>
+      <div class="tip-box micro" style="margin-top:12px;">
+        The UI still covers all CRUD operations, but the student never has to type or look at a MongoDB ID.
+      </div>
+    </div>
+    <div class="example-card">
+      <h3>HTML structure</h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 public/index.html</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-layout">Copy</button></div>
+      </div>
+      <div class="static-code">
+<ol>
+          <li>&lt;div class=&quot;layout&quot;&gt;</li>
+          <li>  &lt;section class=&quot;card&quot;&gt;</li>
+          <li>    &lt;div class=&quot;card-header&quot;&gt;</li>
+          <li>      &lt;h2&gt;All Students&lt;/h2&gt;</li>
+          <li>      &lt;button id=&quot;refreshBtn&quot; class=&quot;secondary&quot; type=&quot;button&quot;&gt;Refresh&lt;/button&gt;</li>
+          <li>    &lt;/div&gt;</li>
+          <li></li>
+          <li>    &lt;table&gt;</li>
+          <li>      &lt;thead&gt;</li>
+          <li>        &lt;tr&gt;</li>
+          <li>          &lt;th&gt;Name&lt;/th&gt;</li>
+          <li>          &lt;th&gt;Age&lt;/th&gt;</li>
+          <li>          &lt;th&gt;Major&lt;/th&gt;</li>
+          <li>        &lt;/tr&gt;</li>
+          <li>      &lt;/thead&gt;</li>
+          <li>      &lt;tbody id=&quot;studentsBody&quot;&gt;</li>
+          <li>        &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;Loading...&lt;/td&gt;&lt;/tr&gt;</li>
+          <li>      &lt;/tbody&gt;</li>
+          <li>    &lt;/table&gt;</li>
+          <li>  &lt;/section&gt;</li>
+          <li></li>
+          <li>  &lt;div class=&quot;stack&quot;&gt;</li>
+          <li>    &lt;section class=&quot;card&quot;&gt;... Add Student form ...&lt;/section&gt;</li>
+          <li>    &lt;section class=&quot;card&quot;&gt;... View One Student dropdown ...&lt;/section&gt;</li>
+          <li>    &lt;section class=&quot;card&quot;&gt;... Update Student dropdown + fields ...&lt;/section&gt;</li>
+          <li>    &lt;section class=&quot;card&quot;&gt;... Delete Student dropdown ...&lt;/section&gt;</li>
+          <li>  &lt;/div&gt;</li>
+          <li>&lt;/div&gt;</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-layout">&lt;div class=&quot;layout&quot;&gt;
+  &lt;section class=&quot;card&quot;&gt;
+    &lt;div class=&quot;card-header&quot;&gt;
+      &lt;h2&gt;All Students&lt;/h2&gt;
+      &lt;button id=&quot;refreshBtn&quot; class=&quot;secondary&quot; type=&quot;button&quot;&gt;Refresh&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;table&gt;
+      &lt;thead&gt;
+        &lt;tr&gt;
+          &lt;th&gt;Name&lt;/th&gt;
+          &lt;th&gt;Age&lt;/th&gt;
+          &lt;th&gt;Major&lt;/th&gt;
+        &lt;/tr&gt;
+      &lt;/thead&gt;
+      &lt;tbody id=&quot;studentsBody&quot;&gt;
+        &lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;Loading...&lt;/td&gt;&lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/section&gt;
+
+  &lt;div class=&quot;stack&quot;&gt;
+    &lt;section class=&quot;card&quot;&gt;... Add Student form ...&lt;/section&gt;
+    &lt;section class=&quot;card&quot;&gt;... View One Student dropdown ...&lt;/section&gt;
+    &lt;section class=&quot;card&quot;&gt;... Update Student dropdown + fields ...&lt;/section&gt;
+    &lt;section class=&quot;card&quot;&gt;... Delete Student dropdown ...&lt;/section&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</textarea>
+    </div>
+  </div>
+
+</div><!-- slide 7 -->
+<div class="slide" data-slide="7">
+  
+  <h2>Step 2 — Add Fetch, Rendering, and Dropdown Helpers</h2>
+  
+  
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>Why helpers matter</h3>
+      <ul>
+        <li><code>showMessage()</code> gives feedback in the browser</li>
+        <li><code>fetchJSON()</code> centralizes request and error handling</li>
+        <li><code>populateStudentSelects()</code> fills every dropdown from the latest data</li>
+        <li><code>renderStudents()</code> keeps the table clean by showing only name, age, and major</li>
+      </ul>
+    </div>
+    <div class="example-card">
+      <h3>Core frontend functions</h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 public/app.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-helpers">Copy</button></div>
+      </div>
+      <div class="static-code">
+<ol>
+          <li>function showMessage(text, type = &quot;success&quot;) {</li>
+          <li>  messageBox.textContent = text;</li>
+          <li>  messageBox.className = `message ${type}`;</li>
+          <li>}</li>
+          <li></li>
+          <li>async function fetchJSON(url, options = {}) {</li>
+          <li>  const response = await fetch(url, {</li>
+          <li>    headers: { &quot;Content-Type&quot;: &quot;application/json&quot; },</li>
+          <li>    ...options</li>
+          <li>  });</li>
+          <li></li>
+          <li>  const data = await response.json().catch(() =&gt; ({}));</li>
+          <li></li>
+          <li>  if (!response.ok) {</li>
+          <li>    throw new Error(data.error || &quot;Request failed&quot;);</li>
+          <li>  }</li>
+          <li></li>
+          <li>  return data;</li>
+          <li>}</li>
+          <li></li>
+          <li>function studentLabel(student) {</li>
+          <li>  return `${student.name} — Age ${student.age} — ${student.major || &quot;Undeclared&quot;}`;</li>
+          <li>}</li>
+          <li></li>
+          <li>function populateStudentSelects(students) {</li>
+          <li>  setSelectOptions(getStudentSelect, students, &quot;Select a student&quot;);</li>
+          <li>  setSelectOptions(updateStudentSelect, students, &quot;Select a student&quot;);</li>
+          <li>  setSelectOptions(deleteStudentSelect, students, &quot;Select a student&quot;);</li>
+          <li>}</li>
+          <li></li>
+          <li>function renderStudents(students) {</li>
+          <li>  if (students.length === 0) {</li>
+          <li>    studentsBody.innerHTML = `&lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;No students in the database yet.&lt;/td&gt;&lt;/tr&gt;`;</li>
+          <li>    return;</li>
+          <li>  }</li>
+          <li></li>
+          <li>  studentsBody.innerHTML = students.map(student =&gt; `</li>
+          <li>    &lt;tr&gt;</li>
+          <li>      &lt;td&gt;${student.name}&lt;/td&gt;</li>
+          <li>      &lt;td&gt;${student.age}&lt;/td&gt;</li>
+          <li>      &lt;td&gt;${student.major || &quot;Undeclared&quot;}&lt;/td&gt;</li>
+          <li>    &lt;/tr&gt;</li>
+          <li>  `).join(&quot;&quot;);</li>
+          <li>}</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-helpers">function showMessage(text, type = &quot;success&quot;) {
+  messageBox.textContent = text;
+  messageBox.className = `message ${type}`;
+}
+
+async function fetchJSON(url, options = {}) {
+  const response = await fetch(url, {
+    headers: { &quot;Content-Type&quot;: &quot;application/json&quot; },
+    ...options
+  });
+
+  const data = await response.json().catch(() =&gt; ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || &quot;Request failed&quot;);
+  }
+
+  return data;
+}
+
+function studentLabel(student) {
+  return `${student.name} — Age ${student.age} — ${student.major || &quot;Undeclared&quot;}`;
+}
+
+function populateStudentSelects(students) {
+  setSelectOptions(getStudentSelect, students, &quot;Select a student&quot;);
+  setSelectOptions(updateStudentSelect, students, &quot;Select a student&quot;);
+  setSelectOptions(deleteStudentSelect, students, &quot;Select a student&quot;);
+}
+
+function renderStudents(students) {
+  if (students.length === 0) {
+    studentsBody.innerHTML = `&lt;tr&gt;&lt;td colspan=&quot;3&quot;&gt;No students in the database yet.&lt;/td&gt;&lt;/tr&gt;`;
+    return;
+  }
+
+  studentsBody.innerHTML = students.map(student =&gt; `
+    &lt;tr&gt;
+      &lt;td&gt;${student.name}&lt;/td&gt;
+      &lt;td&gt;${student.age}&lt;/td&gt;
+      &lt;td&gt;${student.major || &quot;Undeclared&quot;}&lt;/td&gt;
+    &lt;/tr&gt;
+  `).join(&quot;&quot;);
+}</textarea>
+    </div>
+  </div>
+
+</div><!-- slide 8 -->
+<div class="slide" data-slide="8">
+  
+  <h2>Step 3 — Load All Students</h2>
+  
+  
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>What this does</h3>
+      <ul>
+        <li>Calls <code>GET /students</code></li>
+        <li>Receives the array of student documents</li>
+        <li>Renders the table when the page first opens</li>
+        <li>Refreshes every dropdown after add, update, or delete</li>
+      </ul>
+    </div>
+    <div class="example-card">
+      <h3>Frontend code</h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 public/app.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-load-all">Copy</button></div>
+      </div>
+      <div class="static-code">
+<ol>
+          <li>async function loadStudents() {</li>
+          <li>  try {</li>
+          <li>    const students = await fetchJSON(&quot;/students&quot;);</li>
+          <li>    studentsCache = students;</li>
+          <li>    renderStudents(students);</li>
+          <li>    populateStudentSelects(students);</li>
+          <li>  } catch (error) {</li>
+          <li>    showMessage(error.message, &quot;error&quot;);</li>
+          <li>  }</li>
+          <li>}</li>
+          <li></li>
+          <li>refreshBtn.addEventListener(&quot;click&quot;, loadStudents);</li>
+          <li>loadStudents();</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-load-all">async function loadStudents() {
+  try {
+    const students = await fetchJSON(&quot;/students&quot;);
+    studentsCache = students;
+    renderStudents(students);
+    populateStudentSelects(students);
+  } catch (error) {
+    showMessage(error.message, &quot;error&quot;);
+  }
+}
+
+refreshBtn.addEventListener(&quot;click&quot;, loadStudents);
+loadStudents();</textarea>
+    </div>
+  </div>
+  <div class="flow-row" style="margin-top:18px;">
+    <div class="flow-box">Page loads</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">fetch("/students")</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Express route runs</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Student.find()</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Table + dropdowns update</div>
+  </div>
+
+</div><!-- slide 9 -->
+<div class="slide" data-slide="9">
+  
+  <h2>Step 4 — Add a Student from the Form</h2>
+  
+  
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>What the browser sends</h3>
+      <ul>
+        <li>Read values from the Add Student form</li>
+        <li>Build a JSON payload</li>
+        <li>Send <code>POST /students</code></li>
+        <li>Reload the table and dropdowns after success</li>
+      </ul>
+    </div>
+    <div class="example-card">
+      <h3>POST code</h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 public/app.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-add-student">Copy</button></div>
+      </div>
+      <div class="static-code">
+<ol>
+          <li>addForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {</li>
+          <li>  event.preventDefault();</li>
+          <li></li>
+          <li>  const payload = {</li>
+          <li>    name: document.getElementById(&quot;addName&quot;).value.trim(),</li>
+          <li>    age: Number(document.getElementById(&quot;addAge&quot;).value),</li>
+          <li>    major: document.getElementById(&quot;addMajor&quot;).value.trim()</li>
+          <li>  };</li>
+          <li></li>
+          <li>  if (!payload.major) delete payload.major;</li>
+          <li></li>
+          <li>  try {</li>
+          <li>    const student = await fetchJSON(&quot;/students&quot;, {</li>
+          <li>      method: &quot;POST&quot;,</li>
+          <li>      body: JSON.stringify(payload)</li>
+          <li>    });</li>
+          <li></li>
+          <li>    addForm.reset();</li>
+          <li>    renderSingleStudent(student);</li>
+          <li>    showMessage(&quot;Student added successfully.&quot;);</li>
+          <li>    await loadStudents();</li>
+          <li>  } catch (error) {</li>
+          <li>    showMessage(error.message, &quot;error&quot;);</li>
+          <li>  }</li>
+          <li>});</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-add-student">addForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {
+  event.preventDefault();
+
+  const payload = {
+    name: document.getElementById(&quot;addName&quot;).value.trim(),
+    age: Number(document.getElementById(&quot;addAge&quot;).value),
+    major: document.getElementById(&quot;addMajor&quot;).value.trim()
+  };
+
+  if (!payload.major) delete payload.major;
+
+  try {
+    const student = await fetchJSON(&quot;/students&quot;, {
+      method: &quot;POST&quot;,
+      body: JSON.stringify(payload)
+    });
+
+    addForm.reset();
+    renderSingleStudent(student);
+    showMessage(&quot;Student added successfully.&quot;);
+    await loadStudents();
+  } catch (error) {
+    showMessage(error.message, &quot;error&quot;);
+  }
+});</textarea>
+    </div>
+  </div>
+
+</div><!-- slide 10 -->
+<div class="slide" data-slide="10">
+  
+  <h2>Step 5 — View One Student from a Dropdown</h2>
+  
+  
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>How the selection works</h3>
+      <p>The dropdown shows readable student labels, but each option still stores the matching MongoDB ID in its <code>value</code>.</p>
+      <div class="run-box" style="margin-top:12px;">
+        <div class="run-box-header">▶ SAME BACKEND ROUTE</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-output">GET /students/:id</span></div>
+        </div>
+      </div>
+      <div class="tip-box micro" style="margin-top:10px;">
+        This is the key idea: IDs stay under the hood, while the user interacts with names.
+      </div>
+    </div>
+    <div class="example-card">
+      <h3>GET code</h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 public/app.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-get-one">Copy</button></div>
+      </div>
+      <div class="static-code">
+<ol>
+          <li>getForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {</li>
+          <li>  event.preventDefault();</li>
+          <li></li>
+          <li>  const id = getStudentSelect.value;</li>
+          <li>  if (!id) {</li>
+          <li>    showMessage(&quot;Choose a student first.&quot;, &quot;error&quot;);</li>
+          <li>    return;</li>
+          <li>  }</li>
+          <li></li>
+          <li>  try {</li>
+          <li>    const student = await fetchJSON(`/students/${id}`);</li>
+          <li>    renderSingleStudent(student);</li>
+          <li>    showMessage(&quot;Student loaded.&quot;);</li>
+          <li>  } catch (error) {</li>
+          <li>    singleStudentBox.textContent = &quot;No student loaded yet.&quot;;</li>
+          <li>    showMessage(error.message, &quot;error&quot;);</li>
+          <li>  }</li>
+          <li>});</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-get-one">getForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {
+  event.preventDefault();
+
+  const id = getStudentSelect.value;
+  if (!id) {
+    showMessage(&quot;Choose a student first.&quot;, &quot;error&quot;);
+    return;
+  }
+
+  try {
+    const student = await fetchJSON(`/students/${id}`);
+    renderSingleStudent(student);
+    showMessage(&quot;Student loaded.&quot;);
+  } catch (error) {
+    singleStudentBox.textContent = &quot;No student loaded yet.&quot;;
+    showMessage(error.message, &quot;error&quot;);
+  }
+});</textarea>
+    </div>
+  </div>
+
+</div><!-- slide 11 -->
+<div class="slide" data-slide="11">
+  
+  <h2>Step 6 — Update a Student from a Dropdown</h2>
+  
+  
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>Important design choice</h3>
+      <ul>
+        <li>The user picks a student from a dropdown</li>
+        <li>Changing the dropdown fills the form with the current values</li>
+        <li>Only filled fields are sent in the payload</li>
+        <li>The backend still uses <code>$set</code>, so untouched fields stay untouched</li>
+      </ul>
+    </div>
+    <div class="example-card">
+      <h3>PUT code</h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 public/app.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-update">Copy</button></div>
+      </div>
+      <div class="static-code">
+<ol>
+          <li>updateStudentSelect.addEventListener(&quot;change&quot;, () =&gt; {</li>
+          <li>  const id = updateStudentSelect.value;</li>
+          <li>  const student = studentsCache.find(item =&gt; item._id === id);</li>
+          <li></li>
+          <li>  if (!student) {</li>
+          <li>    updateName.value = &quot;&quot;;</li>
+          <li>    updateAge.value = &quot;&quot;;</li>
+          <li>    updateMajor.value = &quot;&quot;;</li>
+          <li>    return;</li>
+          <li>  }</li>
+          <li></li>
+          <li>  fillUpdateForm(student);</li>
+          <li>});</li>
+          <li></li>
+          <li>updateForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {</li>
+          <li>  event.preventDefault();</li>
+          <li></li>
+          <li>  const id = updateStudentSelect.value;</li>
+          <li>  if (!id) {</li>
+          <li>    showMessage(&quot;Choose a student first.&quot;, &quot;error&quot;);</li>
+          <li>    return;</li>
+          <li>  }</li>
+          <li></li>
+          <li>  const payload = {};</li>
+          <li>  if (updateName.value.trim()) payload.name = updateName.value.trim();</li>
+          <li>  if (updateAge.value !== &quot;&quot;) payload.age = Number(updateAge.value);</li>
+          <li>  if (updateMajor.value.trim()) payload.major = updateMajor.value.trim();</li>
+          <li></li>
+          <li>  if (Object.keys(payload).length === 0) {</li>
+          <li>    showMessage(&quot;Enter at least one field to update.&quot;, &quot;error&quot;);</li>
+          <li>    return;</li>
+          <li>  }</li>
+          <li></li>
+          <li>  try {</li>
+          <li>    const updated = await fetchJSON(`/students/${id}`, {</li>
+          <li>      method: &quot;PUT&quot;,</li>
+          <li>      body: JSON.stringify(payload)</li>
+          <li>    });</li>
+          <li></li>
+          <li>    renderSingleStudent(updated);</li>
+          <li>    showMessage(&quot;Student updated successfully.&quot;);</li>
+          <li>    await loadStudents();</li>
+          <li>  } catch (error) {</li>
+          <li>    showMessage(error.message, &quot;error&quot;);</li>
+          <li>  }</li>
+          <li>});</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-update">updateStudentSelect.addEventListener(&quot;change&quot;, () =&gt; {
+  const id = updateStudentSelect.value;
+  const student = studentsCache.find(item =&gt; item._id === id);
+
+  if (!student) {
+    updateName.value = &quot;&quot;;
+    updateAge.value = &quot;&quot;;
+    updateMajor.value = &quot;&quot;;
+    return;
+  }
+
+  fillUpdateForm(student);
+});
+
+updateForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {
+  event.preventDefault();
+
+  const id = updateStudentSelect.value;
+  if (!id) {
+    showMessage(&quot;Choose a student first.&quot;, &quot;error&quot;);
+    return;
+  }
+
+  const payload = {};
+  if (updateName.value.trim()) payload.name = updateName.value.trim();
+  if (updateAge.value !== &quot;&quot;) payload.age = Number(updateAge.value);
+  if (updateMajor.value.trim()) payload.major = updateMajor.value.trim();
+
+  if (Object.keys(payload).length === 0) {
+    showMessage(&quot;Enter at least one field to update.&quot;, &quot;error&quot;);
+    return;
+  }
+
+  try {
+    const updated = await fetchJSON(`/students/${id}`, {
+      method: &quot;PUT&quot;,
+      body: JSON.stringify(payload)
+    });
+
+    renderSingleStudent(updated);
+    showMessage(&quot;Student updated successfully.&quot;);
+    await loadStudents();
+  } catch (error) {
+    showMessage(error.message, &quot;error&quot;);
+  }
+});</textarea>
+    </div>
+  </div>
+
+</div><!-- slide 12 -->
+<div class="slide" data-slide="12">
+  
+  <h2>Step 7 — Delete a Student from a Dropdown</h2>
+  
+  
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>Why this UI is cleaner</h3>
+      <ul>
+        <li>No visible MongoDB IDs</li>
+        <li>No row-level delete buttons to distract from the lesson</li>
+        <li>The same backend delete route still powers the action</li>
+      </ul>
+      <div class="tip-box micro" style="margin-top:10px;">
+        This keeps the browser UI focused on how the frontend talks to the backend, not on database internals.
+      </div>
+    </div>
+    <div class="example-card">
+      <h3>DELETE code</h3>
+      <div class="ide-toolbar">
+        <div class="file-tab">📄 public/app.js</div>
+        <div class="toolbar-actions"><button class="toolbar-btn" data-copy-source="src-delete">Copy</button></div>
+      </div>
+      <div class="static-code">
+<ol>
+          <li>deleteForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {</li>
+          <li>  event.preventDefault();</li>
+          <li></li>
+          <li>  const id = deleteStudentSelect.value;</li>
+          <li>  if (!id) {</li>
+          <li>    showMessage(&quot;Choose a student first.&quot;, &quot;error&quot;);</li>
+          <li>    return;</li>
+          <li>  }</li>
+          <li></li>
+          <li>  try {</li>
+          <li>    await fetchJSON(`/students/${id}`, {</li>
+          <li>      method: &quot;DELETE&quot;</li>
+          <li>    });</li>
+          <li></li>
+          <li>    deleteForm.reset();</li>
+          <li>    getForm.reset();</li>
+          <li>    updateForm.reset();</li>
+          <li>    singleStudentBox.textContent = &quot;No student loaded yet.&quot;;</li>
+          <li>    showMessage(&quot;Student deleted successfully.&quot;);</li>
+          <li>    await loadStudents();</li>
+          <li>  } catch (error) {</li>
+          <li>    showMessage(error.message, &quot;error&quot;);</li>
+          <li>  }</li>
+          <li>});</li>
+        </ol>
+      </div>
+      <textarea class="copy-source" id="src-delete">deleteForm.addEventListener(&quot;submit&quot;, async (event) =&gt; {
+  event.preventDefault();
+
+  const id = deleteStudentSelect.value;
+  if (!id) {
+    showMessage(&quot;Choose a student first.&quot;, &quot;error&quot;);
+    return;
+  }
+
+  try {
+    await fetchJSON(`/students/${id}`, {
+      method: &quot;DELETE&quot;
+    });
+
+    deleteForm.reset();
+    getForm.reset();
+    updateForm.reset();
+    singleStudentBox.textContent = &quot;No student loaded yet.&quot;;
+    showMessage(&quot;Student deleted successfully.&quot;);
+    await loadStudents();
+  } catch (error) {
+    showMessage(error.message, &quot;error&quot;);
+  }
+});</textarea>
+    </div>
+  </div>
+
+</div><!-- slide 13 -->
+<div class="slide" data-slide="13">
+  
+  <h2>How to Run It</h2>
+  
+  
+  <div class="comparison-grid">
+    <div class="example-card">
+      <h3>Terminal</h3>
+      <div class="run-box" style="margin-top:10px;">
+        <div class="run-box-header">▶ COMMANDS</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-prompt">$</span> mkdir public</div>
+          <div class="run-line"><span class="run-prompt">$</span> touch public/index.html public/app.js</div>
+          <div class="run-line"><span class="run-prompt">$</span> node server.js</div>
+        </div>
+      </div>
+      <h3 style="margin-top:16px;">Browser</h3>
+      <div class="run-box" style="margin-top:8px;">
+        <div class="run-box-header">▶ OPEN THIS URL</div>
+        <div class="run-box-body">
+          <div class="run-line"><span class="run-output">http://localhost:3000</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="example-card">
+      <h3>Expected result</h3>
+      <ul>
+        <li>The browser loads <code>public/index.html</code> and then <code>public/app.js</code></li>
+        <li>The page immediately calls <code>GET /students</code></li>
+        <li>The table fills with students from MongoDB</li>
+        <li>Every button or form now tests the API through the frontend</li>
+      </ul>
+      <div class="info-box micro" style="margin-top:12px;">
+        One server, one port, one browser tab. That is why this version is much easier to demo than the curl-based flow.
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="navigation">
+  <button class="nav-button" id="prevBtn">Previous</button>
+  <button class="nav-button" id="nextBtn">Next</button>
+</div>
+
+<script>
+
+  (function () {
+    const KEYWORDS = new Set(['const','let','var','function','return','if','else','try','catch','throw','new','require','module','exports','true','false','null','undefined','async','await','class','extends','import','from','of','in','for','while','do','switch','case','break','default','typeof','instanceof','process']);
+    const BUILTINS = new Set(['mongoose','Student','connectDB','app','express','console','Date','JSON','Math','Object','Array','Error','Number','String','Boolean','Promise','process','ObjectId','studentSchema','MongoClient','req','res','err','client','col','db','path','fetch','document','window','response']);
+    const MONGO_OPS = new Set(['$set','$unset','$inc','$mul','$push','$pull','$eq','$ne','$gt','$gte','$lt','$lte','$in','$nin','$and','$or','$nor','$not','$exists','$regex']);
+
+    function tokenize(text) {
+      const tokens = []; let i = 0;
+      while (i < text.length) {
+        if (text[i]==='/'&&text[i+1]==='/') { tokens.push({type:'comment',val:text.slice(i)}); break; }
+        if (text[i]==='`') {
+          let j=i+1; while(j<text.length&&text[j]!=='`'){if(text[j]==='\\')j++;j++;} tokens.push({type:'string',val:text.slice(i,j+1)}); i=j+1; continue;
+        }
+        if (text[i]==='"'||text[i]==="'") {
+          const q=text[i]; let j=i+1; while(j<text.length&&text[j]!==q){if(text[j]==='\\')j++;j++;} tokens.push({type:'string',val:text.slice(i,j+1)}); i=j+1; continue;
+        }
+        if (text[i]==='$') {
+          let j=i+1; while(j<text.length&&/[a-zA-Z0-9_]/.test(text[j]))j++;
+          const w=text.slice(i,j); tokens.push({type:MONGO_OPS.has(w)?'mongoOp':'other',val:w}); i=j; continue;
+        }
+        if (/[a-zA-Z_]/.test(text[i])) {
+          let j=i; while(j<text.length&&/[a-zA-Z0-9_$]/.test(text[j]))j++;
+          const w=text.slice(i,j); let k=j; while(k<text.length&&text[k]===' ')k++;
+          if(KEYWORDS.has(w)) tokens.push({type:'keyword',val:w});
+          else if(BUILTINS.has(w)) tokens.push({type:'builtin',val:w});
+          else if(text[k]==='(') tokens.push({type:'fn',val:w});
+          else tokens.push({type:'ident',val:w});
+          i=j; continue;
+        }
+        if (/[0-9]/.test(text[i])) {
+          let j=i; while(j<text.length&&/[0-9.]/.test(text[j]))j++;
+          tokens.push({type:'num',val:text.slice(i,j)}); i=j; continue;
+        }
+        tokens.push({type:'other',val:text[i]}); i++;
+      }
+      return tokens;
+    }
+
+    const COLORS = { keyword:'#8B5CF6', string:'#B45309', comment:'#9CA3AF', num:'#059669', fn:'#2563EB', builtin:'#0891B2', mongoOp:'#D97706' };
+    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const render = tokens => tokens.map(t => COLORS[t.type] ? `<span style="color:${COLORS[t.type]}">${esc(t.val)}</span>` : esc(t.val)).join('');
+
+    function highlight() {
+      document.querySelectorAll('.static-code li').forEach(li => {
+        if (li.textContent.trim()==='') return;
+        li.innerHTML = render(tokenize(li.textContent));
+      });
+    }
+    document.readyState==='loading' ? document.addEventListener('DOMContentLoaded',highlight) : highlight();
+  })();
+
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let cur = 0;
+  document.getElementById('totalSlides').textContent = slides.length;
+
+  function updateSlides() {
+    slides.forEach((s,i) => s.classList.toggle('active', i===cur));
+    document.getElementById('currentSlide').textContent = cur+1;
+    document.getElementById('prevBtn').disabled = cur===0;
+    document.getElementById('nextBtn').disabled = cur===slides.length-1;
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => { if(cur>0){cur--;updateSlides();} });
+  document.getElementById('nextBtn').addEventListener('click', () => { if(cur<slides.length-1){cur++;updateSlides();} });
+  document.addEventListener('keydown', e => {
+    if (e.key==='ArrowRight'||e.key==='PageDown'||e.key===' ') { e.preventDefault(); if(cur<slides.length-1){cur++;updateSlides();} }
+    if (e.key==='ArrowLeft'||e.key==='PageUp') { e.preventDefault(); if(cur>0){cur--;updateSlides();} }
+  });
+
+  const toast = document.getElementById('toast');
+  function showToast(m) { toast.textContent=m; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),1400); }
+  document.querySelectorAll('[data-copy-source]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const text = document.getElementById(btn.getAttribute('data-copy-source')).value;
+      try { await navigator.clipboard.writeText(text); showToast('Code copied'); }
+      catch { showToast('Copy failed'); }
+    });
+  });
+
+  updateSlides();
+
+</script>
+</body>
+</html>

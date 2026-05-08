@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HCDD 411 - React Practice Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet"/>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --primary: #3B7DD6;
+    --secondary: #5A6C7D;
+    --accent: #D4940C;
+    --success: #059669;
+    --error: #DC2626;
+    --bg-start: #F0F4F8;
+    --bg-end: #E1E8ED;
+    --slide-bg: rgba(255, 255, 255, 0.95);
+    --border: rgba(59, 125, 214, 0.3);
+    --text: #1F2937;
+    --muted: #6B7280;
+    --react: #61DAFB;
+    --shadow: 0 20px 60px rgba(0,0,0,0.1);
+    --task1: #3B7DD6;
+    --task2: #7C3AED;
+    --task3: #D4940C;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 140px 0 120px 0;
+}
+
+.slide {
+    width: 90%;
+    max-width: 1200px;
+    min-height: 420px;
+    background: var(--slide-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 60px;
+    margin: 0 auto;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateX(100px);
+    transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    display: none;
+    border: 2px solid var(--border);
+}
+
+.slide.active { opacity: 1; transform: translateX(0); display: block; }
+
+h1 {
+    font-weight: 900;
+    font-size: 4em;
+    color: var(--primary);
+    margin-bottom: 18px;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    line-height: 1.05;
+}
+
+h2 {
+    font-weight: 700;
+    font-size: 2.4em;
+    color: var(--accent);
+    margin-bottom: 26px;
+    letter-spacing: -1px;
+}
+
+h3 {
+    font-weight: 600;
+    font-size: 1.3em;
+    color: var(--primary);
+    margin: 16px 0 10px 0;
+}
+
+p { font-size: 1.08em; line-height: 1.65; }
+ul { margin: 14px 0; padding-left: 26px; }
+li { margin: 9px 0; font-size: 1.05em; line-height: 1.55; }
+
+code {
+    font-family: 'Space Mono', monospace;
+    background: rgba(59,125,214,0.13);
+    padding: 3px 8px;
+    border-radius: 5px;
+    color: var(--primary);
+    font-size: 0.92em;
+}
+
+.subtitle {
+    font-size: 1.3em;
+    color: var(--muted);
+    margin-bottom: 36px;
+    font-weight: 300;
+}
+
+/* Header chrome */
+.penn-state-badge {
+    position: fixed;
+    top: 40px;
+    left: 40px;
+    font-weight: 900;
+    font-size: 1.2em;
+    color: var(--primary);
+    z-index: 1000;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.slide-indicator {
+    position: fixed;
+    top: 40px;
+    right: 40px;
+    background: var(--primary);
+    padding: 15px 25px;
+    border-radius: 50px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 1em;
+    z-index: 1000;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+/* Navigation */
+.navigation {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    z-index: 1000;
+}
+
+.nav-button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 15px 35px;
+    border-radius: 50px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.nav-button:hover { background: var(--secondary); transform: scale(1.05); }
+.nav-button:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+/* Callout boxes */
+.info-box, .tip-box, .warning-box, .task-box {
+    padding: 20px;
+    margin: 18px 0;
+    border-radius: 12px;
+}
+
+.info-box { background: rgba(212,148,12,0.1); border-left: 4px solid var(--accent); }
+.tip-box  { background: rgba(5,150,105,0.1);  border-left: 4px solid var(--success); }
+.warning-box { background: rgba(220,38,38,0.1); border-left: 4px solid var(--error); }
+
+/* Task badge chips */
+.task-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.95em;
+    letter-spacing: 0.5px;
+}
+
+.chip-easy   { background: rgba(5,150,105,0.13); color: #065f46; border: 1.5px solid rgba(5,150,105,0.3); }
+.chip-medium { background: rgba(212,148,12,0.13); color: #92400e; border: 1.5px solid rgba(212,148,12,0.3); }
+
+/* Code windows */
+.code-window {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 2px solid var(--border);
+    margin: 18px 0;
+}
+
+.code-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px;
+    background: #1F2937;
+}
+
+.file-tab {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85em;
+    color: #9CA3AF;
+    font-weight: 600;
+}
+
+.file-tab strong { color: #61DAFB; }
+
+.copy-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #9CA3AF;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.8em;
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    transition: all 0.2s;
+}
+
+.copy-btn:hover { background: rgba(255,255,255,0.18); color: white; }
+.copy-btn.copied { color: #10B981; border-color: #10B981; }
+
+.code-block {
+    background: #1F2937;
+    color: #E5E7EB;
+    padding: 22px 24px;
+    overflow-x: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.88em;
+    line-height: 1.75;
+    tab-size: 2;
+}
+
+.code-block .kw  { color: #C084FC; }
+.code-block .fn  { color: #60A5FA; }
+.code-block .str { color: #86EFAC; }
+.code-block .cmt { color: #6B7280; font-style: italic; }
+.code-block .tag { color: #F87171; }
+.code-block .jsx { color: #FCD34D; }
+.code-block .todo { color: #FCD34D; background: rgba(252,211,77,0.15); padding: 1px 6px; border-radius: 4px; }
+
+.code-note {
+    background: rgba(59,125,214,0.08);
+    border-top: 2px solid var(--border);
+    padding: 12px 18px;
+    font-size: 0.92em;
+    color: var(--muted);
+    font-style: italic;
+}
+
+/* Command block */
+.command-block {
+    background: #111827;
+    border-radius: 14px;
+    padding: 22px 26px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9em;
+    line-height: 2;
+    margin: 18px 0;
+    border: 2px solid rgba(97,218,251,0.2);
+}
+
+.command-block .cmd { color: #61DAFB; }
+.command-block .comment { color: #6B7280; }
+.command-block .prompt { color: #6B7280; user-select: none; }
+
+/* Grids */
+.two-col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin: 18px 0;
+}
+
+.three-col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin: 18px 0;
+}
+
+.hero-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 40px;
+    align-items: center;
+}
+
+/* Cards */
+.card {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    transition: all 0.3s ease;
+}
+
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); border-color: var(--primary); }
+
+.card h3 { margin-top: 0; }
+
+/* Task overview cards */
+.task-card {
+    background: white;
+    border-radius: 20px;
+    padding: 28px;
+    border: 2px solid var(--border);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.task-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+}
+
+.task-card.t1::before { background: var(--task1); }
+.task-card.t2::before { background: var(--task2); }
+.task-card.t3::before { background: var(--task3); }
+
+.task-card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0,0,0,0.1); }
+
+.task-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+.t1 .task-number { color: var(--task1); }
+.t2 .task-number { color: var(--task2); }
+.t3 .task-number { color: var(--task3); }
+
+.task-card h3 { margin-top: 4px; font-size: 1.35em; }
+
+/* File tree */
+.file-tree {
+    background: #111827;
+    border-radius: 14px;
+    padding: 22px 26px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.88em;
+    line-height: 2;
+    color: #E5E7EB;
+    border: 2px solid rgba(97,218,251,0.15);
+    margin: 18px 0;
+}
+
+.file-tree .dir  { color: #61DAFB; }
+.file-tree .file { color: #86EFAC; }
+.file-tree .note { color: #6B7280; }
+.file-tree .new  { color: #FCD34D; }
+
+/* Step pill row */
+.step-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 18px 0;
+}
+
+.step-pill {
+    background: var(--primary);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82em;
+    font-weight: 700;
+}
+
+/* Requirements list */
+.req-list {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0;
+}
+
+.req-list li {
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(59,125,214,0.06);
+    border-left: 3px solid var(--primary);
+    margin: 8px 0;
+    font-size: 1.03em;
+}
+
+.req-list li::before {
+    content: '→ ';
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* Hint tag */
+.hint-tag {
+    display: inline-block;
+    background: rgba(5,150,105,0.12);
+    color: #065f46;
+    border: 1px solid rgba(5,150,105,0.25);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.82em;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    margin: 2px 3px;
+    vertical-align: middle;
+}
+
+/* Divider label */
+.section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin: 28px 0 14px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+/* Slide title accent bar */
+.slide-accent {
+    width: 56px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--primary);
+    margin-bottom: 20px;
+}
+
+.t1-accent { background: var(--task1); }
+.t2-accent { background: var(--task2); }
+.t3-accent { background: var(--task3); }
+
+/* Big number display */
+.big-num {
+    font-weight: 900;
+    font-size: 6em;
+    line-height: 1;
+    letter-spacing: -4px;
+    opacity: 0.08;
+    position: absolute;
+    bottom: 40px;
+    right: 50px;
+    font-family: 'Space Mono', monospace;
+    pointer-events: none;
+}
+
+/* Hero wordmark */
+.lab-wordmark {
+    font-size: 5em;
+    font-weight: 900;
+    letter-spacing: -4px;
+    color: var(--primary);
+    opacity: 0.08;
+    text-align: right;
+    line-height: 1;
+}
+
+/* Responsive */
+@media (max-width: 980px) {
+    .slide { padding: 36px 24px; width: 94%; }
+    .hero-grid, .two-col, .three-col { grid-template-columns: 1fr; }
+    h1 { font-size: 2.8em; }
+    h2 { font-size: 1.9em; }
+    .navigation { bottom: 18px; }
+    .penn-state-badge, .slide-indicator { top: 14px; }
+    .penn-state-badge { left: 16px; }
+    .slide-indicator { right: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="penn-state-badge">HCDD 411</div>
+<div class="slide-indicator">
+  <span id="currentSlide">1</span> / <span id="totalSlides">0</span>
+</div>
+
+<div id="slides">
+
+<!-- ============================================================ SLIDE 1: TITLE -->
+<div class="slide active" data-slide="1">
+<div class="hero-grid" style="min-height:360px;">
+  <div>
+    <h1>React Practice</h1>
+    <h2>Md Touhidul Islam</h2>
+    <div class="step-row">
+      <span class="step-pill" style="background:var(--task1);">Task 1 — Easy</span>
+      <span class="step-pill" style="background:var(--task2);">Task 2 — Easy</span>
+      <span class="step-pill" style="background:var(--task3);">Task 3 — Easy-Medium</span>
+    </div>
+  </div>
+  <div class="lab-wordmark">LAB</div>
+</div>
+</div>
+
+<!-- ============================================================ SLIDE 2: OVERVIEW -->
+<div class="slide" data-slide="2">
+<div class="slide-accent"></div>
+<h2>What you will build</h2>
+<p>All three tasks live inside <strong>one Vite project</strong> you create today. Each task is one component file.</p>
+
+<div class="three-col" style="margin-top:28px;">
+  <div class="task-card t1">
+    <div class="task-number">Task 1 · Easy</div>
+    <h3>CourseCard</h3>
+    <p>A reusable card component that receives course data as <strong>props</strong> and displays it. No state needed.</p>
+    <br/>
+    <span class="hint-tag">components</span>
+    <span class="hint-tag">props</span>
+    <span class="hint-tag">JSX</span>
+  </div>
+
+  <div class="task-card t2">
+    <div class="task-number">Task 2 · Easy</div>
+    <h3>LikeButton</h3>
+    <p>A self-contained button that counts how many times it has been clicked using <strong>local state</strong>.</p>
+    <br/>
+    <span class="hint-tag">useState</span>
+    <span class="hint-tag">events</span>
+    <span class="hint-tag">re-render</span>
+  </div>
+
+  <div class="task-card t3">
+    <div class="task-number">Task 3 · Easy-Medium</div>
+    <h3>StudentDirectory</h3>
+    <p>A searchable list of students. Typing in a search box filters the list in real time. Clicking a row shows a details panel.</p>
+    <br/>
+    <span class="hint-tag">useState</span>
+    <span class="hint-tag">filter</span>
+    <span class="hint-tag">map</span>
+    <span class="hint-tag">conditional render</span>
+  </div>
+</div>
+
+<div class="tip-box" style="margin-top:24px;">
+  <strong style="color:var(--success);">Ground rule</strong>
+  <p style="margin-top:8px;">The skeletons on the coming slides show you exactly which files to create and what the starting shape looks like. You fill in every line marked <code style="background:rgba(252,211,77,0.2);color:#92400e;">// TODO</code>. Do not copy a finished solution.</p>
+</div>
+</div>
+
+<!-- ============================================================ SLIDE 3: PROJECT SETUP -->
+<div class="slide" data-slide="3">
+<div class="slide-accent"></div>
+<h2>Create the project</h2>
+<p>Open a terminal and run these commands. You only do this once — all three tasks go inside the same project.</p>
+
+<div class="command-block">
+  <span class="prompt">#</span> <span class="comment">1. Scaffold a new React app with Vite</span><br/>
+  <span class="prompt">$</span> <span class="cmd">npm create vite@latest react-lab -- --template react</span><br/><br/>
+  <span class="prompt">#</span> <span class="comment">2. Move into the project folder</span><br/>
+  <span class="prompt">$</span> <span class="cmd">cd react-lab</span><br/><br/>
+  <span class="prompt">#</span> <span class="comment">3. Install dependencies</span><br/>
+  <span class="prompt">$</span> <span class="cmd">npm install</span><br/><br/>
+  <span class="prompt">#</span> <span class="comment">4. Start the dev server</span><br/>
+  <span class="prompt">$</span> <span class="cmd">npm run dev</span><br/><br/>
+  <span class="prompt">#</span> <span class="comment">You should see: Local: http://localhost:5173/</span>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <h3>What Vite generates</h3>
+    <ul>
+      <li><code>index.html</code> — the single HTML page</li>
+      <li><code>src/main.jsx</code> — mounts React into the page</li>
+      <li><code>src/App.jsx</code> — root component</li>
+      <li><code>package.json</code> — project dependencies</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>What you will add</h3>
+    <ul>
+      <li><code>src/components/</code> — create this folder</li>
+      <li><code>CourseCard.jsx</code></li>
+      <li><code>LikeButton.jsx</code></li>
+      <li><code>StudentDirectory.jsx</code></li>
+    </ul>
+  </div>
+</div>
+
+<div class="warning-box">
+  <strong style="color:var(--error);">Before you write any component</strong> — open <code>src/App.jsx</code> and delete all the boilerplate Vite puts there. Replace it with the skeleton on the next slide.
+</div>
+</div>
+
+<!-- ============================================================ SLIDE 4: FILE STRUCTURE -->
+<div class="slide" data-slide="4">
+<div class="slide-accent"></div>
+<h2>Target file structure</h2>
+<p>This is what your project should look like once all three tasks are set up. Every file marked in <span style="color:#FCD34D;font-family:'Space Mono',monospace;font-weight:700;">yellow</span> is one you create by hand.</p>
+
+<div class="file-tree">
+<span class="dir">react-lab/</span><br/>
+├── index.html<br/>
+├── package.json<br/>
+├── vite.config.js<br/>
+└── <span class="dir">src/</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;├── main.jsx<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="new">App.jsx</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note"># you rewrite this</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="dir new">components/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note"># create this folder</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="new">CourseCard.jsx</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note"># Task 1</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="new">LikeButton.jsx</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note"># Task 2</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="new">StudentDirectory.jsx</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note"># Task 3</span>
+</div>
+
+<div class="section-label">App.jsx skeleton — copy this as your starting point</div>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab"><strong>src/App.jsx</strong></div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><span class="kw">import</span> CourseCard       <span class="kw">from</span> <span class="str">'./components/CourseCard.jsx'</span>
+<span class="kw">import</span> LikeButton       <span class="kw">from</span> <span class="str">'./components/LikeButton.jsx'</span>
+<span class="kw">import</span> StudentDirectory <span class="kw">from</span> <span class="str">'./components/StudentDirectory.jsx'</span>
+
+<span class="kw">function</span> <span class="fn">App</span>() {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div</span> style={{ padding: <span class="str">'40px'</span>, maxWidth: <span class="str">'800px'</span>, margin: <span class="str">'0 auto'</span> }}<span class="tag">&gt;</span>
+      <span class="tag">&lt;h1&gt;</span>React Lab<span class="tag">&lt;/h1&gt;</span>
+
+      <span class="tag">&lt;h2&gt;</span>Task 1 — CourseCard<span class="tag">&lt;/h2&gt;</span>
+      <span class="tag">&lt;CourseCard</span>
+        name=<span class="str">"Distributed Object Computing"</span>
+        instructor=<span class="str">"Md Touhidul Islam"</span>
+        credits=<span class="str">"3"</span>
+      <span class="tag">/&gt;</span>
+
+      <span class="tag">&lt;h2</span> style={{ marginTop: <span class="str">'40px'</span> }}<span class="tag">&gt;</span>Task 2 — LikeButton<span class="tag">&lt;/h2&gt;</span>
+      <span class="tag">&lt;LikeButton /&gt;</span>
+
+      <span class="tag">&lt;h2</span> style={{ marginTop: <span class="str">'40px'</span> }}<span class="tag">&gt;</span>Task 3 — StudentDirectory<span class="tag">&lt;/h2&gt;</span>
+      <span class="tag">&lt;StudentDirectory /&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  )
+}
+
+<span class="kw">export default</span> App</pre>
+  <div class="code-note">This file is already written for you. Your job is to implement the three component files it imports.</div>
+</div>
+</div>
+
+<!-- ============================================================ SLIDE 5: TASK 1 INTRO -->
+<div class="slide" data-slide="5">
+<div class="slide-accent t1-accent"></div>
+<div style="display:flex; align-items:center; gap:16px; margin-bottom:8px;">
+  <span class="task-number" style="color:var(--task1); font-family:'Space Mono',monospace; font-size:0.9em; font-weight:700; text-transform:uppercase; letter-spacing:2px;">Task 1 · Easy</span>
+  <span class="task-chip chip-easy">Easy</span>
+</div>
+<h2 style="color:var(--task1);">CourseCard</h2>
+<p>A pure display component. It receives data from outside, renders it, and has no internal state. This is the most fundamental pattern in React.</p>
+
+<div class="section-label">What it must do</div>
+<ul class="req-list">
+  <li>Accept three props: <code>name</code>, <code>instructor</code>, and <code>credits</code></li>
+  <li>Render all three values on screen in a visually clear layout</li>
+  <li>Show a label next to each value (e.g. "Instructor:", "Credits:")</li>
+  <li>Use at least one JSX expression with curly braces <code>{ }</code> for each prop</li>
+</ul>
+
+</div>
+
+<!-- ============================================================ SLIDE 6: TASK 1 SKELETON -->
+<div class="slide" data-slide="6">
+<div class="slide-accent t1-accent"></div>
+<span class="task-number" style="color:var(--task1); font-family:'Space Mono',monospace; font-size:0.9em; font-weight:700; text-transform:uppercase; letter-spacing:2px; display:block; margin-bottom:12px;">Task 1 · Skeleton file</span>
+<h2 style="color:var(--task1);">CourseCard.jsx — starting point</h2>
+<p>Create <code>src/components/CourseCard.jsx</code> and start with this skeleton. Fill in every <code class="todo">// TODO</code> line.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab"><strong>src/components/CourseCard.jsx</strong></div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><span class="cmt">// Task 1 — CourseCard
+// Accept props and render course information.</span>
+
+<span class="kw">function</span> <span class="fn">CourseCard</span>(<span class="todo">/* TODO: add props here */</span>) {
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div&gt;</span>
+      <span class="cmt">{/* TODO: show the course name */}</span>
+
+      <span class="cmt">{/* TODO: show the instructor */}</span>
+
+      <span class="cmt">{/* TODO: show the credit count */}</span>
+    <span class="tag">&lt;/div&gt;</span>
+  )
+}
+
+<span class="kw">export default</span> CourseCard</pre>
+  <div class="code-note">The export at the bottom is already there. App.jsx imports CourseCard using this default export — do not remove it.</div>
+</div>
+
+<div class="tip-box">
+  <strong style="color:var(--success);">You know Task 1 is done when</strong>
+  <p style="margin-top:8px;">The browser shows the course name, instructor name, and credit count on the page without any errors in the console.</p>
+</div>
+</div>
+
+<!-- ============================================================ SLIDE 7: TASK 2 INTRO -->
+<div class="slide" data-slide="7">
+<div class="slide-accent t2-accent"></div>
+<div style="display:flex; align-items:center; gap:16px; margin-bottom:8px;">
+  <span class="task-number" style="color:var(--task2); font-family:'Space Mono',monospace; font-size:0.9em; font-weight:700; text-transform:uppercase; letter-spacing:2px;">Task 2 · Easy</span>
+  <span class="task-chip chip-easy">Easy</span>
+</div>
+<h2 style="color:var(--task2);">LikeButton</h2>
+<p>Your first component with internal state. No props needed from the outside. The component manages its own click count and re-renders every time the count changes.</p>
+
+<div class="section-label">What it must do</div>
+<ul class="req-list">
+  <li>Initialize a <code>count</code> state variable to <code>0</code> using <code>useState</code></li>
+  <li>Render a button that says something like <strong>"Like"</strong></li>
+  <li>Each click increments <code>count</code> by 1</li>
+  <li>Render the current count value somewhere near the button</li>
+</ul>
+
+</div>
+
+<!-- ============================================================ SLIDE 8: TASK 2 SKELETON -->
+<div class="slide" data-slide="8">
+<div class="slide-accent t2-accent"></div>
+<span class="task-number" style="color:var(--task2); font-family:'Space Mono',monospace; font-size:0.9em; font-weight:700; text-transform:uppercase; letter-spacing:2px; display:block; margin-bottom:12px;">Task 2 · Skeleton file</span>
+<h2 style="color:var(--task2);">LikeButton.jsx — starting point</h2>
+<p>Create <code>src/components/LikeButton.jsx</code> and start here.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab"><strong>src/components/LikeButton.jsx</strong></div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><span class="cmt">// Task 2 — LikeButton
+// Track a click count with useState.</span>
+
+<span class="kw">import</span> { useState } <span class="kw">from</span> <span class="str">'react'</span>
+
+<span class="kw">function</span> <span class="fn">LikeButton</span>() {
+
+  <span class="cmt">// TODO: declare your state variable here</span>
+  <span class="todo">const [count, setCount] = useState( /* TODO */ )</span>
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div&gt;</span>
+      <span class="cmt">{/* TODO: show the count somewhere */}</span>
+
+      <span class="tag">&lt;button</span> onClick=<span class="todo">{/* TODO: increment count */}</span><span class="tag">&gt;</span>
+        Like
+      <span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  )
+}
+
+<span class="kw">export default</span> LikeButton</pre>
+</div>
+
+<div class="two-col" style="margin-top:20px;">
+  <div class="tip-box" style="margin:0;">
+    <strong style="color:var(--success);">You know Task 2 is done when</strong>
+    <p style="margin-top:8px;">The count on the screen increases by 1 every time you click the button. Opening React DevTools and watching the <code>count</code> state update live is a great sanity check.</p>
+  </div>
+  <div class="warning-box" style="margin:0;">
+    <strong style="color:var(--error);">Common mistake</strong>
+    <p style="margin-top:8px;">Writing <code>count = count + 1</code> directly. That will not trigger a re-render. Always use the setter: <code>setCount(count + 1)</code>.</p>
+  </div>
+</div>
+</div>
+
+<!-- ============================================================ SLIDE 9: TASK 3 INTRO -->
+<div class="slide" data-slide="9">
+<div class="slide-accent t3-accent"></div>
+<div style="display:flex; align-items:center; gap:16px; margin-bottom:8px;">
+  <span class="task-number" style="color:var(--task3); font-family:'Space Mono',monospace; font-size:0.9em; font-weight:700; text-transform:uppercase; letter-spacing:2px;">Task 3 · Easy-Medium</span>
+  <span class="task-chip chip-medium">Easy-Medium</span>
+</div>
+<h2 style="color:var(--task3);">StudentDirectory</h2>
+<p>This component manages two pieces of state and uses both to decide what the UI shows. Start with a hardcoded list inside the component — no API calls needed.</p>
+
+<div class="section-label">Student data — hardcode this inside the component</div>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab">Hardcoded data for Task 3</div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><span class="kw">const</span> students = [
+  { id: <span class="str">1</span>, name: <span class="str">'Ava'</span>,  major: <span class="str">'IST'</span>          },
+  { id: <span class="str">2</span>, name: <span class="str">'Noah'</span>, major: <span class="str">'CS'</span>           },
+  { id: <span class="str">3</span>, name: <span class="str">'Liam'</span>, major: <span class="str">'Data Science'</span> },
+  { id: <span class="str">4</span>, name: <span class="str">'Mia'</span>,  major: <span class="str">'HCDD'</span>         },
+  { id: <span class="str">5</span>, name: <span class="str">'Emma'</span>, major: <span class="str">'IST'</span>          },
+]</pre>
+  <div class="code-note">Place this array at the top of your component file, outside the function body, so it does not get recreated on every render.</div>
+</div>
+
+<div class="section-label">What it must do</div>
+<ul class="req-list">
+  <li>Manage a <code>search</code> state variable (starts as empty string <code>""</code>)</li>
+  <li>Manage a <code>selected</code> state variable (starts as <code>null</code>)</li>
+  <li>Render a text input that updates <code>search</code> as the user types</li>
+  <li>Derive a <code>filtered</code> array from <code>students</code> using <code>.filter()</code> and the current <code>search</code> value</li>
+  <li>Render the filtered array as a list using <code>.map()</code></li>
+  <li>Clicking a student sets <code>selected</code> to that student object</li>
+  <li>When <code>selected</code> is not <code>null</code>, show the selected student's name and major below the list</li>
+</ul>
+</div>
+
+<!-- ============================================================ SLIDE 10: TASK 3 SKELETON -->
+<div class="slide" data-slide="10">
+<div class="slide-accent t3-accent"></div>
+<span class="task-number" style="color:var(--task3); font-family:'Space Mono',monospace; font-size:0.9em; font-weight:700; text-transform:uppercase; letter-spacing:2px; display:block; margin-bottom:12px;">Task 3 · Skeleton file</span>
+<h2 style="color:var(--task3);">StudentDirectory.jsx — starting point</h2>
+<p>Create <code>src/components/StudentDirectory.jsx</code> and start with this skeleton.</p>
+
+<div class="code-window">
+  <div class="code-toolbar">
+    <div class="file-tab"><strong>src/components/StudentDirectory.jsx</strong></div>
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-block"><span class="cmt">// Task 3 — StudentDirectory
+// Search + select from a list of students.</span>
+
+<span class="kw">import</span> { useState } <span class="kw">from</span> <span class="str">'react'</span>
+
+<span class="cmt">// Hardcoded data — lives outside the function</span>
+<span class="kw">const</span> students = [
+  { id: <span class="str">1</span>, name: <span class="str">'Ava'</span>,  major: <span class="str">'IST'</span>          },
+  { id: <span class="str">2</span>, name: <span class="str">'Noah'</span>, major: <span class="str">'CS'</span>           },
+  { id: <span class="str">3</span>, name: <span class="str">'Liam'</span>, major: <span class="str">'Data Science'</span> },
+  { id: <span class="str">4</span>, name: <span class="str">'Mia'</span>,  major: <span class="str">'HCDD'</span>         },
+  { id: <span class="str">5</span>, name: <span class="str">'Emma'</span>, major: <span class="str">'IST'</span>          },
+]
+
+<span class="kw">function</span> <span class="fn">StudentDirectory</span>() {
+
+  <span class="cmt">// TODO: declare search state (initial value: "")</span>
+  <span class="todo">const [search, setSearch] = useState( /* TODO */ )</span>
+
+  <span class="cmt">// TODO: declare selected state (initial value: null)</span>
+  <span class="todo">const [selected, setSelected] = useState( /* TODO */ )</span>
+
+  <span class="cmt">// TODO: derive filtered array here, before the return</span>
+  <span class="todo">const filtered = students.filter( /* TODO */ )</span>
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div&gt;</span>
+      <span class="cmt">{/* TODO: text input — value={search}, onChange updates search */}</span>
+
+      <span class="tag">&lt;ul&gt;</span>
+        <span class="cmt">{/* TODO: map over filtered, render one &lt;li&gt; per student */}</span>
+        <span class="cmt">{/* clicking the &lt;li&gt; should call setSelected(student) */}</span>
+        <span class="cmt">{/* each &lt;li&gt; needs a key={student.id} */}</span>
+      <span class="tag">&lt;/ul&gt;</span>
+
+      <span class="cmt">{/* TODO: if selected is not null, show selected.name and selected.major */}</span>
+    <span class="tag">&lt;/div&gt;</span>
+  )
+}
+
+<span class="kw">export default</span> StudentDirectory</pre>
+</div>
+</div>
+
+<!-- ============================================================ SLIDE 11: TASK 3 HINTS -->
+<div class="slide" data-slide="11">
+<div class="slide-accent t3-accent"></div>
+<span class="task-number" style="color:var(--task3); font-family:'Space Mono',monospace; font-size:0.9em; font-weight:700; text-transform:uppercase; letter-spacing:2px; display:block; margin-bottom:12px;">Task 3 · Hints</span>
+<h2 style="color:var(--task3);">Three specific patterns to remember</h2>
+
+<div class="section-label">1 — Controlled input</div>
+<div class="code-window">
+  <div class="code-toolbar"><div class="file-tab">Pattern: controlled input</div></div>
+  <pre class="code-block"><span class="cmt">// The input value is always the state value.
+// onChange updates the state, which updates the input.
+// This is called a "controlled" input.</span>
+<span class="tag">&lt;input</span>
+  value={search}
+  onChange={<span class="fn">(e)</span> =&gt; <span class="fn">setSearch</span>(e.target.value)}
+  placeholder=<span class="str">"Search students"</span>
+<span class="tag">/&gt;</span></pre>
+</div>
+
+<div class="section-label">2 — Filtering</div>
+<div class="code-window">
+  <div class="code-toolbar"><div class="file-tab">Pattern: filter by search text</div></div>
+  <pre class="code-block"><span class="cmt">// .filter() returns a new array — it does not change students.</span>
+<span class="kw">const</span> filtered = students.<span class="fn">filter</span>((s) =>
+  s.name.<span class="fn">toLowerCase</span>().<span class="fn">includes</span>(search.<span class="fn">toLowerCase</span>())
+)</pre>
+</div>
+
+<div class="section-label">3 — Conditional render</div>
+<div class="code-window">
+  <div class="code-toolbar"><div class="file-tab">Pattern: show panel only when selected is not null</div></div>
+  <pre class="code-block"><span class="cmt">// {selected && ...} renders nothing when selected is null.
+// It renders the JSX when selected is a student object.</span>
+{selected &amp;&amp; (
+  <span class="tag">&lt;p&gt;</span>Selected: {selected.name} — {selected.major}<span class="tag">&lt;/p&gt;</span>
+)}</pre>
+</div>
+
+<div class="tip-box" style="margin-top:16px;">
+  <strong style="color:var(--success);">You know Task 3 is done when</strong>
+  <p style="margin-top:8px;">Typing "i" in the search box shows only students whose name contains the letter "i". Clicking any list item updates the selected panel below. Clearing the input restores the full list.</p>
+</div>
+</div>
+
+
+</div><!-- end #slides -->
+
+<!-- Navigation -->
+<div class="navigation">
+  <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)" disabled>← Prev</button>
+  <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+</div>
+
+<script>
+  let current = 1;
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  document.getElementById('totalSlides').textContent = total;
+
+  function showSlide(n) {
+    slides.forEach(s => s.classList.remove('active'));
+    current = Math.max(1, Math.min(n, total));
+    slides[current - 1].classList.add('active');
+    document.getElementById('currentSlide').textContent = current;
+    document.getElementById('prevBtn').disabled = current === 1;
+    document.getElementById('nextBtn').disabled = current === total;
+  }
+
+  function changeSlide(dir) { showSlide(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changeSlide(-1);
+  });
+
+  function copyCode(btn) {
+    const pre = btn.closest('.code-window').querySelector('.code-block');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  showSlide(1);
+</script>
+</body>
+</html>

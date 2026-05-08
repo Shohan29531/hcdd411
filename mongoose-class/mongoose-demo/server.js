@@ -1,17 +1,32 @@
+const path = require("path");
 const express   = require("express");
 const connectDB = require("./config/database");
 const Student   = require("./models/students.model");
 
 const app = express();
-app.use(express.json()); // parse incoming JSON request bodies
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public1")));
+
 
 // ── GET /students ── return all students ──────────────────────
 app.get("/students", async (req, res) => {
   try {
-    const students = await Student.find();
+    const students = await Student.find().sort({ name: 1 });
     res.json(students);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET /students/:id ── return one student by ID ─────────────
+app.get("/students/:id", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).json({ error: "Not found" });
+    res.json(student);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
@@ -31,8 +46,9 @@ app.put("/students/:id", async (req, res) => {
     const student = await Student.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true } // return the updated doc, not the old one
+      { new: true, runValidators: true }
     );
+
     if (!student) return res.status(404).json({ error: "Not found" });
     res.json(student);
   } catch (err) {
@@ -47,11 +63,10 @@ app.delete("/students/:id", async (req, res) => {
     if (!student) return res.status(404).json({ error: "Not found" });
     res.json({ message: "Deleted successfully", student });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 
-// ── Start: connect DB first, then listen ──────────────────────
 async function startServer() {
   await connectDB();
   app.listen(3000, () => {
